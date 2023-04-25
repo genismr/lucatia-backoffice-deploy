@@ -1,0 +1,12 @@
+.ck-editor__editable_inline {
+  min-height: 150px;
+}
+
+.custom-editor.max-height .ck-editor__editable_inline {
+  max-height: 500px;
+}
+
+.ck-editor i {
+  font-size: unset !important;
+  color: unset !important;
+}

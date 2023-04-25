@@ -1,0 +1,12 @@
+@media (max-width: 576px) {
+    .react-bootstrap-table-page-btns-ul {
+        align-items: center;
+        display: flex;
+        padding-top: 1em;
+        flex-direction: column;
+    }
+}
+
+.react-bootstrap-table-pagination{
+    padding-top: 15px;
+}

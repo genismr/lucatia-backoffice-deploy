@@ -1,0 +1,28 @@
+.filter-header-container {
+
+  & > .filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    margin-top: 1rem;
+  }
+
+  & > .filter-header-title {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    margin-top: 1rem;
+  }
+  
+  button ~ button {
+    margin-left: 0.75rem;
+  }
+
+  button {
+    @media (max-width: 1199.5px) {
+      margin-top: 0.5rem;
+    }
+  }
+}
