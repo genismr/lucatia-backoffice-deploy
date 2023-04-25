@@ -11,11 +11,11 @@ export const authClient = () => {
   })
 }
 
-//const PRO = (process.env.NODE_ENV ===  'production' || process.env.NODE_ENV === 'pro')
+const PRO = (process.env.NODE_ENV ===  'production' || process.env.NODE_ENV === 'pro')
 
-export const API = /*PRO
-  ? ''
-  : */'https://localhost:7285/api'
+export const API = PRO
+  ? 'https://lucatiaapi.azurewebsites.net/api'
+  : 'https://localhost:7285/api'
 
 export const SERVER_URL = /*PRO
   ? ''

@@ -58,10 +58,10 @@ function getData(users, loggedUser) {
 
 			elem.nombreApellidos = users[i].nombre + apellidos;
 			elem.email = users[i].email;
-			elem.faviconRol = "TO DO";
+			elem.faviconRol = "??";
 			elem.rol = users[i].role.descripcion;
-			elem.faviconEntityOwner = "TO DO";
-			elem.faviconEntityManager = "TO DO";
+			elem.faviconEntityOwner = "??";
+			elem.faviconEntityManager = "??";
 			elem.lastLogin = "Missing in db";
 			elem.id = users[i].id;
 			data = data.concat(elem);
@@ -123,15 +123,6 @@ export default function UsersPage() {
 		const elem = data.find((item) => item.id === cell);
 		return (
 			<>
-				<Tooltip title="Owner entities">
-					<Button
-						style={buttonsStyle}
-						size="small"
-						onClick={() => history.push("/owner-entities/" + cell)}
-					>
-						<EntitiesIcon />
-					</Button>
-				</Tooltip>
 				<Tooltip title="View">
 					<Button
 						style={buttonsStyle}
@@ -183,8 +174,8 @@ export default function UsersPage() {
 		},
 		{ dataField: "email", text: "Mail", sort: true },
 		{ dataField: "id", text: "Rol", formatter: roleFormatter },
-		{ dataField: "faviconEntityOwner", text: "Owner entities" },
-		{ dataField: "faviconEntityManager", text: "Managed entities" },
+		{ dataField: "faviconEntityOwner", text: "Icons Owner" },
+		{ dataField: "faviconEntityManager", text: "Icons Manager" },
 		{
 			dataField: "lastLogin",
 			text: "Last Login" /*formatter: dateFormatter*/,

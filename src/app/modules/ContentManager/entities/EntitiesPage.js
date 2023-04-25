@@ -33,9 +33,9 @@ function getData(entities) {
 	let data = [];
 	for (let i = 0; i < entities.length; ++i) {
 		const elem = {};
-
+		elem.favicon = "??"
 		elem.nombre = entities[i].nombre;
-		elem.faviconParentEntity = "TO DO";
+		elem.faviconParentEntity = "??";
 		elem.ownerName = "??"
 		elem.id = entities[i].id;
 		data = data.concat(elem);
@@ -120,7 +120,7 @@ export default function EntitiesPage() {
 			text: "Nombre",
 			sort: true,
 		},
-		{ dataField: "faviconParentEntity", text: "Parent entity" },
+		{ dataField: "faviconParentEntity", text: "Parent entity", formatter: imageFormatter },
 		{ dataField: "ownerName", text: "Owner name" },
 		{ dataField: "id", text: "", formatter: buttonFormatter },
 	];
