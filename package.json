@@ -4,7 +4,7 @@
     "private": true,
     "homepage": "",
     "scripts": {
-        "start": "react-scripts --openssl-legacy-provider start",        "test": "react-scripts test",
+        "start": "react-scripts start",        "test": "react-scripts test",
         "lint": "eslint src",
         "lint:fix": "eslint src --fix",
         "format": "prettier --write \"src/**/*.{js,css,scss,html}\"",
