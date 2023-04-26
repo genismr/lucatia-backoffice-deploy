@@ -65,7 +65,7 @@ function getEmptyUser() {
 		poblacion: null,
 		provincia: null,
 		pais: null,
-		fecha_nacimiento: "",
+		fecha_nacimiento: null,
 		fecha_alta: "",
 		user_alta_id: "",
 		user_rol_id: "",
@@ -80,7 +80,7 @@ export default function EditUsersPage() {
 		password: null,
 		repeatPassword: null,
 	});
-	const [changePassword, setChangePassword] = useState(false);
+
 	const [roles, setRoles] = useState(null);
 	const [entities, setEntities] = useState(null);
 
@@ -118,28 +118,6 @@ export default function EditUsersPage() {
 		}
 
 		return data;
-	}
-
-	function getEntitiesData() {
-		/*let data = [];
-		for (let i = 0; i < loggedUser.managedEntities.length; ++i) {
-			getEntityById(loggedUser.managedEntities[i])
-				.then((res) => {
-					if (res.status === 200) {
-						let entity = {};
-						entity.id = res.data.id;
-						entity.nombre = res.data.nombre;
-						data = data.concat(entity);
-						setEntities(data);
-					}
-				})
-				.catch((error) => {
-					alertError({
-						error: error,
-						customMessage: "Could not get entity.",
-					});
-				});
-		}*/
 	}
 
 	function assignEntitiesToUser(assignedUserId) {
@@ -214,8 +192,7 @@ export default function EditUsersPage() {
 	function saveUser() {
 		if (
 			checkIsEmpty(user.nombre) ||
-			checkIsEmpty(user.email) ||
-			checkIsEmpty(user.fecha_nacimiento)
+			checkIsEmpty(user.email)
 		) {
 			alertError({
 				error: null,
@@ -223,7 +200,7 @@ export default function EditUsersPage() {
 			});
 			return;
 		}
-		if (isNaN(Date.parse(user.fecha_nacimiento))) {
+		if (user.fecha_nacimiento != null && isNaN(Date.parse(user.fecha_nacimiento))) {
 			alertError({
 				error: null,
 				customMessage: "Invalid date format",
@@ -232,7 +209,7 @@ export default function EditUsersPage() {
 		}
 
 		let saveUser = user;
-		if (!userId || changePassword) {
+		if (!userId) {
 			if (!newPassword.password || !newPassword.repeatPassword) {
 				alertError({
 					error: null,
@@ -336,6 +313,8 @@ export default function EditUsersPage() {
 						user.fecha_nacimiento.lastIndexOf("T")
 					);
 
+					if (user.fecha_nacimiento === "0001-01-01") user.fecha_nacimiento = null;
+
 					delete user.role;
 					user.user_rol_id = roleId;
 					user.entities = user.entities.map((e) => e.id);
@@ -403,8 +382,9 @@ export default function EditUsersPage() {
 							margin="normal"
 							variant="outlined"
 							required
+							disabled={userId}
 						/>
-						{!userId || changePassword ? (
+						{!userId && (
 							<>
 								<br />
 								<br />
@@ -447,42 +427,6 @@ export default function EditUsersPage() {
 									variant="outlined"
 									required
 								/>
-								<br />
-								{userId && (
-									<>
-										<Button
-											onClick={() => {
-												setChangePassword(false);
-												setNewPassword({
-													password: null,
-													repeatPassword: null,
-												});
-											}}
-											variant="outlined"
-											style={{
-												marginRight: "20px",
-											}}
-										>
-											Cancel change password
-										</Button>
-										<br />
-										<br />
-									</>
-								)}
-							</>
-						) : (
-							<>
-								<br />
-								<br />
-								<Button
-									onClick={() => setChangePassword(true)}
-									variant="outlined"
-									color="primary"
-									style={{ marginRight: "20px" }}
-								>
-									Change password
-								</Button>
-								<br />
 								<br />
 							</>
 						)}
@@ -584,7 +528,6 @@ export default function EditUsersPage() {
 							placeholder="yyyy-mm-dd"
 							margin="normal"
 							variant="outlined"
-							required
 						/>
 						<br />
 						<FormControl style={{ width: "100%" }}>
