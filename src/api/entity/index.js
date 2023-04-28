@@ -5,13 +5,9 @@ export const postEntity = (entity) => {
   return authClient().post(`${API}/entity`, entity)
 }
 
-//Get all entities
-export const getAllEntities = () => {
-  return authClient().get(`${API}/entity/all`)
-}
-
 //Get entities
 export const getEntities = (accessToken) => {
+  console.log(accessToken)
   return authClient().get(`${API}/entity?accessToken=${accessToken}`)
 }
 

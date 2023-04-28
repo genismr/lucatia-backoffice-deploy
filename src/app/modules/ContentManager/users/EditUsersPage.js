@@ -19,6 +19,8 @@ import { useHistory, useParams } from "react-router-dom";
 import {
 	assignOwnerEntity,
 	unassignOwnerEntity,
+	assignManagedEntity,
+	unassignManagedEntity,
 	deleteUser,
 	getUserById,
 	postUser,
@@ -70,6 +72,7 @@ function getEmptyUser() {
 		user_alta_id: "",
 		user_rol_id: "",
 		entities: [],
+		managed_entities: []
 	};
 }
 
@@ -85,6 +88,9 @@ export default function EditUsersPage() {
 	const [entities, setEntities] = useState(null);
 
 	const [initialAssignedEntities, setInitialAssignedEntities] = useState(
+		null
+	);
+	const [initialManagedEntities, setInitialManagedEntities] = useState(
 		null
 	);
 
@@ -120,7 +126,7 @@ export default function EditUsersPage() {
 		return data;
 	}
 
-	function assignEntitiesToUser(assignedUserId) {
+	function handleOwnedEntitiesAssignment(assignedUserId) {
 		let newAssignedEntities = user.entities;
 		if (initialAssignedEntities != null) {
 			newAssignedEntities = user.entities.filter(
@@ -129,8 +135,6 @@ export default function EditUsersPage() {
 		}
 
 		if (!userId || newAssignedEntities.length) {
-			console.log("new");
-			console.log(newAssignedEntities);
 
 			let assignBody = [];
 
@@ -138,13 +142,10 @@ export default function EditUsersPage() {
 				let bodyElem = {
 					entidad_id: newAssignedEntities[i],
 					fecha_alta: new Date(),
-					user_alta_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+					user_alta_id: loggedUser.userID,
 				};
 				assignBody = assignBody.concat(bodyElem);
 			}
-
-			console.log("body");
-			console.log(assignBody);
 
 			assignOwnerEntity(assignedUserId, assignBody)
 				.then((res) => {
@@ -172,8 +173,6 @@ export default function EditUsersPage() {
 			);
 
 		if (unassignedEntities != null) {
-			console.log("deleted");
-			console.log(unassignedEntities);
 
 			unassignOwnerEntity(assignedUserId, unassignedEntities).then(
 				(res) => {
@@ -187,6 +186,73 @@ export default function EditUsersPage() {
 				}
 			);
 		}
+	}
+
+	function handleManagedEntitiesAssignment(assignedUserId) {
+		let newAssignedEntities = user.managed_entities;
+		if (initialManagedEntities != null) {
+			newAssignedEntities = user.managed_entities.filter(
+				(e) => !initialManagedEntities.includes(e)
+			);
+		}
+
+		if (!userId || newAssignedEntities.length) {
+			let assignBody = [];
+
+			for (let i = 0; i < newAssignedEntities.length; ++i) {
+				let bodyElem = {
+					entidad_id: newAssignedEntities[i],
+					fecha_alta: new Date(),
+					user_alta_id: loggedUser.userID,
+				};
+				assignBody = assignBody.concat(bodyElem);
+			}
+
+			assignManagedEntity(assignedUserId, assignBody)
+				.then((res) => {
+					if (res.status === 200) {
+						alertSuccess({
+							title: "Saved!",
+							customMessage: "User successfully saved.",
+						});
+						history.push("/users");
+					}
+				})
+				.catch((error) => {
+					deleteUser(assignedUserId);
+					alertError({
+						error: error,
+						customMessage: "Could not save user.",
+					});
+				});
+		}
+
+		let unassignedEntities = null;
+		if (initialManagedEntities != null)
+			unassignedEntities = initialManagedEntities.filter(
+				(e) => !user.managed_entities.includes(e)
+			);
+
+		if (unassignedEntities != null) {
+			unassignManagedEntity(assignedUserId, unassignedEntities).then(
+				(res) => {
+					if (res.status === 204) {
+						alertSuccess({
+							title: "Saved!",
+							customMessage: "User successfully saved.",
+						});
+						history.push("/users");
+					}
+				}
+			);
+		}
+	}
+
+
+
+	function assignEntitiesToUser(assignedUserId) {
+		handleOwnedEntitiesAssignment(assignedUserId);
+		handleManagedEntitiesAssignment(assignedUserId);		
 	}
 
 	function saveUser() {
@@ -317,8 +383,10 @@ export default function EditUsersPage() {
 
 					delete user.role;
 					user.user_rol_id = roleId;
-					user.entities = user.entities.map((e) => e.id);
+					user.entities = user.owned_entities.map((e) => e.id);
+					user.managed_entities = user.managed_entities.map((e) => e.id);
 					setInitialAssignedEntities(user.entities);
+					setInitialManagedEntities(user.managed_entities);
 
 					setUser(user);
 
@@ -336,7 +404,7 @@ export default function EditUsersPage() {
 
 	const handleChange = (element) => (event) => {
 		let text = event.target.value;
-		if (element !== "entities" && event.target.value.trim() == "")
+		if (!element.includes("entities") && event.target.value.trim() == "")
 			text = null;
 		setUser({ ...user, [element]: text });
 	};
@@ -530,9 +598,10 @@ export default function EditUsersPage() {
 							variant="outlined"
 						/>
 						<br />
+						<br />
 						<FormControl style={{ width: "100%" }}>
 							<InputLabel id="demo-simple-select-standard-label">
-								Assigned entities
+								Entidades propietarias
 							</InputLabel>
 							<Select
 								labelId="demo-simple-select-standard-label"
@@ -540,6 +609,28 @@ export default function EditUsersPage() {
 								value={user.entities || ""}
 								multiple
 								onChange={handleChange("entities")}
+								MenuProps={MenuProps}
+							>
+								{entities?.map((option) => (
+									<MenuItem key={option.id} value={option.id}>
+										{option.nombre}
+									</MenuItem>
+								))}
+							</Select>
+							<FormHelperText>Select entities</FormHelperText>
+						</FormControl>
+						<br />
+						<br />
+						<FormControl style={{ width: "100%" }}>
+							<InputLabel id="demo-simple-select-standard-label">
+								Entidades gestionadas
+							</InputLabel>
+							<Select
+								labelId="demo-simple-select-standard-label"
+								id="demo-simple-select-standard"
+								value={user.managed_entities || ""}
+								multiple
+								onChange={handleChange("managed_entities")}
 								MenuProps={MenuProps}
 							>
 								{entities?.map((option) => (

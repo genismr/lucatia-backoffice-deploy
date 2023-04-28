@@ -74,7 +74,7 @@ export default function ViewEntitiesPage() {
 						<p>{entity.contacto_propietario || "---"}</p>
 						<h5>Contacto técnico</h5>
 						<p>{entity.contacto_tecnico || "---"}</p>
-						<h5>Contacto administrative</h5>
+						<h5>Contacto administrativo</h5>
 						<p>{entity.contacto_administrativo || "---"}</p>
 						<h5>Contacto helpDesk</h5>
 						<p>{entity.contacto_helpdesk || "---"}</p>
