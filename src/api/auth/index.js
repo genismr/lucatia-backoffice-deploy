@@ -19,8 +19,13 @@ export const getCredentials = () => {
   return authClient().get(`${API}/user/credentials`)
 }
 
+/*
 export const refreshTokens = () => {
   return authClient().get(`${API}/user/refresh`)
+}*/
+
+export const refreshTokens = (accessToken) => {
+  return authClient().get(`${API}/login/refresh-tokens/${accessToken}`)
 }
 
 export const forgotPassword = (credentials) => {

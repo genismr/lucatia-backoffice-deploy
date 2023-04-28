@@ -27,13 +27,12 @@ export default function ViewUsersPage() {
 		ContentSkeleton,
 	} = useSkeleton();
 
-	function getCommonEntities() {
+	function getCommonEntities(entities) {
 		let commonEntities = [];
 
-		for (let i = 0; i < user.entities.length; ++i) {
-			console.log(user.entities[i].id)
-			if ((loggedUser.managedEntities).includes(user.entities[i].id)) {
-				commonEntities.push(user.entities[i].nombre)
+		for (let i = 0; i < entities.length; ++i) {
+			if ((loggedUser.managedEntities).includes(entities[i].id)) {
+				commonEntities.push(entities[i].nombre)
 			}
 		}
 
@@ -55,7 +54,7 @@ export default function ViewUsersPage() {
 						0,
 						user.fecha_nacimiento.lastIndexOf("T")
 					);
-					console.log(user.entities);
+					console.log(user)
 					setUser(user);
 					disableLoadingData();
 				}
@@ -97,11 +96,25 @@ export default function ViewUsersPage() {
 						<h5>País</h5>
 						<p>{user.pais || "---"}</p>
 						<h5>Fecha de nacimiento</h5>
-						<p>{user.fecha_nacimiento || "---"}</p>
-						<h5>Entidades asignadas</h5>
-						{user.entities.length ? (
+						{user.fecha_nacimiento != "0001-01-01" ? (
 							<p>
-								{getCommonEntities()}
+								{user.fecha_nacimiento}
+							</p>
+						) : (
+							<p>{"---"}</p>
+						)}
+						<h5>Entidades asignadas</h5>
+						{user.owned_entities.length ? (
+							<p>
+								{getCommonEntities(user.owned_entities)}
+							</p>
+						) : (
+							<p>{"---"}</p>
+						)}
+						<h5>Entidades gestionadas</h5>
+						{user.managed_entities.length ? (
+							<p>
+								{getCommonEntities(user.managed_entities)}
 							</p>
 						) : (
 							<p>{"---"}</p>

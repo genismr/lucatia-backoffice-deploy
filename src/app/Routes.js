@@ -14,7 +14,11 @@ import { LayoutSplashScreen } from '../_metronic/layout'
 export function Routes() {
 	const [loading, setLoading] = useState(false)
 	const dispatch = useDispatch()
-	  const isLogged = useSelector((store) => store.authentication?.loggedIn, shallowEqual)
+	const isLogged = useSelector((store) => store.authentication?.loggedIn, shallowEqual)
+	const loggedUser = useSelector(
+		(store) => store.authentication?.user,
+		shallowEqual
+	);
   
 	// Checking wether we have credentials in cookies before going to login
 	useEffect(() => {
@@ -46,7 +50,7 @@ export function Routes() {
 	  if (isLogged){
 		const interval = setInterval(async () => {
 		  try {
-			await refreshTokens()
+			await refreshTokens(loggedUser.accessToken)
 		  } catch (error) {
 			logError({ error, customMessage:'Cannot refresh tokens.' })
 			// alertError({error})

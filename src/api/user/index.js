@@ -32,17 +32,20 @@ export const countAdmins = () => {
 	return authClient().get(`${API}/user/count/${role}`)
 }
 
-// Get owner entity by userId and entityId
-export const getOwnerEntity = (userId, entityId) => {
-  return authClient().get(`${API}/userOwnerEntity/user/${userId}/entity/${entityId}`)
-}
-
 export const assignOwnerEntity = async (userId, ownerEntities) => {
   return authClient().post(`${API}/user/${userId}/assignOwnerEntities`, ownerEntities)
 }
 
 export const unassignOwnerEntity = async (userId, entities) => {
   return authClient().post(`${API}/user/${userId}/unassignOwnerEntities`, entities)
+}
+
+export const assignManagedEntity = async (userId, managedEntities) => {
+  return authClient().post(`${API}/user/${userId}/assignManagedEntities`, managedEntities)
+}
+
+export const unassignManagedEntity = async (userId, entities) => {
+  return authClient().post(`${API}/user/${userId}/unassignManagedEntities`, entities)
 }
 
 
