@@ -31,7 +31,7 @@ export default function ViewUsersPage() {
 		let commonEntities = [];
 
 		for (let i = 0; i < entities.length; ++i) {
-			if ((loggedUser.managedEntities).includes(entities[i].id)) {
+			if (loggedUser.role.rango === 0 || (loggedUser.managedEntities).includes(entities[i].id)) {
 				commonEntities.push(entities[i].nombre)
 			}
 		}
