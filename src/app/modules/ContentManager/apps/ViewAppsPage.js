@@ -60,12 +60,16 @@ export default function ViewAppsPage() {
 						<p>{app.nombre || "---"}</p>
 						<h5>Descripción</h5>
 						<p>{app.descripcion || "---"}</p>
+						<h5>Tecnología</h5>
+						<p>{app.tecnologia || "---"}</p>
 						<h5>Entidades propietarias</h5>
 						<p>{app.ownedEntities.length ? app.ownedEntities.map(e => e.nombre).join(", ") : "---"}</p>
 						<h5>Entidades delegadas</h5>
 						<p>{app.delegatedEntities.length ? app.delegatedEntities.map(e => e.nombre).join(", ") : "---"}</p>
 						<h5>Managers</h5>
 						<p>{app.managers.length ? app.managers.map(m => (m.nombre + " " + m.apellidos)).join(", ") : "---"}</p>
+						<h5>Estado</h5>
+						{app.activo ? (<p>Activo</p>) : (<p>Inactivo</p>)}
 					</CardBody>
 				</Card>
 				<div style={{ display: "flex", flexDirection: "row" }}>

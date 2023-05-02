@@ -17,7 +17,6 @@ export const deleteUser = (id) => {
 
 // Create user
 export const postUser = async (user) => {
-  delete user.entitiesManaged;
   return authClient().post(`${API}/user`, user)
 }
 
@@ -26,6 +25,15 @@ export const updateUser = async (id, user) => {
   return authClient().put(`${API}/user/${id}`, user)
 }
 
+export const setUserActive = async (id) => {
+	return authClient().put(`${API}/user/${id}/set-active`, {});
+};
+
+export const setUserInactive = async (id) => {
+	return authClient().put(`${API}/user/${id}/set-inactive`, {});
+};
+
+
 // Count all admins
 export const countAdmins = () => {
   const role = "admin"
@@ -33,19 +41,19 @@ export const countAdmins = () => {
 }
 
 export const assignOwnerEntity = async (userId, ownerEntities) => {
-  return authClient().post(`${API}/user/${userId}/assignOwnerEntities`, ownerEntities)
+  return authClient().post(`${API}/user/${userId}/assign-owner-entities`, ownerEntities)
 }
 
 export const unassignOwnerEntity = async (userId, entities) => {
-  return authClient().post(`${API}/user/${userId}/unassignOwnerEntities`, entities)
+  return authClient().post(`${API}/user/${userId}/unassign-owner-entities`, entities)
 }
 
 export const assignManagedEntity = async (userId, managedEntities) => {
-  return authClient().post(`${API}/user/${userId}/assignManagedEntities`, managedEntities)
+  return authClient().post(`${API}/user/${userId}/assign-managed-entities`, managedEntities)
 }
 
 export const unassignManagedEntity = async (userId, entities) => {
-  return authClient().post(`${API}/user/${userId}/unassignManagedEntities`, entities)
+  return authClient().post(`${API}/user/${userId}/unassign-managed-entities`, entities)
 }
 
 

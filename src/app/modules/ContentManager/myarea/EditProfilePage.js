@@ -78,9 +78,8 @@ function getEmptyUser() {
 	};
 }
 
-export default function EditUsersPage() {
+export default function EditProfilePage() {
 	const [user, setUser] = useState(getEmptyUser());
-	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 	const [newPassword, setNewPassword] = useState({
 		password: null,
 		repeatPassword: null,
@@ -156,7 +155,7 @@ export default function EditUsersPage() {
 							title: "Saved!",
 							customMessage: "User successfully saved.",
 						});
-						history.push("/users");
+						history.push('/dashboard');
 					}
 				})
 				.catch((error) => {
@@ -183,7 +182,7 @@ export default function EditUsersPage() {
 							title: "Saved!",
 							customMessage: "User successfully saved.",
 						});
-						history.push("/users");
+						history.push('/dashboard')
 					}
 				}
 			);
@@ -217,7 +216,7 @@ export default function EditUsersPage() {
 							title: "Saved!",
 							customMessage: "User successfully saved.",
 						});
-						history.push("/users");
+						history.push('/dashboard');
 					}
 				})
 				.catch((error) => {
@@ -243,7 +242,7 @@ export default function EditUsersPage() {
 							title: "Saved!",
 							customMessage: "User successfully saved.",
 						});
-						history.push("/users");
+						history.push('/dashboard')
 					}
 				}
 			);
@@ -309,7 +308,7 @@ export default function EditUsersPage() {
 								customMessage: "User successfully created.",
 							});
 						}
-						history.push("/users");
+						history.push('/dashboard')
 					}
 				})
 				.catch((error) => {
@@ -351,7 +350,7 @@ export default function EditUsersPage() {
 					error: error,
 					customMessage: "Could not get roles.",
 				});
-				history.push("/users");
+				history.push('/dashboard')
 			});
 		getEntities(loggedUser.accessToken)
 			.then((res) => {
@@ -401,7 +400,7 @@ export default function EditUsersPage() {
 					error: error,
 					customMessage: "Could not get user.",
 				});
-				history.push("/users");
+				history.push('/dashboard')
 			});
 	}, [userId, disableLoadingData, history]);
 
@@ -417,7 +416,7 @@ export default function EditUsersPage() {
 		return (
 			<>
 				<Card>
-					<CardHeader title="Edit user"></CardHeader>
+					<CardHeader title="Edit profile"></CardHeader>
 					<CardBody>
 						<TextField
 							id={`nombre`}
@@ -647,7 +646,7 @@ export default function EditUsersPage() {
 					</CardBody>
 				</Card>
 				<Button
-					onClick={() => history.push("/users")}
+					onClick={() => history.push('/dashboard')}
 					variant="outlined"
 					style={{ marginRight: "20px" }}
 				>
@@ -660,7 +659,7 @@ export default function EditUsersPage() {
 					style={{ marginRight: "20px" }}
 				>
 					Save user
-				</Button>			
+				</Button>				
 			</>
 		);
 }

@@ -5,6 +5,7 @@ import { useLocation } from "react-router";
 import { NavLink } from "react-router-dom";
 import SVG from "react-inlinesvg";
 import { toAbsoluteUrl, checkIsActive } from "../../../../_helpers";
+import RecentActorsIcon from "@material-ui/icons/RecentActors";
 import PeopleIcon from "@material-ui/icons/People";
 import BuildingIcon from "@material-ui/icons/AccountBalance";
 import AppIcon from "@material-ui/icons/PhoneIphone";
@@ -46,15 +47,32 @@ export function AsideMenuList({ layoutProps }) {
 						<span className="menu-text">Dashboard</span>
 					</NavLink>
 				</li>
+				<li
+					className={`menu-item ${getMenuItemActive(
+						"/edit-user",
+						false
+					)}`}
+					aria-haspopup="true"
+				>
+					<NavLink
+						className="menu-link"
+						to={"/my-area/edit-user/" + user?.userID}
+					>
+						<span className="menu-icon">
+							<RecentActorsIcon />
+						</span>
+						<span className="menu-text">My area</span>
+					</NavLink>
+				</li>
 				<li className="menu-section">
 					<h4 className="menu-text">USERS</h4>
 					<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
-				</li>
+				</li>				
 				<li
 					className={`menu-item ${getMenuItemActive(
 						"/users",
 						false
-					)} ${getMenuItemActive("/edit-user", false)}`}
+					)}`}
 					aria-haspopup="true"
 				>
 					<NavLink className="menu-link" to="/users">

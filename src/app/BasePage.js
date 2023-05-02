@@ -15,6 +15,7 @@ import EditAssetsPage from "./modules/ContentManager/assets/EditAssetsPage";
 import AppsPage from "./modules/ContentManager/apps/AppsPage";
 import ViewAppsPage from "./modules/ContentManager/apps/ViewAppsPage";
 import EditAppsPage from "./modules/ContentManager/apps/EditAppsPage";
+import EditProfilePage from "./modules/ContentManager/myarea/EditProfilePage";
 
 export default function BasePage() {
 	const user = useSelector(
@@ -28,6 +29,8 @@ export default function BasePage() {
 			{/* Redirect from root URL to /dashboard. */}
 			<Redirect exact from="/" to="/dashboard" />
 			<ContentRoute path="/dashboard" component={DashboardPage} />
+
+			<ContentRoute from="/my-area/edit-user/:id?" component={EditProfilePage} />
 
 			{/* USERS */}
 			{/* Users */}

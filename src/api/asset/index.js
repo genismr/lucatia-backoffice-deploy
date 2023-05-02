@@ -9,12 +9,12 @@ export const postAsset = (asset) => {
 
 //Assign tag to asset
 export const assignTags = (assetId, tags) => {
-  return authClient().post(`${API}/asset/${assetId}/assignTags`, tags)
+  return authClient().post(`${API}/asset/${assetId}/assign-tags`, tags)
 }
 
 //Unassign tag from asset
 export const unassignTags = (assetId, tags) => {
-  return authClient().post(`${API}/asset/${assetId}/unassignTags`, tags)
+  return authClient().post(`${API}/asset/${assetId}/unassign-tags`, tags)
 }
 
 //Get assets

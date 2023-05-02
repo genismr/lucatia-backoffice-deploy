@@ -10,7 +10,7 @@ import Table, {
 	buttonsStyle,
 } from "../../../components/tables/table";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { getApps, postApp, deleteApp } from "../../../../api/app";
+import { getApps, setAppActive, setAppInactive } from "../../../../api/app";
 import {
 	Button,
 	Tooltip,
@@ -20,7 +20,6 @@ import {
 	InputLabel,
 } from "@material-ui/core";
 import FiltersCard from "../../../components/filters/Filter";
-import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import ViewIcon from "@material-ui/icons/Visibility";
 import { alertError, alertSuccess } from "../../../../utils/logger";
@@ -28,7 +27,8 @@ import { useHistory, useParams } from "react-router-dom";
 import { shallowEqual, useSelector } from "react-redux";
 import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
-import LinkIcon from "@material-ui/icons/Link";
+import ToggleOffIcon from "@material-ui/icons/ToggleOff";
+import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -49,18 +49,20 @@ function getData(apps) {
 
 		elem.faviconApp = apps[i].icono_id;
 		elem.nombre = apps[i].nombre;
-		elem.tecnologia = "??";
-		elem.faviconOwnerEntity = "??";
-		elem.faviconsDelegatedEntities = "??";
+		elem.tecnologia = apps[i].tecnologia;
+		elem.faviconOwnerEntity = apps[i].ownedEntities?.map(e => e.icono_id);
+		elem.faviconsDelegatedEntities = apps[i].delegatedEntities?.map(e => e.icono_id);
+		elem.activo = apps[i].activo;
 		elem.id = apps[i].id;
 		data = data.concat(elem);
 	}
+	console.log(data)
 	return data;
 }
 
 export default function AppsPage() {
 	const [data, setData] = useState([]);
-	const [appId, setAppId] = useState(null);
+	const [app, setSelectedApp] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 	const [refresh, setRefresh] = useState(false);
 	const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
@@ -110,16 +112,20 @@ export default function AppsPage() {
 						<EditIcon />
 					</Button>
 				</Tooltip>
-				<Tooltip title="Delete">
+				<Tooltip title={elem?.activo ? "Disable" : "Enable"}>
 					<Button
 						style={buttonsStyle}
 						size="small"
 						onClick={() => {
-							setAppId(cell);
-							setOpenConfirmDialog(2);
+							setSelectedApp(elem);
+							setOpenConfirmDialog(1);
 						}}
 					>
-						<DeleteIcon />
+						{elem?.activo ? (
+							<ToggleOffIcon />
+						) : (
+							<ToggleOnIcon style={{ color: "red" }} />
+						)}
 					</Button>
 				</Tooltip>
 			</>
@@ -189,30 +195,77 @@ export default function AppsPage() {
 				<CardBody>
 					<Table data={data} columns={columns} />
 					<ConfirmDialog
-						title={"Are you sure you want to remove this app?"}
-						open={openConfirmDialog === 2}
+						title={`Are you sure you want to ${
+							app?.activo ? "disable" : "enable"
+						} this app?`}
+						open={openConfirmDialog === 1}
 						setOpen={setOpenConfirmDialog}
 						onConfirm={() => {
-							deleteApp(appId)
-								.then((res) => {
-									if (
-										res.status === 204 ||
-										res.status === 200
-									) {
-										alertSuccess({
-											title: "Deleted!",
-											customMessage:
-												"App removed successfully.",
+							if (!app?.activo) {
+								setAppActive(app.id)
+									.then((res) => {
+										if (
+											res.status === 200 ||
+											res.status === 204
+										) {
+											alertSuccess({
+												title: `${
+													app?.activo
+														? "Disabled!"
+														: "Enabled!"
+												}`,
+												customMessage: `App ${
+													app?.activo
+														? "disabled"
+														: "enabled"
+												} successfully`,
+											});
+											setRefresh(true);
+										}
+									})
+									.catch((error) => {
+										alertError({
+											error: error,
+											customMessage: `Could not ${
+												app?.activo
+													? "disable"
+													: "enable"
+											} app.`,
 										});
-										setRefresh(true);
-									}
-								})
-								.catch((error) => {
-									alertError({
-										error: error,
-										customMessage: "Could not delete app.",
 									});
-								});
+							} else {
+								setAppInactive(app.id)
+									.then((res) => {
+										if (
+											res.status === 200 ||
+											res.status === 204
+										) {
+											alertSuccess({
+												title: `${
+													app?.activo
+														? "Disabled!"
+														: "Enabled!"
+												}`,
+												customMessage: `App ${
+													app?.activo
+														? "disabled"
+														: "enabled"
+												} successfully`,
+											});
+											setRefresh(true);
+										}
+									})
+									.catch((error) => {
+										alertError({
+											error: error,
+											customMessage: `Could not ${
+												app?.activo
+													? "disable"
+													: "enable"
+											} app.`,
+										});
+									});
+							}
 						}}
 					/>
 				</CardBody>

@@ -58,12 +58,14 @@ function getEmptyApp() {
 		id: "",
 		nombre: "",
 		descripcion: "",
+		tecnologia: null,
 		icono_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 		banner_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 		fecha_alta: "",
 		user_alta_id: "",
 		ownedEntities: [],
 		delegatedEntities: [],
+		activo: true,
 	};
 }
 
@@ -79,6 +81,8 @@ function getData(app) {
 	data.user_alta_id = app.user_alta_id;
 	data.ownedEntities = app.ownedEntities.map((e) => e.id);
 	data.delegatedEntities = app.delegatedEntities.map((e) => e.id);
+	data.tecnologia = app.tecnologia;
+	data.activo = app.activo;
 
 	return data;
 }
@@ -323,11 +327,11 @@ export default function EditAppsPage() {
 				.then((res) => {
 					if (res.status === 201) {
 						handleEntitiesAssignment(res.data.id);
-						/*alertSuccess({
+						alertSuccess({
 							title: "Saved!",
 							customMessage: "App successfully created.",
 						});
-						history.push("/apps");*/
+						history.push("/apps");
 					}
 				})
 				.catch((error) => {
@@ -341,11 +345,11 @@ export default function EditAppsPage() {
 				.then((res) => {
 					if (res.status === 204) {
 						handleEntitiesAssignment(appId);
-						/*alertSuccess({
+						alertSuccess({
 							title: "Saved!",
 							customMessage: "App successfully saved.",
 						});
-						history.push("/apps");*/
+						history.push("/apps");
 					}
 				})
 				.catch((error) => {
@@ -388,6 +392,19 @@ export default function EditAppsPage() {
 							label="Descripción"
 							value={app.descripcion}
 							onChange={handleChange("descripcion")}
+							InputLabelProps={{
+								shrink: true,
+							}}
+							margin="normal"
+							variant="outlined"
+						/>
+						<br />
+						<br />
+						<TextField
+							id={`tecnologia`}
+							label="Tecnología"
+							value={app.tecnologia}
+							onChange={handleChange("tecnologia")}
 							InputLabelProps={{
 								shrink: true,
 							}}
@@ -454,49 +471,7 @@ export default function EditAppsPage() {
 					style={{ marginRight: "20px" }}
 				>
 					Save app
-				</Button>
-				{appId && (
-					<>
-						<MuiThemeProvider theme={theme}>
-							<Button
-								onClick={() => setOpenConfirmDialog(true)}
-								variant="outlined"
-								color="secondary"
-							>
-								Delete app
-							</Button>
-						</MuiThemeProvider>
-
-						<ConfirmDialog
-							title={"Are you sure you want to delete this app?"}
-							open={openConfirmDialog}
-							setOpen={setOpenConfirmDialog}
-							onConfirm={() => {
-								deleteApp(appId)
-									.then((res) => {
-										if (
-											res.status === 204 ||
-											res.status === 200
-										) {
-											alertSuccess({
-												title: "Deleted!",
-												customMessage:
-													"App deleted successfully",
-											});
-											history.push("/apps");
-										}
-									})
-									.catch((error) => {
-										alertError({
-											error: error,
-											customMessage:
-												"Could not delete app.",
-										});
-									});
-							}}
-						/>
-					</>
-				)}
+				</Button>				
 			</>
 		);
 }

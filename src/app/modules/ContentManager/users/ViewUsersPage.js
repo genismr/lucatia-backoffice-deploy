@@ -119,6 +119,8 @@ export default function ViewUsersPage() {
 						) : (
 							<p>{"---"}</p>
 						)}
+						<h5>Estado</h5>
+						{user.activo ? (<p>Activo</p>) : (<p>Inactivo</p>)}
 					</CardBody>
 				</Card>
 				<div style={{ display: "flex", flexDirection: "row" }}>

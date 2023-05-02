@@ -38,6 +38,9 @@ export function substringFormatter(cell) {
 const buildDate = (date) => {
   if (Object.prototype.toString.call(date) !== '[object Date]')
     return
+
+  if (date.getTime() === new Date("0001-01-01T00:00:00").getTime()) return '---'
+  
   const displayDate = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}  ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`
   return displayDate
 }

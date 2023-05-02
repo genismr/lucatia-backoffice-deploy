@@ -10,7 +10,11 @@ import Table, {
 	buttonsStyle,
 } from "../../../components/tables/table";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { getUsers, deleteUser, changeStatusUser } from "../../../../api/user";
+import {
+	getUsers,
+	setUserActive,
+	setUserInactive,
+} from "../../../../api/user";
 import { getRoles } from "../../../../api/role";
 import {
 	Button,
@@ -31,6 +35,8 @@ import { shallowEqual, useSelector } from "react-redux";
 import FiltersCard from "../../../components/filters/Filter";
 import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
+import ToggleOffIcon from "@material-ui/icons/ToggleOff";
+import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -43,7 +49,6 @@ const MenuProps = {
 	},
 	getContentAnchorEl: () => null,
 };
-
 
 function getData(users, loggedUser) {
 	let data = [];
@@ -62,7 +67,8 @@ function getData(users, loggedUser) {
 			elem.rol = users[i].role.descripcion;
 			elem.faviconEntityOwner = "??";
 			elem.faviconEntityManager = "??";
-			elem.lastLogin = "Missing in db";
+			elem.lastLogin = users[i].last_login;
+			elem.activo = users[i].activo;
 			elem.id = users[i].id;
 			data = data.concat(elem);
 		}
@@ -73,7 +79,10 @@ function getData(users, loggedUser) {
 function getPermittedRoles(roles, loggedUser) {
 	let data = [];
 	for (let i = 0; i < roles.length; ++i) {
-		if (loggedUser.role.rango === 0 || roles[i].rango > loggedUser.role.rango) {
+		if (
+			loggedUser.role.rango === 0 ||
+			roles[i].rango > loggedUser.role.rango
+		) {
 			let elem = {};
 			elem.id = roles[i].id;
 			elem.descripcion = roles[i].descripcion;
@@ -91,7 +100,7 @@ const initialFilters = {
 
 export default function UsersPage() {
 	const [data, setData] = useState([]);
-	const [userId, setUserId] = useState(null);
+	const [user, setSelectedUser] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 	const [refresh, setRefresh] = useState(false);
 	const [roles, setRoles] = useState(null);
@@ -101,7 +110,7 @@ export default function UsersPage() {
 	const [filterOptions, setFilterOptions] = useState(initialFilters);
 
 	const history = useHistory();
-	const user = useSelector(
+	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
 		shallowEqual
 	);
@@ -127,15 +136,13 @@ export default function UsersPage() {
 					<Button
 						style={buttonsStyle}
 						size="small"
-						onClick={() =>
-							history.push("/view-user/" + cell)
-						}
+						onClick={() => history.push("/view-user/" + cell)}
 					>
 						<ViewIcon />
 					</Button>
 				</Tooltip>
-				{(user.role.rango === 0 ||
-					elem.role.rango !== user.role.rango) && (
+				{(loggedUser.role.rango === 0 ||
+					elem.role.rango !== loggedUser.role.rango) && (
 					<>
 						<Tooltip title="Edit">
 							<Button
@@ -148,16 +155,20 @@ export default function UsersPage() {
 								<EditIcon />
 							</Button>
 						</Tooltip>
-						<Tooltip title="Delete">
+						<Tooltip title={elem?.activo ? "Disable" : "Enable"}>
 							<Button
 								style={buttonsStyle}
 								size="small"
 								onClick={() => {
-									setUserId(cell);
-									setOpenConfirmDialog(2);
+									setSelectedUser(elem);
+									setOpenConfirmDialog(1);
 								}}
 							>
-								<DeleteIcon />
+								{elem?.activo ? (
+									<ToggleOffIcon />
+								) : (
+									<ToggleOnIcon style={{ color: "red" }} />
+								)}
 							</Button>
 						</Tooltip>
 					</>
@@ -178,7 +189,8 @@ export default function UsersPage() {
 		{ dataField: "faviconEntityManager", text: "Icons Manager" },
 		{
 			dataField: "lastLogin",
-			text: "Last Login" /*formatter: dateFormatter*/,
+			text: "Last Login",
+			formatter: dateFormatter,
 		},
 		{ dataField: "id", text: "", formatter: buttonFormatter },
 	];
@@ -187,7 +199,7 @@ export default function UsersPage() {
 		getRoles()
 			.then((res) => {
 				if (res.status === 200) {
-					setRoles(getPermittedRoles(res.data, user));
+					setRoles(getPermittedRoles(res.data, loggedUser));
 					setRefresh(false);
 				}
 			})
@@ -197,7 +209,7 @@ export default function UsersPage() {
 					customMessage: "Could not get roles.",
 				});
 			});
-		getUsers(user.accessToken)
+		getUsers(loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setData(res.data);
@@ -220,8 +232,7 @@ export default function UsersPage() {
 				let filter = true;
 				if (filterOptions.roles && filterOptions.roles.length)
 					filter =
-						filter &&
-						filterOptions.roles.includes(item.role.id);
+						filter && filterOptions.roles.includes(item.role.id);
 				if (filter) return item;
 				return false;
 			})
@@ -235,7 +246,7 @@ export default function UsersPage() {
 
 	const handleChange = (element) => (event) => {
 		setFilterOptions({ ...filterOptions, [element]: event.target.value });
-		console.log(filterOptions)
+		console.log(filterOptions);
 	};
 
 	const renderFiltersContent = () => {
@@ -290,34 +301,81 @@ export default function UsersPage() {
 					/>
 
 					<Table
-						data={getData(filteredData, user)}
+						data={getData(filteredData, loggedUser)}
 						columns={columns}
 					/>
 					<ConfirmDialog
-						title={"Are you sure you want to remove this user?"}
-						open={openConfirmDialog === 2}
+						title={`Are you sure you want to ${
+							user?.activo ? "disable" : "enable"
+						} this user?`}
+						open={openConfirmDialog === 1}
 						setOpen={setOpenConfirmDialog}
 						onConfirm={() => {
-							deleteUser(userId)
-								.then((res) => {
-									if (
-										res.status === 204 ||
-										res.status === 200
-									) {
-										alertSuccess({
-											title: "Deleted!",
-											customMessage:
-												"User removed successfully.",
+							if (!user?.activo) {
+								setUserActive(user.id)
+									.then((res) => {
+										if (
+											res.status === 200 ||
+											res.status === 204
+										) {
+											alertSuccess({
+												title: `${
+													user?.activo
+														? "Disabled!"
+														: "Enabled!"
+												}`,
+												customMessage: `User ${
+													user?.activo
+														? "disabled"
+														: "enabled"
+												} successfully`,
+											});
+											setRefresh(true);
+										}
+									})
+									.catch((error) => {
+										alertError({
+											error: error,
+											customMessage: `Could not ${
+												user?.activo
+													? "disable"
+													: "enable"
+											} user.`,
 										});
-										setRefresh(true);
-									}
-								})
-								.catch((error) => {
-									alertError({
-										error: error,
-										customMessage: "Could not remove user.",
 									});
-								});
+							} else {
+								setUserInactive(user.id)
+									.then((res) => {
+										if (
+											res.status === 200 ||
+											res.status === 204
+										) {
+											alertSuccess({
+												title: `${
+													user?.activo
+														? "Disabled!"
+														: "Enabled!"
+												}`,
+												customMessage: `User ${
+													user?.activo
+														? "disabled"
+														: "enabled"
+												} successfully`,
+											});
+											setRefresh(true);
+										}
+									})
+									.catch((error) => {
+										alertError({
+											error: error,
+											customMessage: `Could not ${
+												user?.activo
+													? "disable"
+													: "enable"
+											} user.`,
+										});
+									});
+							}
 						}}
 					/>
 				</CardBody>

@@ -84,6 +84,8 @@ export default function ViewEntitiesPage() {
 						<p>{entity.ownedApps.length ? entity.ownedApps.map(e => e.nombre).join(", ") : "---"}</p>
 						<h5>Apps con acceso delegado</h5>
 						<p>{entity.delegatedApps.length ? entity.delegatedApps.map(e => e.nombre).join(", ") : "---"}</p>
+						<h5>Estado</h5>
+						{entity.activo ? (<p>Activo</p>) : (<p>Inactivo</p>)}
 					</CardBody>
 				</Card>
 				<div style={{ display: "flex", flexDirection: "row" }}>

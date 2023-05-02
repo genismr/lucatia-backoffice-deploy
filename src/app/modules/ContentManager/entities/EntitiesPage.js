@@ -10,7 +10,7 @@ import Table, {
 	buttonsStyle,
 } from "../../../components/tables/table";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { getEntities, deleteEntity } from "../../../../api/entity";
+import { getEntities, setEntityActive, setEntityInactive } from "../../../../api/entity";
 import { getRoles } from "../../../../api/role";
 import {
 	Button,
@@ -28,31 +28,37 @@ import { useHistory, useParams } from "react-router-dom";
 import { shallowEqual, useSelector } from "react-redux";
 import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
+import ToggleOffIcon from "@material-ui/icons/ToggleOff";
+import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 
 function getData(entities) {
 	let data = [];
 	for (let i = 0; i < entities.length; ++i) {
 		const elem = {};
-		elem.favicon = "??"
+
+		elem.favicon = entities[i].icono_id;
 		elem.nombre = entities[i].nombre;
-		elem.faviconParentEntity = "??";
-		elem.ownerName = "??"
+		elem.faviconParentEntity = entities[i].parentEntity?.icono_id;
+		elem.ownerName = "??";
+		elem.activo = entities[i].activo;
 		elem.id = entities[i].id;
+
 		data = data.concat(elem);
 	}
+
 	return data;
 }
 
 export default function EntitiesPage() {
 	const [data, setData] = useState([]);
-	const [entityId, setEntityId] = useState(null);
+	const [entity, setSelectedEntity] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 	const [refresh, setRefresh] = useState(false);
 	const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
 	const [previewImage, setPreviewImage] = useState(null);
 
 	const history = useHistory();
-	const user = useSelector(
+	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
 		shallowEqual
 	);
@@ -81,9 +87,7 @@ export default function EntitiesPage() {
 					<Button
 						style={buttonsStyle}
 						size="small"
-						onClick={() =>
-							history.push("/view-entity/" + cell)
-						}
+						onClick={() => history.push("/view-entity/" + cell)}
 					>
 						<ViewIcon />
 					</Button>
@@ -97,16 +101,20 @@ export default function EntitiesPage() {
 						<EditIcon />
 					</Button>
 				</Tooltip>
-				<Tooltip title="Delete">
+				<Tooltip title={elem?.activo ? "Disable" : "Enable"}>
 					<Button
 						style={buttonsStyle}
 						size="small"
 						onClick={() => {
-							setEntityId(cell);
-							setOpenConfirmDialog(2);
+							setSelectedEntity(elem);
+							setOpenConfirmDialog(1);
 						}}
 					>
-						<DeleteIcon />
+						{elem?.activo ? (
+							<ToggleOffIcon />
+						) : (
+							<ToggleOnIcon style={{ color: "red" }} />
+						)}
 					</Button>
 				</Tooltip>
 			</>
@@ -120,13 +128,17 @@ export default function EntitiesPage() {
 			text: "Nombre",
 			sort: true,
 		},
-		{ dataField: "faviconParentEntity", text: "Parent entity", formatter: imageFormatter },
+		{
+			dataField: "faviconParentEntity",
+			text: "Parent entity",
+			formatter: imageFormatter,
+		},
 		{ dataField: "ownerName", text: "Owner name" },
 		{ dataField: "id", text: "", formatter: buttonFormatter },
 	];
 
 	useEffect(() => {
-		getEntities(user.accessToken)
+		getEntities(loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setData(getData(res.data));
@@ -145,7 +157,7 @@ export default function EntitiesPage() {
 		<>
 			<Card>
 				<CardHeader title="Entities list">
-					{(user.role.rango === 0 || user.role.rango === 10) && (
+					{(loggedUser.role.rango === 0 || loggedUser.role.rango === 10) && (
 						<CardHeaderToolbar>
 							<button
 								type="button"
@@ -160,31 +172,77 @@ export default function EntitiesPage() {
 				<CardBody>
 					<Table data={data} columns={columns} />
 					<ConfirmDialog
-						title={"Are you sure you want to remove this entity?"}
-						open={openConfirmDialog === 2}
+						title={`Are you sure you want to ${
+							entity?.activo ? "disable" : "enable"
+						} this entity?`}
+						open={openConfirmDialog === 1}
 						setOpen={setOpenConfirmDialog}
 						onConfirm={() => {
-							deleteEntity(entityId)
-								.then((res) => {
-									if (
-										res.status === 204 ||
-										res.status === 200
-									) {
-										alertSuccess({
-											title: "Deleted!",
-											customMessage:
-												"Entity removed successfully.",
+							if (!entity?.activo) {
+								setEntityActive(entity.id)
+									.then((res) => {
+										if (
+											res.status === 200 ||
+											res.status === 204
+										) {
+											alertSuccess({
+												title: `${
+													entity?.activo
+														? "Disabled!"
+														: "Enabled!"
+												}`,
+												customMessage: `Entity ${
+													entity?.activo
+														? "disabled"
+														: "enabled"
+												} successfully`,
+											});
+											setRefresh(true);
+										}
+									})
+									.catch((error) => {
+										alertError({
+											error: error,
+											customMessage: `Could not ${
+												entity?.activo
+													? "disable"
+													: "enable"
+											} entity.`,
 										});
-										setRefresh(true);
-									}
-								})
-								.catch((error) => {
-									alertError({
-										error: error,
-										customMessage:
-											"Could not remove entity.",
 									});
-								});
+							} else {
+								setEntityInactive(entity.id)
+									.then((res) => {
+										if (
+											res.status === 200 ||
+											res.status === 204
+										) {
+											alertSuccess({
+												title: `${
+													entity?.activo
+														? "Disabled!"
+														: "Enabled!"
+												}`,
+												customMessage: `Entity ${
+													entity?.activo
+														? "disabled"
+														: "enabled"
+												} successfully`,
+											});
+											setRefresh(true);
+										}
+									})
+									.catch((error) => {
+										alertError({
+											error: error,
+											customMessage: `Could not ${
+												entity?.activo
+													? "disable"
+													: "enable"
+											} entity.`,
+										});
+									});
+							}
 						}}
 					/>
 				</CardBody>

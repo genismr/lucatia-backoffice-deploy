@@ -21,7 +21,8 @@ import {
 	getEntities,
 	getEntityById,
 	updateEntity,
-	deleteEntity,
+	setEntityActive,
+	setEntityInactive
 } from "../../../../api/entity";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError, alertSuccess } from "../../../../utils/logger";
@@ -52,8 +53,8 @@ const MenuProps = {
 
 function getEmptyEntity() {
 	return {
-		id: "",
 		entidad_padre_id: null,
+		icono_id: null,
 		nombre: "",
 		razon_social: "",
 		nif: null,
@@ -67,7 +68,8 @@ function getEmptyEntity() {
 		contacto_administrativo: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 		contacto_helpdesk: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 		fecha_alta: "",
-		user_alta_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+		user_alta_id: "",
+		activo: true,
 	};
 }
 
@@ -75,6 +77,8 @@ export default function EditEntitiesPage() {
 	const [entity, setEntity] = useState(getEmptyEntity());
 	const [parentEntities, setParentEntities] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+	const [refresh, setRefresh] = useState(false);
+
 
 	const entityId = useParams().id;
 	const history = useHistory();
@@ -136,6 +140,7 @@ export default function EditEntitiesPage() {
 		let saveEntity = entity;
 		if (!entityId) {
 			saveEntity.fecha_alta = new Date();
+			saveEntity.user_alta_id = loggedUser.userID;
 			postEntity(saveEntity)
 				.then((res) => {
 					if (res.status === 201) {
@@ -153,6 +158,7 @@ export default function EditEntitiesPage() {
 					});
 				});
 		} else {
+			if (entity.entidad_padre_id == 0) entity.entidad_padre_id = null;
 			updateEntity(entityId, saveEntity)
 				.then((res) => {
 					if (res.status === 204) {
@@ -374,50 +380,6 @@ export default function EditEntitiesPage() {
 				>
 					Save entity
 				</Button>
-				{entityId && (
-					<>
-						<MuiThemeProvider theme={theme}>
-							<Button
-								onClick={() => setOpenConfirmDialog(true)}
-								variant="outlined"
-								color="secondary"
-							>
-								Delete entity
-							</Button>
-						</MuiThemeProvider>
-
-						<ConfirmDialog
-							title={
-								"Are you sure you want to delete this entity?"
-							}
-							open={openConfirmDialog}
-							setOpen={setOpenConfirmDialog}
-							onConfirm={() => {
-								deleteEntity(entityId)
-									.then((res) => {
-										if (
-											res.status === 204 ||
-											res.status === 200
-										) {
-											alertSuccess({
-												title: "Deleted!",
-												customMessage:
-													"Entity deleted successfully",
-											});
-											history.push("/entities");
-										}
-									})
-									.catch((error) => {
-										alertError({
-											error: error,
-											customMessage:
-												"Could not delete entity.",
-										});
-									});
-							}}
-						/>
-					</>
-				)}
 			</>
 		);
 }

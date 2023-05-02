@@ -7,15 +7,11 @@ export const postApp = (app) => {
 }
 
 export const assignEntities = (id, body) => {
-  console.log('assign')
-  console.log(body)
-  return authClient().post(`${API}/app/${id}/assignEntities`, body)
+  return authClient().post(`${API}/app/${id}/assign-entities`, body)
 }
 
 export const unassignEntities = (id, body) => {
-  console.log('unassign')
-  console.log(body)
-  return authClient().post(`${API}/app/${id}/unassignEntities`, body)
+  return authClient().post(`${API}/app/${id}/unassign-entities`, body)
 }
 
 export const getApps = (accessToken) => {
@@ -27,16 +23,22 @@ export const getAppById = (id) => {
 }
 
 export const changeEntityOwnership = (id, body) => {
-  console.log('change')
-  console.log(body)
-  return authClient().put(`${API}/app/${id}/changeEntityOwnership`, body)
+  return authClient().put(`${API}/app/${id}/toggle-entity-ownership`, body)
 }
 
 export const updateApp = (id, app) => {
+  console.log('app', app)
   return authClient().put(`${API}/app/${id}`, app)
 }
 
-// Delete user
+export const setAppActive = async (id) => {
+	return authClient().put(`${API}/app/${id}/set-active`, {});
+};
+
+export const setAppInactive = async (id) => {
+	return authClient().put(`${API}/app/${id}/set-inactive`, {});
+};
+
 export const deleteApp = (id) => {
   return authClient().delete(`${API}/app/${id}`)
 }
