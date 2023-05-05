@@ -35,15 +35,6 @@ import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { checkIsEmpty } from "../../../../utils/helpers";
 
-// Create theme for delete button (red)
-const theme = createMuiTheme({
-	palette: {
-		secondary: {
-			main: "#F64E60",
-		},
-	},
-});
-
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -311,123 +302,153 @@ export default function EditAssetsPage() {
 				<Card>
 					<CardHeader title="Edit asset"></CardHeader>
 					<CardBody>
-						<TextField
-							id={`nombre`}
-							label="Nombre"
-							value={asset.descripcion}
-							onChange={handleChange("descripcion")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-							required
-						/>
+						<div className="row">
+							<div className="col-6 gx-3">
+								<TextField
+									id={`nombre`}
+									label="Nombre"
+									value={asset.descripcion}
+									onChange={handleChange("descripcion")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									required
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<TextField
+									id={`url`}
+									label="URL"
+									value={asset.url}
+									onChange={handleChange("url")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									required
+								/>
+							</div>
+						</div>
 						<br />
 						<br />
-						<TextField
-							id={`url`}
-							label="URL"
-							value={asset.url}
-							onChange={handleChange("url")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-							required
-						/>
-						<br />
-						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Asset type *
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={asset.asset_tipo_id || ""}
-								onClick={handleChange("asset_tipo_id")}
-								MenuProps={MenuProps}
-							>
-								{types?.map((type) => (
-									<MenuItem key={type.id} value={type.id}>
-										{type.descripcion}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select a type</FormHelperText>
-						</FormControl>
-						<br />
-						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Asset format *
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={asset.asset_formato_id || ""}
-								onClick={handleChange("asset_formato_id")}
-								MenuProps={MenuProps}
-							>
-								{formats?.map((format) => (
-									<MenuItem key={format.id} value={format.id}>
-										{format.descripcion}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select a format</FormHelperText>
-						</FormControl>
-						<br />
-						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Asset category *
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={asset.asset_categoria_id || ""}
-								onClick={handleChange("asset_categoria_id")}
-								MenuProps={MenuProps}
-							>
-								{categories?.map((category) => (
-									<MenuItem
-										key={category.id}
-										value={category.id}
+						<div className="row">
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Asset type *
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={asset.asset_tipo_id || ""}
+										onClick={handleChange("asset_tipo_id")}
+										MenuProps={MenuProps}
 									>
-										{category.descripcion}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select a category</FormHelperText>
-						</FormControl>
-						<br />
-						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Asset extension *
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={asset.asset_extension_id || ""}
-								onClick={handleChange("asset_extension_id")}
-								MenuProps={MenuProps}
-							>
-								{extensions?.map((extension) => (
-									<MenuItem
-										key={extension.id}
-										value={extension.id}
+										{types?.map((type) => (
+											<MenuItem
+												key={type.id}
+												value={type.id}
+											>
+												{type.descripcion}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select a type
+									</FormHelperText>
+								</FormControl>
+							</div>
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Asset format *
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={asset.asset_formato_id || ""}
+										onClick={handleChange(
+											"asset_formato_id"
+										)}
+										MenuProps={MenuProps}
 									>
-										{extension.descripcion}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select a extension</FormHelperText>
-						</FormControl>
+										{formats?.map((format) => (
+											<MenuItem
+												key={format.id}
+												value={format.id}
+											>
+												{format.descripcion}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select a format
+									</FormHelperText>
+								</FormControl>
+							</div>
+						</div>
 						<br />
+						<div className="row">
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Asset category *
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={asset.asset_categoria_id || ""}
+										onClick={handleChange(
+											"asset_categoria_id"
+										)}
+										MenuProps={MenuProps}
+									>
+										{categories?.map((category) => (
+											<MenuItem
+												key={category.id}
+												value={category.id}
+											>
+												{category.descripcion}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select a category
+									</FormHelperText>
+								</FormControl>
+							</div>
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Asset extension *
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={asset.asset_extension_id || ""}
+										onClick={handleChange(
+											"asset_extension_id"
+										)}
+										MenuProps={MenuProps}
+									>
+										{extensions?.map((extension) => (
+											<MenuItem
+												key={extension.id}
+												value={extension.id}
+											>
+												{extension.descripcion}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select a extension
+									</FormHelperText>
+								</FormControl>
+							</div>
+						</div>
 						<br />
 						<FormControl style={{ width: "100%" }}>
 							<InputLabel id="demo-simple-select-standard-label">
@@ -468,50 +489,6 @@ export default function EditAssetsPage() {
 				>
 					Save asset
 				</Button>
-				{assetId && (
-					<>
-						<MuiThemeProvider theme={theme}>
-							<Button
-								onClick={() => setOpenConfirmDialog(true)}
-								variant="outlined"
-								color="secondary"
-							>
-								Delete asset
-							</Button>
-						</MuiThemeProvider>
-
-						<ConfirmDialog
-							title={
-								"Are you sure you want to delete this asset?"
-							}
-							open={openConfirmDialog}
-							setOpen={setOpenConfirmDialog}
-							onConfirm={() => {
-								deleteAsset(assetId)
-									.then((res) => {
-										if (
-											res.status === 204 ||
-											res.status === 200
-										) {
-											alertSuccess({
-												title: "Deleted!",
-												customMessage:
-													"Asset deleted successfully",
-											});
-											history.push("/assets");
-										}
-									})
-									.catch((error) => {
-										alertError({
-											error: error,
-											customMessage:
-												"Could not delete asset.",
-										});
-									});
-							}}
-						/>
-					</>
-				)}
 			</>
 		);
 }

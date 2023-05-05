@@ -22,7 +22,7 @@ import {
 	getEntityById,
 	updateEntity,
 	setEntityActive,
-	setEntityInactive
+	setEntityInactive,
 } from "../../../../api/entity";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError, alertSuccess } from "../../../../utils/logger";
@@ -78,7 +78,6 @@ export default function EditEntitiesPage() {
 	const [parentEntities, setParentEntities] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 	const [refresh, setRefresh] = useState(false);
-
 
 	const entityId = useParams().id;
 	const history = useHistory();
@@ -197,170 +196,221 @@ export default function EditEntitiesPage() {
 				<Card>
 					<CardHeader title="Edit entity"></CardHeader>
 					<CardBody>
-						<TextField
-							id={`nombre`}
-							label="Nombre"
-							value={entity.nombre}
-							onChange={handleChange("nombre")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-							required
-						/>
-						<TextField
-							id={`razonSocial`}
-							label="Razon social"
-							value={entity.razon_social}
-							onChange={handleChange("razon_social")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-							required
-						/>
-						<TextField
-							id={`nif`}
-							label="NIF"
-							value={entity.nif}
-							onChange={handleChange("nif")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`direccion`}
-							label="Dirección"
-							value={entity.direccion}
-							onChange={handleChange("direccion")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`codigoPostal`}
-							label="Código Postal"
-							value={entity.cp}
-							onChange={handleChange("cp")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`poblacion`}
-							label="Población"
-							value={entity.poblacion}
-							onChange={handleChange("poblacion")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`provincia`}
-							label="Provincia"
-							value={entity.provincia}
-							onChange={handleChange("provincia")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`pais`}
-							label="País"
-							value={entity.pais}
-							onChange={handleChange("pais")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`propietario`}
-							label="Contacto propietario"
-							value={entity.contacto_propietario}
-							onChange={handleChange("contacto_propietario")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`tecnico`}
-							label="Contacto técnico"
-							value={entity.contacto_tecnico}
-							onChange={handleChange("contacto_tecnico")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`administrativo`}
-							label="Contacto administrativo"
-							value={entity.contacto_administrativo}
-							onChange={handleChange("contacto_administrativo")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`helpDesk`}
-							label="Contacto helpDesk"
-							value={entity.contacto_helpdesk}
-							onChange={handleChange("contacto_helpdesk")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<TextField
+									id={`nombre`}
+									label="Nombre"
+									value={entity.nombre}
+									onChange={handleChange("nombre")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									required
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<TextField
+									id={`razonSocial`}
+									label="Razon social"
+									value={entity.razon_social}
+									onChange={handleChange("razon_social")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									required
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<TextField
+									id={`nif`}
+									label="NIF"
+									value={entity.nif}
+									onChange={handleChange("nif")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-6 gx-3">
+								<TextField
+									id={`direccion`}
+									label="Dirección"
+									value={entity.direccion}
+									onChange={handleChange("direccion")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<TextField
+									id={`poblacion`}
+									label="Población"
+									value={entity.poblacion}
+									onChange={handleChange("poblacion")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<TextField
+									id={`codigoPostal`}
+									label="Código Postal"
+									value={entity.cp}
+									onChange={handleChange("cp")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<TextField
+									id={`provincia`}
+									label="Provincia"
+									value={entity.provincia}
+									onChange={handleChange("provincia")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<TextField
+									id={`pais`}
+									label="País"
+									value={entity.pais}
+									onChange={handleChange("pais")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-6 gx-3">
+								<br />
+								<br />
+								<TextField
+									id={`propietario`}
+									label="Contacto propietario"
+									value={entity.contacto_propietario}
+									onChange={handleChange(
+										"contacto_propietario"
+									)}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<br />
+								<br />
+								<TextField
+									id={`tecnico`}
+									label="Contacto técnico"
+									value={entity.contacto_tecnico}
+									onChange={handleChange("contacto_tecnico")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-6 gx-3">
+								<TextField
+									id={`administrativo`}
+									label="Contacto administrativo"
+									value={entity.contacto_administrativo}
+									onChange={handleChange(
+										"contacto_administrativo"
+									)}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<TextField
+									id={`helpDesk`}
+									label="Contacto helpDesk"
+									value={entity.contacto_helpdesk}
+									onChange={handleChange("contacto_helpdesk")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+						</div>
 						{loggedUser.role.rango === 0 && (
 							<>
 								<br />
 								<br />
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Entidad padre
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={entity.entidad_padre_id || ""}
-										onClick={handleChange(
-											"entidad_padre_id"
-										)}
-										MenuProps={MenuProps}
-									>
-										{parentEntities?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
+								<div className="row">
+									<div className="col-3 gx-3">
+										<FormControl style={{ width: "100%" }}>
+											<InputLabel id="demo-simple-select-standard-label">
+												Entidad padre
+											</InputLabel>
+											<Select
+												labelId="demo-simple-select-standard-label"
+												id="demo-simple-select-standard"
+												value={
+													entity.entidad_padre_id ||
+													""
+												}
+												onClick={handleChange(
+													"entidad_padre_id"
+												)}
+												MenuProps={MenuProps}
 											>
-												{option.nombre}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>
-										Select a parent entity
-									</FormHelperText>
-								</FormControl>
+												{parentEntities?.map(
+													(option) => (
+														<MenuItem
+															key={option.id}
+															value={option.id}
+														>
+															{option.nombre}
+														</MenuItem>
+													)
+												)}
+											</Select>
+											<FormHelperText>
+												Select a parent entity
+											</FormHelperText>
+										</FormControl>
+									</div>
+								</div>
 							</>
 						)}
 					</CardBody>

@@ -12,7 +12,6 @@ import Table, {
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import {
 	getAssets,
-	deleteAsset,
 	getTypes,
 	getCategories,
 	getFormats,
@@ -28,7 +27,6 @@ import {
 	InputLabel,
 } from "@material-ui/core";
 import FiltersCard from "../../../components/filters/Filter";
-import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import ViewIcon from "@material-ui/icons/Visibility";
 import { alertError, alertSuccess } from "../../../../utils/logger";
@@ -154,19 +152,7 @@ export default function AssetsPage() {
 					>
 						<EditIcon />
 					</Button>
-				</Tooltip>
-				<Tooltip title="Delete">
-					<Button
-						style={buttonsStyle}
-						size="small"
-						onClick={() => {
-							setAssetId(cell);
-							setOpenConfirmDialog(2);
-						}}
-					>
-						<DeleteIcon />
-					</Button>
-				</Tooltip>
+				</Tooltip>				
 			</>
 		);
 	}
@@ -469,35 +455,7 @@ export default function AssetsPage() {
 						handleClearFilters={handleClearFilters}
 						handleSearch={handleSearch}
 					/>
-					<Table data={getData(filteredData)} columns={columns} />
-					<ConfirmDialog
-						title={"Are you sure you want to remove this asset?"}
-						open={openConfirmDialog === 2}
-						setOpen={setOpenConfirmDialog}
-						onConfirm={() => {
-							deleteAsset(assetId)
-								.then((res) => {
-									if (
-										res.status === 204 ||
-										res.status === 200
-									) {
-										alertSuccess({
-											title: "Deleted!",
-											customMessage:
-												"Asset removed successfully.",
-										});
-										setRefresh(true);
-									}
-								})
-								.catch((error) => {
-									alertError({
-										error: error,
-										customMessage:
-											"Could not delete asset.",
-									});
-								});
-						}}
-					/>
+					<Table data={getData(filteredData)} columns={columns} />					
 				</CardBody>
 			</Card>
 		</>

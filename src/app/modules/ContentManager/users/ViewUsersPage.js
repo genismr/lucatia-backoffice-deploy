@@ -31,8 +31,11 @@ export default function ViewUsersPage() {
 		let commonEntities = [];
 
 		for (let i = 0; i < entities.length; ++i) {
-			if (loggedUser.role.rango === 0 || (loggedUser.managedEntities).includes(entities[i].id)) {
-				commonEntities.push(entities[i].nombre)
+			if (
+				loggedUser.role.rango === 0 ||
+				loggedUser.managedEntities.includes(entities[i].id)
+			) {
+				commonEntities.push(entities[i].nombre);
 			}
 		}
 
@@ -54,7 +57,7 @@ export default function ViewUsersPage() {
 						0,
 						user.fecha_nacimiento.lastIndexOf("T")
 					);
-					console.log(user)
+					console.log(user);
 					setUser(user);
 					disableLoadingData();
 				}
@@ -75,52 +78,90 @@ export default function ViewUsersPage() {
 				<Card>
 					<CardHeader title="View user info"></CardHeader>
 					<CardBody>
-						<h5>Nombre</h5>
-						<p>{user.nombre || "---"}</p>
-						<h5>Apellidos</h5>
-						<p>{user.apellidos || "---"}</p>
-						<h5>Email</h5>
-						<p>{user.email || "---"}</p>
-						<h5>Role</h5>
-						<p>{user.role.descripcion || "---"}</p>
-						<h5>Teléfono</h5>
-						<p>{user.telefono || "---"}</p>
-						<h5>Dirección</h5>
-						<p>{user.direccion || "---"}</p>
-						<h5>Código Postal</h5>
-						<p>{user.cp || "---"}</p>
-						<h5>Población</h5>
-						<p>{user.poblacion || "---"}</p>
-						<h5>Provincia</h5>
-						<p>{user.provincia || "---"}</p>
-						<h5>País</h5>
-						<p>{user.pais || "---"}</p>
-						<h5>Fecha de nacimiento</h5>
-						{user.fecha_nacimiento != "0001-01-01" ? (
-							<p>
-								{user.fecha_nacimiento}
-							</p>
-						) : (
-							<p>{"---"}</p>
-						)}
-						<h5>Entidades asignadas</h5>
-						{user.owned_entities.length ? (
-							<p>
-								{getCommonEntities(user.owned_entities)}
-							</p>
-						) : (
-							<p>{"---"}</p>
-						)}
-						<h5>Entidades gestionadas</h5>
-						{user.managed_entities.length ? (
-							<p>
-								{getCommonEntities(user.managed_entities)}
-							</p>
-						) : (
-							<p>{"---"}</p>
-						)}
-						<h5>Estado</h5>
-						{user.activo ? (<p>Activo</p>) : (<p>Inactivo</p>)}
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Nombre</h5>
+								<p>{user.nombre || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Apellidos</h5>
+								<p>{user.apellidos || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Email</h5>
+								<p>{user.email || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Teléfono</h5>
+								<p>{user.telefono || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Dirección</h5>
+								<p>{user.direccion || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Población</h5>
+								<p>{user.poblacion || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Fecha de nacimiento</h5>
+								{user.fecha_nacimiento != "0001-01-01" ? (
+									<p>{user.fecha_nacimiento}</p>
+								) : (
+									<p>{"---"}</p>
+								)}
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Role</h5>
+								<p>{user.role.descripcion || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Estado</h5>
+								{user.activo ? <p>Activo</p> : <p>Inactivo</p>}
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Código Postal</h5>
+								<p>{user.cp || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Provincia</h5>
+								<p>{user.provincia || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>País</h5>
+								<p>{user.pais || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Entidades asignadas</h5>
+								{user.owned_entities.length ? (
+									<p>
+										{getCommonEntities(user.owned_entities)}
+									</p>
+								) : (
+									<p>{"---"}</p>
+								)}
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Entidades gestionadas</h5>
+								{user.managed_entities.length ? (
+									<p>
+										{getCommonEntities(
+											user.managed_entities
+										)}
+									</p>
+								) : (
+									<p>{"---"}</p>
+								)}
+							</div>
+						</div>
 					</CardBody>
 				</Card>
 				<div style={{ display: "flex", flexDirection: "row" }}>

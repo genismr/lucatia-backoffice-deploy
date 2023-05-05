@@ -25,6 +25,8 @@ import {
 	getUserById,
 	postUser,
 	updateUser,
+	postUserAppMetadata,
+	updateUserAppMetadata,
 } from "../../../../api/user";
 import { getEntities } from "../../../../api/entity";
 import { getRoles } from "../../../../api/role";
@@ -33,6 +35,7 @@ import { alertError, alertSuccess } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { checkIsEmpty } from "../../../../utils/helpers";
+import { getAppMetadata } from "../../../../api/app";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -74,12 +77,14 @@ function getEmptyUser() {
 		last_login: null,
 		activo: true,
 		owned_entities: [],
-		managed_entities: []
+		managed_entities: [],
+		app_metadata: [],
 	};
 }
 
 export default function EditUsersPage() {
 	const [user, setUser] = useState(getEmptyUser());
+
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 	const [newPassword, setNewPassword] = useState({
 		password: null,
@@ -88,13 +93,12 @@ export default function EditUsersPage() {
 
 	const [roles, setRoles] = useState(null);
 	const [entities, setEntities] = useState(null);
+	const [appMetadata, setAppMetadata] = useState(null);
 
 	const [initialAssignedEntities, setInitialAssignedEntities] = useState(
 		null
 	);
-	const [initialManagedEntities, setInitialManagedEntities] = useState(
-		null
-	);
+	const [initialManagedEntities, setInitialManagedEntities] = useState(null);
 
 	const userId = useParams().id;
 	const history = useHistory();
@@ -137,7 +141,6 @@ export default function EditUsersPage() {
 		}
 
 		if (!userId || newAssignedEntities.length) {
-
 			let assignBody = [];
 
 			for (let i = 0; i < newAssignedEntities.length; ++i) {
@@ -175,7 +178,6 @@ export default function EditUsersPage() {
 			);
 
 		if (unassignedEntities != null) {
-
 			unassignOwnerEntity(assignedUserId, unassignedEntities).then(
 				(res) => {
 					if (res.status === 204) {
@@ -250,25 +252,59 @@ export default function EditUsersPage() {
 		}
 	}
 
-
-
 	function assignEntitiesToUser(assignedUserId) {
 		handleOwnedEntitiesAssignment(assignedUserId);
-		handleManagedEntitiesAssignment(assignedUserId);		
+		handleManagedEntitiesAssignment(assignedUserId);
+	}
+
+	function saveUserMetadata(metadataUserId) {
+		if (!userId) {
+			let saveMetadata = user.app_metadata;
+			saveMetadata.map(
+				(e) => (
+					(e.fecha_alta = new Date()),
+					(e.user_alta_id = loggedUser.userID)
+				)
+			);
+
+			postUserAppMetadata(metadataUserId, saveMetadata)
+				.then((res) => {
+					if (res.status === 201) {
+					}
+				})
+				.catch((error) => {
+					alertError({
+						error: error,
+						customMessage: "Could not save user metadata.",
+					});
+				});
+		} else {
+			updateUserAppMetadata(metadataUserId, user.app_metadata)
+				.then((res) => {
+					if (res.status === 204) {
+					}
+				})
+				.catch((error) => {
+					alertError({
+						error: error,
+						customMessage: "Could not save user metadata.",
+					});
+				});
+		}
 	}
 
 	function saveUser() {
-		if (
-			checkIsEmpty(user.nombre) ||
-			checkIsEmpty(user.email)
-		) {
+		if (checkIsEmpty(user.nombre) || checkIsEmpty(user.email)) {
 			alertError({
 				error: null,
 				customMessage: "Some required fields are missing",
 			});
 			return;
 		}
-		if (user.fecha_nacimiento != null && isNaN(Date.parse(user.fecha_nacimiento))) {
+		if (
+			user.fecha_nacimiento != null &&
+			isNaN(Date.parse(user.fecha_nacimiento))
+		) {
 			alertError({
 				error: null,
 				customMessage: "Invalid date format",
@@ -301,7 +337,13 @@ export default function EditUsersPage() {
 			postUser(saveUser)
 				.then((res) => {
 					if (res.status === 201) {
-						if (user.owned_entities.length) {
+						if (user.app_metadata.length) {
+							saveUserMetadata(res.data.id);
+						}
+						if (
+							user.owned_entities.length ||
+							user.managed_entities.length
+						) {
 							assignEntitiesToUser(res.data.id);
 						} else {
 							alertSuccess({
@@ -327,6 +369,7 @@ export default function EditUsersPage() {
 			updateUser(userId, saveUser)
 				.then((res) => {
 					if (res.status === 204) {
+						saveUserMetadata(userId);
 						assignEntitiesToUser(userId);
 					}
 				})
@@ -366,6 +409,18 @@ export default function EditUsersPage() {
 					customMessage: "Could not get entities.",
 				});
 			});
+		getAppMetadata("404eb47a-4b1c-408a-fcb7-08db4575ec5a")
+			.then((res) => {
+				if (res.status === 200) {
+					setAppMetadata(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get app metadata.",
+				});
+			});
 		if (!userId) {
 			disableLoadingData();
 			return;
@@ -381,17 +436,21 @@ export default function EditUsersPage() {
 						user.fecha_nacimiento.lastIndexOf("T")
 					);
 
-					if (user.fecha_nacimiento === "0001-01-01") user.fecha_nacimiento = null;
-					if (user.last_login === "0001-01-01T00:00:00") user.last_login = null;
+					if (user.fecha_nacimiento === "0001-01-01")
+						user.fecha_nacimiento = null;
+					if (user.last_login === "0001-01-01T00:00:00")
+						user.last_login = null;
 
 					delete user.role;
 					user.user_rol_id = roleId;
 					user.owned_entities = user.owned_entities.map((e) => e.id);
-					user.managed_entities = user.managed_entities.map((e) => e.id);
+					user.managed_entities = user.managed_entities.map(
+						(e) => e.id
+					);
 					setInitialAssignedEntities(user.owned_entities);
 					setInitialManagedEntities(user.managed_entities);
-
 					setUser(user);
+					console.log("user", user);
 
 					disableLoadingData();
 				}
@@ -412,6 +471,146 @@ export default function EditUsersPage() {
 		setUser({ ...user, [element]: text });
 	};
 
+	const handleChangeMetadata = (element, app_metadata_id) => (event) => {
+		let metadataUser = [...user.app_metadata];
+		if (
+			metadataUser.filter((u) => u.app_metadata_id === app_metadata_id)
+				.length === 0
+		) {
+			let whichMetadata = appMetadata.find(
+				(a) => a.app_metadata_id == app_metadata_id
+			);
+			metadataUser.push({
+				app_metadata_id: app_metadata_id,
+				app_id: whichMetadata.app_id,
+				metadata_tipo_id: whichMetadata.metadata_tipo_id,
+				metadata_es_respuesta_abierta:
+					whichMetadata.metadata_es_respuesta_abierta,
+				metadata_valor_abierto: "",
+				metadata_valor_select: "",
+				metadata_valor_select_id: null,
+			});
+		}
+
+		if (element === "metadata_valor_select") {
+			metadataUser.find(
+				(u) => u.app_metadata_id == app_metadata_id
+			).metadata_valor_select_id = event.target.value;
+			let value = appMetadata
+				.find((a) => a.app_metadata_id == app_metadata_id)
+				.metadata_select_values.find((u) => u.id == event.target.value)
+				.meta_valor_select;
+			metadataUser.find((u) => u.app_metadata_id == app_metadata_id)[
+				element
+			] = value;
+		} else {
+			metadataUser.find((u) => u.app_metadata_id == app_metadata_id)[
+				element
+			] = event.target.value;
+		}
+		setUser({ ...user, ["app_metadata"]: metadataUser });
+	};
+
+	function getMetadataValue(attribute, app_metadata_id) {
+		let value = "";
+		if (user.app_metadata.length) {
+			let found = user.app_metadata.find(
+				(u) => u.app_metadata_id == app_metadata_id
+			);
+			if (attribute === "metadata_valor_select_id") {
+				if (found != undefined) value = found.metadata_valor_select_id;
+			} else {
+				if (found != undefined) value = found.metadata_valor_abierto;
+			}
+		}
+
+		return value;
+	}
+
+	function renderMetadataFields() {
+		return (
+			<>
+				<div className="row">
+					{appMetadata?.length > 0 &&
+						appMetadata.map((attribute) => {
+							if (attribute.metadata_es_respuesta_abierta) {
+								return (
+									<>
+										<div className="col-6">
+											<TextField
+												id={attribute}
+												defaultValue={getMetadataValue(
+													"metadata_valor_abierto",
+													attribute.app_metadata_id
+												)}
+												label={
+													attribute.metadata_nombre
+												}
+												onChange={handleChangeMetadata(
+													"metadata_valor_abierto",
+													attribute.app_metadata_id
+												)}
+												InputLabelProps={{
+													shrink: true,
+												}}
+												margin="normal"
+												variant="outlined"
+											/>
+										</div>
+									</>
+								);
+							} else {
+								return (
+									<>
+										<div className="col-6">
+											<FormControl
+												style={{ width: "100%" }}
+											>
+												<InputLabel id="demo-simple-select-standard-label">
+													{attribute.metadata_nombre}
+												</InputLabel>
+												<Select
+													labelId="demo-simple-select-standard-label"
+													id="demo-simple-select-standard"
+													defaultValue={getMetadataValue(
+														"metadata_valor_select_id",
+														attribute.app_metadata_id
+													)}
+													onChange={handleChangeMetadata(
+														"metadata_valor_select",
+														attribute.app_metadata_id
+													)}
+													MenuProps={MenuProps}
+												>
+													{attribute.metadata_select_values?.map(
+														(option) => (
+															<MenuItem
+																key={option.id}
+																value={
+																	option.id
+																}
+															>
+																{
+																	option.meta_valor_select
+																}
+															</MenuItem>
+														)
+													)}
+												</Select>
+											</FormControl>
+
+											<br />
+											<br />
+										</div>
+									</>
+								);
+							}
+						})}
+				</div>
+			</>
+		);
+	}
+
 	if (isLoadingData) return <ContentSkeleton />;
 	else
 		return (
@@ -419,232 +618,293 @@ export default function EditUsersPage() {
 				<Card>
 					<CardHeader title="Edit user"></CardHeader>
 					<CardBody>
-						<TextField
-							id={`nombre`}
-							label="Nombre"
-							value={user.nombre}
-							onChange={handleChange("nombre")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-							required
-						/>
-						<TextField
-							id={`apellidos`}
-							label="Apellidos"
-							value={user.apellidos}
-							onChange={handleChange("apellidos")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`email`}
-							label="Email"
-							value={user.email}
-							onChange={handleChange("email")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-							required
-							disabled={userId}
-						/>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<TextField
+									id={`nombre`}
+									label="Nombre"
+									value={user.nombre}
+									onChange={handleChange("nombre")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									required
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<TextField
+									id={`apellidos`}
+									label="Apellidos"
+									value={user.apellidos}
+									onChange={handleChange("apellidos")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<TextField
+									id={`email`}
+									label="Email"
+									value={user.email}
+									onChange={handleChange("email")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									required
+									disabled={userId}
+								/>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-3 gx-3">
+								<TextField
+									id={`telefono`}
+									label="Teléfono"
+									value={user.telefono}
+									onChange={handleChange("telefono")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-3 gx-3">
+								<TextField
+									id={`fecha_nacimiento`}
+									label="Fecha de nacimiento"
+									value={user.fecha_nacimiento}
+									onChange={handleChange("fecha_nacimiento")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									placeholder="yyyy-mm-dd"
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Role *
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={user.user_rol_id || ""}
+										onChange={handleChange("user_rol_id")}
+										MenuProps={MenuProps}
+									>
+										{roles?.map((option) => (
+											<MenuItem
+												key={option.id}
+												value={option.id}
+											>
+												{option.descripcion}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select a role
+									</FormHelperText>
+								</FormControl>
+							</div>
+						</div>
 						{!userId && (
 							<>
 								<br />
-								<br />
-								<TextField
-									id={`password`}
-									label="Password"
-									value={newPassword.password}
-									onChange={(event) => {
-										if (event.target.value !== " ")
-											setNewPassword({
-												...newPassword,
-												password: event.target.value,
-											});
-									}}
-									InputLabelProps={{
-										shrink: true,
-									}}
-									type="password"
-									margin="normal"
-									variant="outlined"
-									required
-								/>
-								<TextField
-									id={`repeatPassword`}
-									label="Repeat password"
-									value={newPassword.repeatPassword}
-									onChange={(event) => {
-										if (event.target.value !== " ")
-											setNewPassword({
-												...newPassword,
-												repeatPassword:
-													event.target.value,
-											});
-									}}
-									InputLabelProps={{
-										shrink: true,
-									}}
-									type="password"
-									margin="normal"
-									variant="outlined"
-									required
-								/>
+								<div className="row">
+									<div className="col w-25 gx-3">
+										<TextField
+											id={`password`}
+											label="Password"
+											value={newPassword.password}
+											onChange={(event) => {
+												if (event.target.value !== " ")
+													setNewPassword({
+														...newPassword,
+														password:
+															event.target.value,
+													});
+											}}
+											InputLabelProps={{
+												shrink: true,
+											}}
+											type="password"
+											margin="normal"
+											variant="outlined"
+											required
+										/>
+									</div>
+									<div className="col w-25 gx-3">
+										<TextField
+											id={`repeatPassword`}
+											label="Repeat password"
+											value={newPassword.repeatPassword}
+											onChange={(event) => {
+												if (event.target.value !== " ")
+													setNewPassword({
+														...newPassword,
+														repeatPassword:
+															event.target.value,
+													});
+											}}
+											InputLabelProps={{
+												shrink: true,
+											}}
+											type="password"
+											margin="normal"
+											variant="outlined"
+											required
+										/>
+									</div>
+								</div>
 								<br />
 							</>
 						)}
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Role *
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={user.user_rol_id || ""}
-								onChange={handleChange("user_rol_id")}
-								MenuProps={MenuProps}
-							>
-								{roles?.map((option) => (
-									<MenuItem key={option.id} value={option.id}>
-										{option.descripcion}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select a role</FormHelperText>
-						</FormControl>
+						<div className="row">
+							<div className="col-6 gx-3">
+								<TextField
+									id={`direccion`}
+									label="Dirección"
+									value={user.direccion}
+									onChange={handleChange("direccion")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<TextField
+									id={`poblacion`}
+									label="Población"
+									value={user.poblacion}
+									onChange={handleChange("poblacion")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<TextField
+									id={`cp`}
+									label="Código postal"
+									value={user.cp}
+									onChange={handleChange("cp")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<TextField
+									id={`provincia`}
+									label="Província"
+									value={user.provincia}
+									onChange={handleChange("provincia")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<TextField
+									id={`pais`}
+									label="País"
+									value={user.pais}
+									onChange={handleChange("pais")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+						</div>
 						<br />
 						<br />
-						<TextField
-							id={`telefono`}
-							label="Teléfono"
-							value={user.telefono}
-							onChange={handleChange("telefono")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`direccion`}
-							label="Dirección"
-							value={user.direccion}
-							onChange={handleChange("direccion")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`cp`}
-							label="Código postal"
-							value={user.cp}
-							onChange={handleChange("cp")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`poblacion`}
-							label="Población"
-							value={user.poblacion}
-							onChange={handleChange("poblacion")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`provincia`}
-							label="Província"
-							value={user.provincia}
-							onChange={handleChange("provincia")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`pais`}
-							label="País"
-							value={user.pais}
-							onChange={handleChange("pais")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<TextField
-							id={`fecha_nacimiento`}
-							label="Fecha de nacimiento"
-							value={user.fecha_nacimiento}
-							onChange={handleChange("fecha_nacimiento")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							placeholder="yyyy-mm-dd"
-							margin="normal"
-							variant="outlined"
-						/>
-						<br />
-						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Entidades propietarias
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={user.owned_entities || ""}
-								multiple
-								onChange={handleChange("owned_entities")}
-								MenuProps={MenuProps}
-							>
-								{entities?.map((option) => (
-									<MenuItem key={option.id} value={option.id}>
-										{option.nombre}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select entities</FormHelperText>
-						</FormControl>
-						<br />
-						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Entidades gestionadas
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={user.managed_entities || ""}
-								multiple
-								onChange={handleChange("managed_entities")}
-								MenuProps={MenuProps}
-							>
-								{entities?.map((option) => (
-									<MenuItem key={option.id} value={option.id}>
-										{option.nombre}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select entities</FormHelperText>
-						</FormControl>
+						<div className="row">
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Entidades propietarias
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={user.owned_entities || ""}
+										multiple
+										onChange={handleChange(
+											"owned_entities"
+										)}
+										MenuProps={MenuProps}
+									>
+										{entities?.map((option) => (
+											<MenuItem
+												key={option.id}
+												value={option.id}
+											>
+												{option.nombre}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select entities
+									</FormHelperText>
+								</FormControl>
+							</div>
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Entidades gestionadas
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={user.managed_entities || ""}
+										multiple
+										onChange={handleChange(
+											"managed_entities"
+										)}
+										MenuProps={MenuProps}
+									>
+										{entities?.map((option) => (
+											<MenuItem
+												key={option.id}
+												value={option.id}
+											>
+												{option.nombre}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select entities
+									</FormHelperText>
+								</FormControl>
+							</div>
+						</div>
 					</CardBody>
+				</Card>
+				<Card>
+					<CardHeader title="Additional information"></CardHeader>
+					<CardBody>{renderMetadataFields()}</CardBody>
 				</Card>
 				<Button
 					onClick={() => history.push("/users")}
@@ -660,7 +920,7 @@ export default function EditUsersPage() {
 					style={{ marginRight: "20px" }}
 				>
 					Save user
-				</Button>			
+				</Button>
 			</>
 		);
 }

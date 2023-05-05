@@ -28,7 +28,7 @@ import {
 	deleteApp,
 	assignEntities,
 	unassignEntities,
-	changeEntityOwnership
+	changeEntityOwnership,
 } from "../../../../api/app";
 import { getEntities } from "../../../../api/entity";
 
@@ -279,25 +279,27 @@ export default function EditAppsPage() {
 					!app.delegatedEntities.includes(value)
 			);
 		}
-		
+
 		let unassignedEntities = unassignedOwned.concat(unassignedDelegated);
 
 		if (unassignedEntities.length) {
-			unassignEntities(assignedAppId, unassignedEntities).then((res) => {
-				if (res.status === 204) {
-					alertSuccess({
-						title: "Saved!",
-						customMessage: "App successfully saved.",
+			unassignEntities(assignedAppId, unassignedEntities)
+				.then((res) => {
+					if (res.status === 204) {
+						alertSuccess({
+							title: "Saved!",
+							customMessage: "App successfully saved.",
+						});
+						history.push("/apps");
+					}
+				})
+				.catch((error) => {
+					deleteApp(assignedAppId);
+					alertError({
+						error: error,
+						customMessage: "Could not assign entities.",
 					});
-					history.push("/apps");
-				}
-			}).catch((error) => {
-				deleteApp(assignedAppId);
-				alertError({
-					error: error,
-					customMessage: "Could not assign entities.",
 				});
-			});
 		}
 	}
 
@@ -373,20 +375,35 @@ export default function EditAppsPage() {
 				<Card>
 					<CardHeader title="Edit app"></CardHeader>
 					<CardBody>
-						<TextField
-							id={`nombre`}
-							label="Nombre"
-							value={app.nombre}
-							onChange={handleChange("nombre")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-							required
-						/>
-						<br />
-						<br />
+						<div className="row">
+							<div className="col-6 gx-3">
+								<TextField
+									id={`nombre`}
+									label="Nombre"
+									value={app.nombre}
+									onChange={handleChange("nombre")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									required
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<TextField
+									id={`tecnologia`}
+									label="Tecnología"
+									value={app.tecnologia}
+									onChange={handleChange("tecnologia")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							</div>
+						</div>
 						<TextField
 							id={`descripcion`}
 							label="Descripción"
@@ -400,61 +417,64 @@ export default function EditAppsPage() {
 						/>
 						<br />
 						<br />
-						<TextField
-							id={`tecnologia`}
-							label="Tecnología"
-							value={app.tecnologia}
-							onChange={handleChange("tecnologia")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-						<br />
-						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Entidades propietarias
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={app.ownedEntities || ""}
-								multiple
-								onChange={handleChange("ownedEntities")}
-								MenuProps={MenuProps}
-							>
-								{entities?.map((option) => (
-									<MenuItem key={option.id} value={option.id}>
-										{option.nombre}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select entities</FormHelperText>
-						</FormControl>
-						<br />
-						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Entidades con acceso delegado
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={app.delegatedEntities || ""}
-								multiple
-								onChange={handleChange("delegatedEntities")}
-								MenuProps={MenuProps}
-							>
-								{entities?.map((option) => (
-									<MenuItem key={option.id} value={option.id}>
-										{option.nombre}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select entities</FormHelperText>
-						</FormControl>
+						<div className="row">
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Entidades propietarias
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={app.ownedEntities || ""}
+										multiple
+										onChange={handleChange("ownedEntities")}
+										MenuProps={MenuProps}
+									>
+										{entities?.map((option) => (
+											<MenuItem
+												key={option.id}
+												value={option.id}
+											>
+												{option.nombre}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select entities
+									</FormHelperText>
+								</FormControl>
+							</div>
+							<div className="col-6 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Entidades con acceso delegado
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={app.delegatedEntities || ""}
+										multiple
+										onChange={handleChange(
+											"delegatedEntities"
+										)}
+										MenuProps={MenuProps}
+									>
+										{entities?.map((option) => (
+											<MenuItem
+												key={option.id}
+												value={option.id}
+											>
+												{option.nombre}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select entities
+									</FormHelperText>
+								</FormControl>
+							</div>
+						</div>
 					</CardBody>
 				</Card>
 				<Button
@@ -471,7 +491,7 @@ export default function EditAppsPage() {
 					style={{ marginRight: "20px" }}
 				>
 					Save app
-				</Button>				
+				</Button>
 			</>
 		);
 }

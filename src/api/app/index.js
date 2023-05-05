@@ -6,6 +6,8 @@ export const postApp = (app) => {
   return authClient().post(`${API}/app`, app)
 }
 
+
+
 export const assignEntities = (id, body) => {
   return authClient().post(`${API}/app/${id}/assign-entities`, body)
 }
@@ -18,6 +20,10 @@ export const getApps = (accessToken) => {
   return authClient().get(`${API}/app?accessToken=${accessToken}`)
 }
 
+export const getAppMetadata = (id) => {
+  return authClient().get(`${API}/app/${id}/metadata`)
+}
+
 export const getAppById = (id) => {
   return authClient().get(`${API}/app/${id}`)
 }
@@ -27,7 +33,6 @@ export const changeEntityOwnership = (id, body) => {
 }
 
 export const updateApp = (id, app) => {
-  console.log('app', app)
   return authClient().put(`${API}/app/${id}`, app)
 }
 

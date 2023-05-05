@@ -56,36 +56,92 @@ export default function ViewEntitiesPage() {
 				<Card>
 					<CardHeader title="View entity info"></CardHeader>
 					<CardBody>
-						<h5>Nombre</h5>
-						<p>{entity.nombre || "---"}</p>
-						<h5>Razon social</h5>
-						<p>{entity.razon_social || "---"}</p>
-						<h5>Dirección</h5>
-						<p>{entity.direccion || "---"}</p>
-						<h5>Código Postal</h5>
-						<p>{entity.cp || "---"}</p>
-						<h5>Población</h5>
-						<p>{entity.poblacion || "---"}</p>
-						<h5>Província</h5>
-						<p>{entity.provincia || "---"}</p>
-						<h5>País</h5>
-						<p>{entity.pais || "---"}</p>
-						<h5>Contacto propietario</h5>
-						<p>{entity.contacto_propietario || "---"}</p>
-						<h5>Contacto técnico</h5>
-						<p>{entity.contacto_tecnico || "---"}</p>
-						<h5>Contacto administrativo</h5>
-						<p>{entity.contacto_administrativo || "---"}</p>
-						<h5>Contacto helpDesk</h5>
-						<p>{entity.contacto_helpdesk || "---"}</p>
-						<h5>Entidad padre</h5>
-						<p>{entity.entidad_padre_id || "---"}</p>
-						<h5>Apps en propiedad</h5>
-						<p>{entity.ownedApps.length ? entity.ownedApps.map(e => e.nombre).join(", ") : "---"}</p>
-						<h5>Apps con acceso delegado</h5>
-						<p>{entity.delegatedApps.length ? entity.delegatedApps.map(e => e.nombre).join(", ") : "---"}</p>
-						<h5>Estado</h5>
-						{entity.activo ? (<p>Activo</p>) : (<p>Inactivo</p>)}
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Nombre</h5>
+								<p>{entity.nombre || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Razon social</h5>
+								<p>{entity.razon_social || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Estado</h5>
+								{entity.activo ? (
+									<p>Activo</p>
+								) : (
+									<p>Inactivo</p>
+								)}
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Dirección</h5>
+								<p>{entity.direccion || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Población</h5>
+								<p>{entity.poblacion || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Código Postal</h5>
+								<p>{entity.cp || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Província</h5>
+								<p>{entity.provincia || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>País</h5>
+								<p>{entity.pais || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Contacto propietario</h5>
+								<p>{entity.contacto_propietario || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Contacto técnico</h5>
+								<p>{entity.contacto_tecnico || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Contacto administrativo</h5>
+								<p>{entity.contacto_administrativo || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Contacto helpDesk</h5>
+								<p>{entity.contacto_helpdesk || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Entidad padre</h5>
+								<p>{entity.entidad_padre_id || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Apps en propiedad</h5>
+								<p>
+									{entity.ownedApps.length
+										? entity.ownedApps
+												.map((e) => e.nombre)
+												.join(", ")
+										: "---"}
+								</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Apps con acceso delegado</h5>
+								<p>
+									{entity.delegatedApps.length
+										? entity.delegatedApps
+												.map((e) => e.nombre)
+												.join(", ")
+										: "---"}
+								</p>
+							</div>
+						</div>
 					</CardBody>
 				</Card>
 				<div style={{ display: "flex", flexDirection: "row" }}>

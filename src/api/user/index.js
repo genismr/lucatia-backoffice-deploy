@@ -20,6 +20,14 @@ export const postUser = async (user) => {
   return authClient().post(`${API}/user`, user)
 }
 
+export const postUserAppMetadata = async (id, metadata) => {
+  return authClient().post(`${API}/user/${id}/app-metadata`, metadata)
+}
+
+export const updateUserAppMetadata = async (id, metadata) => {
+  return authClient().put(`${API}/user/${id}/app-metadata`, metadata)
+}
+
 // Update user
 export const updateUser = async (id, user) => {
   return authClient().put(`${API}/user/${id}`, user)

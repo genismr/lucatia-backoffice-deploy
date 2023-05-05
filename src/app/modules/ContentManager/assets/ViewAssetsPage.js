@@ -56,20 +56,48 @@ export default function ViewAssetsPage() {
 				<Card>
 					<CardHeader title="View asset info"></CardHeader>
 					<CardBody>
-						<h5>Nombre</h5>
-						<p>{asset.descripcion || "---"}</p>
-						<h5>Tipo</h5>
-						<p>{asset.type.descripcion || "---"}</p>
-						<h5>Formato</h5>
-						<p>{asset.format.descripcion || "---"}</p>
-						<h5>Categoría</h5>
-						<p>{asset.category.descripcion || "---"}</p>
-						<h5>Extensión</h5>
-						<p>{asset.extension.descripcion || "---"}</p>
-						<h5>URL</h5>
-						<p>{asset.url || "---"}</p>
-						<h5>Tags</h5>
-						<p>{asset.tags.length ? asset.tags.map(t => t.descripcion).join(", ") : "---"}</p>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Nombre</h5>
+								<p>{asset.descripcion || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>URL</h5>
+								<p>{asset.url || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Tipo</h5>
+								<p>{asset.type.descripcion || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Formato</h5>
+								<p>{asset.format.descripcion || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Categoría</h5>
+								<p>{asset.category.descripcion || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Extensión</h5>
+								<p>{asset.extension.descripcion || "---"}</p>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Tags</h5>
+								<p>
+									{asset.tags.length
+										? asset.tags
+												.map((t) => t.descripcion)
+												.join(", ")
+										: "---"}
+								</p>
+							</div>
+						</div>
 					</CardBody>
 				</Card>
 				<div style={{ display: "flex", flexDirection: "row" }}>
