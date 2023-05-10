@@ -312,7 +312,7 @@ export default function UsersPage() {
 						setOpen={setOpenConfirmDialog}
 						onConfirm={() => {
 							if (!user?.activo) {
-								setUserActive(user.id)
+								setUserActive(user.id, loggedUser.accessToken)
 									.then((res) => {
 										if (
 											res.status === 200 ||
@@ -344,7 +344,7 @@ export default function UsersPage() {
 										});
 									});
 							} else {
-								setUserInactive(user.id)
+								setUserInactive(user.id, loggedUser.accessToken)
 									.then((res) => {
 										if (
 											res.status === 200 ||

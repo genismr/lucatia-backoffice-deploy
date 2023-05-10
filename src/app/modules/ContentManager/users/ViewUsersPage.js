@@ -48,7 +48,7 @@ export default function ViewUsersPage() {
 			history.push("/users");
 			return;
 		}
-		getUserById(userId)
+		getUserById(userId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					let user = res.data;
@@ -94,19 +94,13 @@ export default function ViewUsersPage() {
 						</div>
 						<div className="row">
 							<div className="col-4 gx-3">
+								<h5>Código</h5>
+								<p>{user.codigo_hexa || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
 								<h5>Teléfono</h5>
 								<p>{user.telefono || "---"}</p>
 							</div>
-							<div className="col-4 gx-3">
-								<h5>Dirección</h5>
-								<p>{user.direccion || "---"}</p>
-							</div>
-							<div className="col-4 gx-3">
-								<h5>Población</h5>
-								<p>{user.poblacion || "---"}</p>
-							</div>
-						</div>
-						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Fecha de nacimiento</h5>
 								{user.fecha_nacimiento != "0001-01-01" ? (
@@ -115,13 +109,19 @@ export default function ViewUsersPage() {
 									<p>{"---"}</p>
 								)}
 							</div>
+						</div>
+						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Role</h5>
 								<p>{user.role.descripcion || "---"}</p>
 							</div>
 							<div className="col-4 gx-3">
-								<h5>Estado</h5>
-								{user.activo ? <p>Activo</p> : <p>Inactivo</p>}
+								<h5>Dirección</h5>
+								<p>{user.direccion || "---"}</p>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Población</h5>
+								<p>{user.poblacion || "---"}</p>
 							</div>
 						</div>
 						<div className="row">
@@ -160,6 +160,22 @@ export default function ViewUsersPage() {
 								) : (
 									<p>{"---"}</p>
 								)}
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Apps asignadas</h5>
+								{user.apps.length ? (
+									<p>
+										{user.apps.map(a => a.nombre).join(", ")}
+									</p>
+								) : (
+									<p>{"---"}</p>
+								)}
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-4 gx-3">
+								<h5>Estado</h5>
+								{user.activo ? <p>Activo</p> : <p>Inactivo</p>}
 							</div>
 						</div>
 					</CardBody>

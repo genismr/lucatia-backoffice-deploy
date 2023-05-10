@@ -27,6 +27,8 @@ import {
 	updateUser,
 	postUserAppMetadata,
 	updateUserAppMetadata,
+	assignUserApp,
+	unassignUserApp,
 } from "../../../../api/user";
 import { getEntities } from "../../../../api/entity";
 import { getRoles } from "../../../../api/role";
@@ -64,6 +66,7 @@ function getEmptyUser() {
 		apellidos: null,
 		email: "",
 		password: "",
+		codigo_hexa: null,
 		telefono: null,
 		direccion: null,
 		cp: null,
@@ -79,7 +82,29 @@ function getEmptyUser() {
 		owned_entities: [],
 		managed_entities: [],
 		app_metadata: [],
+		apps: [],
 	};
+}
+
+function getAppsRelatedToEntities(entities) {
+	let data = [];
+
+	for (let i = 0; i < entities.length; ++i) {
+		let ownedApps = entities[i].ownedApps;
+		let delegatedApps = entities[i].delegatedApps;
+		let apps = [...ownedApps, ...delegatedApps];
+		apps = apps.map((x) => ({ ...x, entity_id: entities[i].id }));
+
+		data = data.concat(apps);
+	}
+
+	let appsId = [...new Set(data.map((a) => a.id))];
+
+	data = appsId.map((x) => {
+		return data.filter((value) => value.id == x)[0];
+	});
+
+	return data;
 }
 
 export default function EditUsersPage() {
@@ -93,12 +118,20 @@ export default function EditUsersPage() {
 
 	const [roles, setRoles] = useState(null);
 	const [entities, setEntities] = useState(null);
+	const [apps, setApps] = useState(null);
+
 	const [appMetadata, setAppMetadata] = useState(null);
+
+	const [initialAppMetadata, setInitialAppMetadata] = useState(null);
 
 	const [initialAssignedEntities, setInitialAssignedEntities] = useState(
 		null
 	);
 	const [initialManagedEntities, setInitialManagedEntities] = useState(null);
+	const [initialAssignedApps, setInitialAssignedApps] = useState(null);
+
+	const [success, setSuccess] = useState(false);
+	const myProfile = window.location.href.toString().includes("my-area");
 
 	const userId = useParams().id;
 	const history = useHistory();
@@ -141,29 +174,19 @@ export default function EditUsersPage() {
 		}
 
 		if (!userId || newAssignedEntities.length) {
-			let assignBody = [];
-
-			for (let i = 0; i < newAssignedEntities.length; ++i) {
-				let bodyElem = {
-					entidad_id: newAssignedEntities[i],
-					fecha_alta: new Date(),
-					user_alta_id: loggedUser.userID,
-				};
-				assignBody = assignBody.concat(bodyElem);
-			}
-
-			assignOwnerEntity(assignedUserId, assignBody)
+			assignOwnerEntity(
+				assignedUserId,
+				newAssignedEntities,
+				loggedUser.accessToken
+			)
 				.then((res) => {
 					if (res.status === 200) {
-						alertSuccess({
-							title: "Saved!",
-							customMessage: "User successfully saved.",
-						});
-						history.push("/users");
+						setSuccess(true);
 					}
 				})
 				.catch((error) => {
-					deleteUser(assignedUserId);
+					setSuccess(false);
+					if (!userId) deleteUser(assignedUserId);
 					alertError({
 						error: error,
 						customMessage: "Could not save user.",
@@ -178,17 +201,15 @@ export default function EditUsersPage() {
 			);
 
 		if (unassignedEntities != null) {
-			unassignOwnerEntity(assignedUserId, unassignedEntities).then(
-				(res) => {
-					if (res.status === 204) {
-						alertSuccess({
-							title: "Saved!",
-							customMessage: "User successfully saved.",
-						});
-						history.push("/users");
-					}
+			unassignOwnerEntity(
+				assignedUserId,
+				unassignedEntities,
+				loggedUser.accessToken
+			).then((res) => {
+				if (res.status === 204) {
+					setSuccess(true);
 				}
-			);
+			});
 		}
 	}
 
@@ -201,29 +222,19 @@ export default function EditUsersPage() {
 		}
 
 		if (!userId || newAssignedEntities.length) {
-			let assignBody = [];
-
-			for (let i = 0; i < newAssignedEntities.length; ++i) {
-				let bodyElem = {
-					entidad_id: newAssignedEntities[i],
-					fecha_alta: new Date(),
-					user_alta_id: loggedUser.userID,
-				};
-				assignBody = assignBody.concat(bodyElem);
-			}
-
-			assignManagedEntity(assignedUserId, assignBody)
+			assignManagedEntity(
+				assignedUserId,
+				newAssignedEntities,
+				loggedUser.accessToken
+			)
 				.then((res) => {
 					if (res.status === 200) {
-						alertSuccess({
-							title: "Saved!",
-							customMessage: "User successfully saved.",
-						});
-						history.push("/users");
+						setSuccess(true);
 					}
 				})
 				.catch((error) => {
-					deleteUser(assignedUserId);
+					setSuccess(false);
+					if (!userId) deleteUser(assignedUserId);
 					alertError({
 						error: error,
 						customMessage: "Could not save user.",
@@ -238,63 +249,136 @@ export default function EditUsersPage() {
 			);
 
 		if (unassignedEntities != null) {
-			unassignManagedEntity(assignedUserId, unassignedEntities).then(
-				(res) => {
-					if (res.status === 204) {
-						alertSuccess({
-							title: "Saved!",
-							customMessage: "User successfully saved.",
-						});
-						history.push("/users");
-					}
+			unassignManagedEntity(
+				assignedUserId,
+				unassignedEntities,
+				loggedUser.accessToken
+			).then((res) => {
+				if (res.status === 204) {
+					setSuccess(true);
 				}
-			);
+			});
 		}
 	}
 
-	function assignEntitiesToUser(assignedUserId) {
-		handleOwnedEntitiesAssignment(assignedUserId);
-		handleManagedEntitiesAssignment(assignedUserId);
+	function handleAppAssignment(assignedUserId) {
+		let permittedApps = getPermittedApps();
+
+		for (let i = 0; user.apps != undefined && i < user.apps.length; ++i) {
+			if (!permittedApps.find((x) => x.id == user.apps[i]))
+				user.apps.splice(i, 1);
+		}
+
+		let newAssignedApps = user.apps;
+		if (initialAssignedApps != null) {
+			newAssignedApps = user.apps.filter(
+				(e) => !initialAssignedApps.includes(e)
+			);
+		}
+
+		if (!userId || newAssignedApps.length) {
+			assignUserApp(
+				assignedUserId,
+				newAssignedApps,
+				loggedUser.accessToken
+			)
+				.then((res) => {
+					if (res.status === 200) {
+						setSuccess(true);
+					}
+				})
+				.catch((error) => {
+					setSuccess(false);
+					if (!userId) deleteUser(assignedUserId);
+					alertError({
+						error: error,
+						customMessage: "Could not save user.",
+					});
+				});
+		}
+
+		let unassignedApps = null;
+		if (initialAssignedApps != null)
+			unassignedApps = initialAssignedApps.filter(
+				(e) => !user.apps.includes(e)
+			);
+
+		if (unassignedApps != null) {
+			unassignUserApp(
+				assignedUserId,
+				unassignedApps,
+				loggedUser.accessToken
+			).then((res) => {
+				if (res.status === 204) {
+					setSuccess(true);
+				}
+			});
+		}
 	}
 
 	function saveUserMetadata(metadataUserId) {
-		if (!userId) {
-			let saveMetadata = user.app_metadata;
-			saveMetadata.map(
-				(e) => (
-					(e.fecha_alta = new Date()),
-					(e.user_alta_id = loggedUser.userID)
-				)
+		let saveNewMetadata = user.app_metadata;
+		if (initialAppMetadata != null) {
+			saveNewMetadata = user.app_metadata.filter(
+				(e) =>
+					!initialAppMetadata.find(
+						(y) => y.app_metadata_id == e.app_metadata_id
+					)
 			);
+		}
 
-			postUserAppMetadata(metadataUserId, saveMetadata)
+		if (saveNewMetadata.length) {
+			postUserAppMetadata(
+				metadataUserId,
+				saveNewMetadata,
+				loggedUser.accessToken
+			)
 				.then((res) => {
 					if (res.status === 201) {
+						setSuccess(true);
 					}
 				})
 				.catch((error) => {
-					alertError({
-						error: error,
-						customMessage: "Could not save user metadata.",
-					});
-				});
-		} else {
-			updateUserAppMetadata(metadataUserId, user.app_metadata)
-				.then((res) => {
-					if (res.status === 204) {
-					}
-				})
-				.catch((error) => {
+					setSuccess(false);
 					alertError({
 						error: error,
 						customMessage: "Could not save user metadata.",
 					});
 				});
 		}
+
+		let saveMetadata = user.app_metadata.filter(
+			(e) =>
+				!saveNewMetadata.find(
+					(y) => y.app_metadata_id == e.app_metadata_id
+				)
+		);
+
+		updateUserAppMetadata(
+			metadataUserId,
+			saveMetadata,
+			loggedUser.accessToken
+		)
+			.then((res) => {
+				if (res.status === 204) {
+					setSuccess(true);
+				}
+			})
+			.catch((error) => {
+				setSuccess(false);
+				alertError({
+					error: error,
+					customMessage: "Could not save user metadata.",
+				});
+			});
 	}
 
 	function saveUser() {
-		if (checkIsEmpty(user.nombre) || checkIsEmpty(user.email)) {
+		if (
+			checkIsEmpty(user.nombre) ||
+			checkIsEmpty(user.email) ||
+			checkIsEmpty(user.user_rol_id)
+		) {
 			alertError({
 				error: null,
 				customMessage: "Some required fields are missing",
@@ -332,9 +416,7 @@ export default function EditUsersPage() {
 		}
 
 		if (!userId) {
-			saveUser.fecha_alta = new Date();
-			saveUser.user_alta_id = loggedUser.userID;
-			postUser(saveUser)
+			postUser(saveUser, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 201) {
 						if (user.app_metadata.length) {
@@ -344,14 +426,17 @@ export default function EditUsersPage() {
 							user.owned_entities.length ||
 							user.managed_entities.length
 						) {
-							assignEntitiesToUser(res.data.id);
-						} else {
+							handleOwnedEntitiesAssignment(res.data.id);
+							handleManagedEntitiesAssignment(res.data.id);
+							handleAppAssignment(res.data.id);
+						}
+						if ({ ...success }) {
 							alertSuccess({
 								title: "Saved!",
 								customMessage: "User successfully created.",
 							});
+							history.push("/users");
 						}
-						history.push("/users");
 					}
 				})
 				.catch((error) => {
@@ -366,11 +451,22 @@ export default function EditUsersPage() {
 					});
 				});
 		} else {
-			updateUser(userId, saveUser)
+			updateUser(userId, saveUser, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 204) {
-						saveUserMetadata(userId);
-						assignEntitiesToUser(userId);
+						if (user.app_metadata.length) {
+							saveUserMetadata(userId);
+						}
+						handleOwnedEntitiesAssignment(userId);
+						handleManagedEntitiesAssignment(userId);
+						handleAppAssignment(userId);
+						if ({ ...success }) {
+							alertSuccess({
+								title: "Saved!",
+								customMessage: "User successfully saved.",
+							});
+							history.push("/users");
+						}
 					}
 				})
 				.catch((error) => {
@@ -399,8 +495,8 @@ export default function EditUsersPage() {
 		getEntities(loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
-					console.log(res.data);
 					setEntities(res.data);
+					setApps(getAppsRelatedToEntities(res.data));
 				}
 			})
 			.catch((error) => {
@@ -425,7 +521,7 @@ export default function EditUsersPage() {
 			disableLoadingData();
 			return;
 		}
-		getUserById(userId)
+		getUserById(userId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					let roleId = res.data.role.id;
@@ -447,10 +543,13 @@ export default function EditUsersPage() {
 					user.managed_entities = user.managed_entities.map(
 						(e) => e.id
 					);
+					user.apps = user.apps.map((e) => e.id);
+
 					setInitialAssignedEntities(user.owned_entities);
 					setInitialManagedEntities(user.managed_entities);
+					setInitialAssignedApps([...user.apps]);
 					setUser(user);
-					console.log("user", user);
+					setInitialAppMetadata(user.app_metadata);
 
 					disableLoadingData();
 				}
@@ -464,9 +563,26 @@ export default function EditUsersPage() {
 			});
 	}, [userId, disableLoadingData, history]);
 
+	function getPermittedApps() {
+		if (apps != null) {
+			let userEntities = [
+				...user.owned_entities,
+				...user.managed_entities,
+			];
+			let result = apps.filter((x) => userEntities.includes(x.entity_id));
+
+			return result;
+		}
+		return null;
+	}
+
 	const handleChange = (element) => (event) => {
 		let text = event.target.value;
-		if (!element.includes("entities") && event.target.value.trim() == "")
+		if (
+			!element.includes("entities") &&
+			!element.includes("apps") &&
+			event.target.value.trim() == ""
+		)
 			text = null;
 		setUser({ ...user, [element]: text });
 	};
@@ -616,7 +732,7 @@ export default function EditUsersPage() {
 		return (
 			<>
 				<Card>
-					<CardHeader title="Edit user"></CardHeader>
+					<CardHeader title={myProfile ? "Edit profile" : "Edit user"}></CardHeader>
 					<CardBody>
 						<div className="row">
 							<div className="col-4 gx-3">
@@ -663,7 +779,21 @@ export default function EditUsersPage() {
 							</div>
 						</div>
 						<div className="row">
-							<div className="col-3 gx-3">
+							<div className="col-4 gx-3">
+								<TextField
+									id={`codigoHexa`}
+									label="Código"
+									value={user.codigo_hexa}
+									onChange={handleChange("codigo_hexa")}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									disabled={true}
+								/>
+							</div>
+							<div className="col-4 gx-3">
 								<TextField
 									id={`telefono`}
 									label="Teléfono"
@@ -676,7 +806,7 @@ export default function EditUsersPage() {
 									variant="outlined"
 								/>
 							</div>
-							<div className="col-3 gx-3">
+							<div className="col-4 gx-3">
 								<TextField
 									id={`fecha_nacimiento`}
 									label="Fecha de nacimiento"
@@ -689,32 +819,6 @@ export default function EditUsersPage() {
 									margin="normal"
 									variant="outlined"
 								/>
-							</div>
-							<div className="col-6 gx-3">
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Role *
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={user.user_rol_id || ""}
-										onChange={handleChange("user_rol_id")}
-										MenuProps={MenuProps}
-									>
-										{roles?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
-											>
-												{option.descripcion}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>
-										Select a role
-									</FormHelperText>
-								</FormControl>
 							</div>
 						</div>
 						{!userId && (
@@ -770,7 +874,33 @@ export default function EditUsersPage() {
 							</>
 						)}
 						<div className="row">
-							<div className="col-6 gx-3">
+							<div className="col-4 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Role *
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={user.user_rol_id || ""}
+										onChange={handleChange("user_rol_id")}
+										MenuProps={MenuProps}
+									>
+										{roles?.map((option) => (
+											<MenuItem
+												key={option.id}
+												value={option.id}
+											>
+												{option.descripcion}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										Select a role
+									</FormHelperText>
+								</FormControl>
+							</div>
+							<div className="col-4 gx-3">
 								<TextField
 									id={`direccion`}
 									label="Dirección"
@@ -783,7 +913,7 @@ export default function EditUsersPage() {
 									variant="outlined"
 								/>
 							</div>
-							<div className="col-6 gx-3">
+							<div className="col-4 gx-3">
 								<TextField
 									id={`poblacion`}
 									label="Población"
@@ -841,7 +971,7 @@ export default function EditUsersPage() {
 						<br />
 						<br />
 						<div className="row">
-							<div className="col-6 gx-3">
+							<div className="col-4 gx-3">
 								<FormControl style={{ width: "100%" }}>
 									<InputLabel id="demo-simple-select-standard-label">
 										Entidades propietarias
@@ -870,7 +1000,7 @@ export default function EditUsersPage() {
 									</FormHelperText>
 								</FormControl>
 							</div>
-							<div className="col-6 gx-3">
+							<div className="col-4 gx-3">
 								<FormControl style={{ width: "100%" }}>
 									<InputLabel id="demo-simple-select-standard-label">
 										Entidades gestionadas
@@ -897,6 +1027,31 @@ export default function EditUsersPage() {
 									<FormHelperText>
 										Select entities
 									</FormHelperText>
+								</FormControl>
+							</div>
+							<div className="col-4 gx-3">
+								<FormControl style={{ width: "100%" }}>
+									<InputLabel id="demo-simple-select-standard-label">
+										Apps asignadas
+									</InputLabel>
+									<Select
+										labelId="demo-simple-select-standard-label"
+										id="demo-simple-select-standard"
+										value={user.apps || ""}
+										multiple
+										onChange={handleChange("apps")}
+										MenuProps={MenuProps}
+									>
+										{getPermittedApps()?.map((option) => (
+											<MenuItem
+												key={option.id}
+												value={option.id}
+											>
+												{option.nombre}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>Select apps</FormHelperText>
 								</FormControl>
 							</div>
 						</div>

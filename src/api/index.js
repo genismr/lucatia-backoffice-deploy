@@ -4,9 +4,9 @@ export const baseClient = () => {
   return axios.create()
 }
 
-export const authClient = () => {
+export const authClient = (token) => {
   return axios.create({
-    headers: {"Access-Control-Allow-Origin": "*"},
+    headers: {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "*", "Authorization": `Bearer ${token}`},
     'Access-Control-Allow-Credentials': true,
   })
 }

@@ -6,8 +6,6 @@ export const postApp = (app) => {
   return authClient().post(`${API}/app`, app)
 }
 
-
-
 export const assignEntities = (id, body) => {
   return authClient().post(`${API}/app/${id}/assign-entities`, body)
 }
