@@ -1,15 +1,13 @@
 import { API, authClient } from '../index'
 
-export const uploadSingleFile = (file, folder) => {
+export const uploadSingleFile = (file) => {
 	if (!file)
-		return Promise.reject(new Error('File must be provided'))
-
+		return Promise.reject(new Error('File must be provided'))	
+		
 	const formData = new FormData()
-	formData.append('folder', folder)
 	formData.append('file', file)
-
-	const URL = `${API}/file/single-file`
-	return authClient().post(URL, formData)
+	
+	return authClient().post(`${API}/files`, formData)
 }
 
 export const uploadFilesGetLinks = async (files, folder) => {

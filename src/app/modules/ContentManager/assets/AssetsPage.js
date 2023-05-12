@@ -34,7 +34,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { shallowEqual, useSelector } from "react-redux";
 import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
-import LinkIcon from "@material-ui/icons/Link";
+import DownloadIcon from "@material-ui/icons/GetApp";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -102,15 +102,13 @@ export default function AssetsPage() {
 		const elem = data.find((item) => item.id === cell);
 		return (
 			<>
-				<Tooltip title={elem.url}>
-					<Button
-						style={buttonsStyle}
-						size="small"
-						onClick={() => window.open(elem.url, "_blank").focus()}
-					>
-						<LinkIcon />
-					</Button>
-				</Tooltip>
+				<Button
+					style={buttonsStyle}
+					size="small"
+					onClick={() => window.open(elem.url, "_blank").focus()}
+				>
+					<DownloadIcon />
+				</Button>
 			</>
 		);
 	}
@@ -152,7 +150,7 @@ export default function AssetsPage() {
 					>
 						<EditIcon />
 					</Button>
-				</Tooltip>				
+				</Tooltip>
 			</>
 		);
 	}
@@ -189,7 +187,7 @@ export default function AssetsPage() {
 		},
 		{
 			dataField: "id",
-			text: "URL",
+			text: "File",
 			formatter: urlFormatter,
 		},
 		{ dataField: "id", text: "", formatter: buttonFormatter },
@@ -455,7 +453,7 @@ export default function AssetsPage() {
 						handleClearFilters={handleClearFilters}
 						handleSearch={handleSearch}
 					/>
-					<Table data={getData(filteredData)} columns={columns} />					
+					<Table data={getData(filteredData)} columns={columns} />
 				</CardBody>
 			</Card>
 		</>

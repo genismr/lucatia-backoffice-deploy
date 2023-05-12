@@ -4,17 +4,22 @@ import {
 	CardBody,
 	CardHeader,
 } from "../../../../_metronic/_partials/controls";
-import { Button } from "@material-ui/core";
+import { Button, Tooltip } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import { getAssetById } from "../../../../api/asset";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
+import Visibility from "@material-ui/icons/Visibility";
+import PreviewDialog from "../../../components/dialogs/PreviewDialog";
+import { buttonsStyle } from "../../../components/tables/table";
 
 export default function ViewAssetsPage() {
 	const [asset, setAsset] = useState(null);
 	const assetId = useParams().id;
 	const history = useHistory();
+
+	const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
 
 	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
@@ -62,8 +67,34 @@ export default function ViewAssetsPage() {
 								<p>{asset.descripcion || "---"}</p>
 							</div>
 							<div className="col-4 gx-3">
-								<h5>URL</h5>
-								<p>{asset.url || "---"}</p>
+								<h5>
+									File
+									<Tooltip title={"Preview file"}>
+										<Button
+											size="small"
+											onClick={() =>
+												setOpenPreviewDialog(true)
+											}
+											style={{
+												...buttonsStyle,
+												marginRight: "15px",
+											}}
+										>
+											<Visibility />
+										</Button>
+									</Tooltip>
+									<PreviewDialog
+										title={"Preview file"}
+										open={openPreviewDialog}
+										setOpen={setOpenPreviewDialog}
+										src={asset.url}
+									/>
+								</h5>
+								<p>
+									{asset.url !== ""
+										? asset.url.split(/-(.*)/s)[1]
+										: "---"}
+								</p>
 							</div>
 						</div>
 						<div className="row">

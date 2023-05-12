@@ -6,6 +6,7 @@ import {
 } from "../../../../_metronic/_partials/controls";
 import {
 	Button,
+	Tooltip,
 	TextField,
 	MuiThemeProvider,
 	createMuiTheme,
@@ -33,7 +34,11 @@ import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError, alertSuccess } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { checkIsEmpty } from "../../../../utils/helpers";
+import PreviewDialog from "../../../components/dialogs/PreviewDialog";
+import { buttonsStyle } from "../../../components/tables/table";
+import { checkIsEmpty, getFileType } from "../../../../utils/helpers";
+import Visibility from "@material-ui/icons/Visibility";
+import { uploadSingleFile } from "../../../../api/files";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -46,6 +51,14 @@ const MenuProps = {
 	},
 	getContentAnchorEl: () => null,
 };
+
+const theme = createMuiTheme({
+	palette: {
+		secondary: {
+			main: "#F64E60",
+		},
+	},
+});
 
 function getEmptyAsset() {
 	return {
@@ -82,6 +95,7 @@ function getData(asset) {
 export default function EditAssetsPage() {
 	const [asset, setAsset] = useState(getEmptyAsset());
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+	const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
 
 	const [types, setTypes] = useState(null);
 	const [categories, setCategories] = useState(null);
@@ -90,6 +104,8 @@ export default function EditAssetsPage() {
 	const [tags, setTags] = useState(null);
 
 	const [initialAssignedTags, setInitialAssignedTags] = useState(null);
+
+	const [selectedFile, setSelectedFile] = useState(null);
 
 	const assetId = useParams().id;
 	const history = useHistory();
@@ -237,7 +253,6 @@ export default function EditAssetsPage() {
 	function saveAsset() {
 		if (
 			checkIsEmpty(asset.descripcion) ||
-			checkIsEmpty(asset.url) ||
 			checkIsEmpty(asset.asset_tipo_id) ||
 			checkIsEmpty(asset.asset_categoria_id) ||
 			checkIsEmpty(asset.asset_formato_id) ||
@@ -250,11 +265,19 @@ export default function EditAssetsPage() {
 			return;
 		}
 
+		if (!selectedFile) {
+			alertError({
+				error: null,
+				customMessage: "File is required",
+			});
+			return;
+		}
+
 		let saveAsset = asset;
 		if (!assetId) {
 			saveAsset.fecha_alta = new Date();
 			saveAsset.user_alta_id = loggedUser.userID;
-			postAsset(saveAsset)
+			postAsset(saveAsset, selectedFile)
 				.then((res) => {
 					if (res.status === 201) {
 						if (asset.tags.length) {
@@ -275,7 +298,7 @@ export default function EditAssetsPage() {
 					});
 				});
 		} else {
-			updateAsset(assetId, saveAsset)
+			updateAsset(assetId, saveAsset, selectedFile)
 				.then((res) => {
 					if (res.status === 204) {
 						handleTagAssignment(assetId);
@@ -302,36 +325,18 @@ export default function EditAssetsPage() {
 				<Card>
 					<CardHeader title="Edit asset"></CardHeader>
 					<CardBody>
-						<div className="row">
-							<div className="col-6 gx-3">
-								<TextField
-									id={`nombre`}
-									label="Nombre"
-									value={asset.descripcion}
-									onChange={handleChange("descripcion")}
-									InputLabelProps={{
-										shrink: true,
-									}}
-									margin="normal"
-									variant="outlined"
-									required
-								/>
-							</div>
-							<div className="col-6 gx-3">
-								<TextField
-									id={`url`}
-									label="URL"
-									value={asset.url}
-									onChange={handleChange("url")}
-									InputLabelProps={{
-										shrink: true,
-									}}
-									margin="normal"
-									variant="outlined"
-									required
-								/>
-							</div>
-						</div>
+						<TextField
+							id={`nombre`}
+							label="Nombre"
+							value={asset.descripcion}
+							onChange={handleChange("descripcion")}
+							InputLabelProps={{
+								shrink: true,
+							}}
+							margin="normal"
+							variant="outlined"
+							required
+						/>
 						<br />
 						<br />
 						<div className="row">
@@ -472,6 +477,62 @@ export default function EditAssetsPage() {
 						</FormControl>
 						<br />
 						<br />
+						<label htmlFor={"upload-file"}>
+							<input
+								style={{ display: "none" }}
+								id={"upload-file"}
+								name={"upload-file"}
+								type="file"
+								onChange={(e) => {
+									setSelectedFile(e.target.files[0]);
+								}}
+							/>
+							<Button
+								style={{ marginRight: "15px" }}
+								color="secondary"
+								component="span"
+								variant="outlined"
+							>
+								{selectedFile || asset.url !== ""
+									? "Change file"
+									: "Upload file"}
+							</Button>
+						</label>
+						{(selectedFile || (asset.url && asset.url !== "")) && (
+							<>
+								<Tooltip title={"Preview file"}>
+									<Button
+										size="small"
+										onClick={() =>
+											setOpenPreviewDialog(true)
+										}
+										style={{
+											...buttonsStyle,
+											marginRight: "15px",
+										}}
+									>
+										<Visibility />
+									</Button>
+								</Tooltip>
+								<PreviewDialog
+									title={"Preview file"}
+									open={openPreviewDialog}
+									setOpen={setOpenPreviewDialog}
+									src={
+										selectedFile
+											? URL.createObjectURL(selectedFile)
+											: asset.url
+									}
+								/>
+								<span>
+									{selectedFile
+										? selectedFile?.name
+										: asset.url !== ""
+										? asset.url.split(/-(.*)/s)[1]
+										: ""}
+								</span>
+							</>
+						)}
 					</CardBody>
 				</Card>
 				<Button

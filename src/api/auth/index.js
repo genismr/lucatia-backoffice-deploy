@@ -4,6 +4,7 @@ export const login = (email, password) => {
   var bodyFormData = new FormData();
   bodyFormData.append('email', email);
   bodyFormData.append('password', password);
+  bodyFormData.append('app', "404eb47a-4b1c-408a-fcb7-08db4575ec5a");
   return authClient().post(`${API}/login`, bodyFormData)
 }
 
