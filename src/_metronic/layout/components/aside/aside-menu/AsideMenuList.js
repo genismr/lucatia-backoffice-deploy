@@ -124,7 +124,7 @@ export function AsideMenuList({ layoutProps }) {
 						</li>
 					</>
 				)}
-				{user.role.descripcion === "Designer" && (
+				{(user.role.rango === 0 || user.role.descripcion === "Designer") && (
 					<>
 						<li className="menu-section">
 							<h4 className="menu-text">ASSETS</h4>
