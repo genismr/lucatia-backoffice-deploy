@@ -10,11 +10,14 @@ import { getEntityById } from "../../../../api/entity";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
+import { getUsers } from "../../../../api/user";
 
 export default function ViewEntitiesPage() {
 	const [entity, setEntity] = useState(null);
 	const entityId = useParams().id;
 	const history = useHistory();
+
+	const [users, setUsers] = useState(null);
 
 	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
@@ -33,6 +36,18 @@ export default function ViewEntitiesPage() {
 			history.push("/entities");
 			return;
 		}
+		getUsers(loggedUser.accessToken)
+			.then((res) => {
+				if (res.status === 200) {
+					setUsers(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get users.",
+				});
+			});
 		getEntityById(entityId)
 			.then((res) => {
 				if (res.status === 200) {
@@ -48,6 +63,21 @@ export default function ViewEntitiesPage() {
 				history.push("/entities");
 			});
 	}, [entityId, disableLoadingData, history]);
+
+	function getUserInfo(userId) {
+		if (users != null) {
+			let user = users.find((x) => x.id == userId);
+			return user
+				? user.nombre +
+						" " +
+						(user.apellidos != null ? user.apellidos : "") +
+						" - " +
+						user.email +
+						(user.telefono != null ? " - " + user.telefono : "")
+				: "---";
+		}
+		return null;
+	}
 
 	if (isLoadingData) return <ContentSkeleton />;
 	else
@@ -99,21 +129,21 @@ export default function ViewEntitiesPage() {
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Contacto propietario</h5>
-								<p>{entity.contacto_propietario || "---"}</p>
+								<p>{getUserInfo(entity.contacto_propietario)}</p>
 							</div>
 						</div>
 						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Contacto técnico</h5>
-								<p>{entity.contacto_tecnico || "---"}</p>
+								<p>{getUserInfo(entity.contacto_tecnico)}</p>
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Contacto administrativo</h5>
-								<p>{entity.contacto_administrativo || "---"}</p>
+								<p>{getUserInfo(entity.contacto_administrativo)}</p>
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Contacto helpDesk</h5>
-								<p>{entity.contacto_helpdesk || "---"}</p>
+								<p>{getUserInfo(entity.contacto_helpdesk)}</p>
 							</div>
 						</div>
 						<div className="row">

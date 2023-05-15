@@ -1,16 +1,13 @@
 import { authClient, API } from '../index'
 
 export const postEntity = (entity) => {
-  console.log(entity)
   return authClient().post(`${API}/entity`, entity)
 }
 
-//Get entities
 export const getEntities = (accessToken) => {
   return authClient().get(`${API}/entity?accessToken=${accessToken}`)
 }
 
-//Get entity
 export const getEntityById = (entityId) => {
   return authClient().get(`${API}/entity/${entityId}`)
 }

@@ -6,6 +6,7 @@ import {
 } from "../../../../_metronic/_partials/controls";
 import {
 	Button,
+	Tooltip,
 	TextField,
 	MuiThemeProvider,
 	createMuiTheme,
@@ -14,7 +15,9 @@ import {
 	MenuItem,
 	Select,
 	FormHelperText,
+	InputAdornment,
 } from "@material-ui/core";
+import { buttonsStyle } from "../../../components/tables/table";
 import { useHistory, useParams } from "react-router-dom";
 import {
 	postEntity,
@@ -24,10 +27,14 @@ import {
 	setEntityActive,
 	setEntityInactive,
 } from "../../../../api/entity";
+import { getUsers } from "../../../../api/user";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError, alertSuccess } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
+import PersonAddIcon from "@material-ui/icons/PersonAdd";
+import LinkIcon from "@material-ui/icons/Link";
+import EntityContactsTableDialog from "../../../components/dialogs/EntityContactsTableDialog";
 import { checkIsEmpty } from "../../../../utils/helpers";
 
 // Create theme for delete button (red)
@@ -63,10 +70,10 @@ function getEmptyEntity() {
 		poblacion: null,
 		provincia: null,
 		pais: null,
-		contacto_propietario: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-		contacto_tecnico: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-		contacto_administrativo: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-		contacto_helpdesk: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+		contacto_propietario: null,
+		contacto_tecnico: null,
+		contacto_administrativo: null,
+		contacto_helpdesk: null,
 		fecha_alta: "",
 		user_alta_id: "",
 		activo: true,
@@ -78,6 +85,27 @@ export default function EditEntitiesPage() {
 	const [parentEntities, setParentEntities] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 	const [refresh, setRefresh] = useState(false);
+	const [openTableDialog, setOpenTableDialog] = useState(null);
+
+	const [
+		contactoPropietarioSelected,
+		setContactoPropietarioSelected,
+	] = useState(null);
+
+	const [contactoTecnicoSelected, setContactoTecnicoSelected] = useState(
+		null
+	);
+
+	const [
+		contactoAdministrativoSelected,
+		setContactoAdministrativoSelected,
+	] = useState(null);
+
+	const [contactoHelpDeskSelected, setContactoHelpDeskSelected] = useState(
+		null
+	);
+
+	const [users, setUsers] = useState(null);
 
 	const entityId = useParams().id;
 	const history = useHistory();
@@ -106,6 +134,18 @@ export default function EditEntitiesPage() {
 					customMessage: "Could not get entities.",
 				});
 				history.push("/entities");
+			});
+		getUsers(loggedUser.accessToken)
+			.then((res) => {
+				if (res.status === 200) {
+					setUsers(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get users.",
+				});
 			});
 		if (!entityId) {
 			disableLoadingData();
@@ -137,8 +177,8 @@ export default function EditEntitiesPage() {
 		}
 
 		let saveEntity = entity;
+		if (entity.entidad_padre_id == 0) saveEntity.entidad_padre_id = null;
 		if (!entityId) {
-			saveEntity.fecha_alta = new Date();
 			saveEntity.user_alta_id = loggedUser.userID;
 			postEntity(saveEntity)
 				.then((res) => {
@@ -157,7 +197,8 @@ export default function EditEntitiesPage() {
 					});
 				});
 		} else {
-			if (entity.entidad_padre_id == 0) entity.entidad_padre_id = null;
+			if (entity.entidad_padre_id == 0) saveEntity.entidad_padre_id = null;
+
 			updateEntity(entityId, saveEntity)
 				.then((res) => {
 					if (res.status === 204) {
@@ -188,6 +229,37 @@ export default function EditEntitiesPage() {
 			text = null;
 		setEntity({ ...entity, [element]: text });
 	};
+
+	function getUserInfo(userId) {
+		if (users != null) {
+			let user = users.find((x) => x.id == userId);
+			return user
+				? user.nombre +
+						" " +
+						(user.apellidos != null ? user.apellidos : "") +
+						" - " +
+						user.email +
+						(user.telefono != null ? " - " + user.telefono : "")
+				: "";
+		}
+		return null;
+	}
+
+	function updateContacto(user) {
+		if (contactoPropietarioSelected) {
+			setContactoPropietarioSelected(null);
+			entity.contacto_propietario = user.id;
+		} else if (contactoTecnicoSelected) {
+			setContactoTecnicoSelected(null);
+			entity.contacto_tecnico = user.id;
+		} else if (contactoAdministrativoSelected) {
+			setContactoAdministrativoSelected(null);
+			entity.contacto_administrativo = user.id;
+		} else if (contactoHelpDeskSelected) {
+			setContactoHelpDeskSelected(null);
+			entity.contacto_helpdesk = user.id;
+		}
+	}
 
 	if (isLoadingData) return <ContentSkeleton />;
 	else
@@ -308,14 +380,15 @@ export default function EditEntitiesPage() {
 								/>
 							</div>
 						</div>
+						<br />
 						<div className="row">
 							<div className="col-6 gx-3">
-								<br />
-								<br />
 								<TextField
 									id={`propietario`}
 									label="Contacto propietario"
-									value={entity.contacto_propietario}
+									value={getUserInfo(
+										entity.contacto_propietario
+									)}
 									onChange={handleChange(
 										"contacto_propietario"
 									)}
@@ -324,21 +397,61 @@ export default function EditEntitiesPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									InputProps={
+										({ readOnly: true },
+										{
+											endAdornment: (
+												<Tooltip title="Select contact">
+													<Button
+														onClick={() => {
+															setContactoPropietarioSelected(
+																true
+															);
+															setOpenTableDialog(
+																true
+															);
+														}}
+													>
+														<PersonAddIcon />
+													</Button>
+												</Tooltip>
+											),
+										})
+									}
 								/>
 							</div>
 							<div className="col-6 gx-3">
-								<br />
-								<br />
 								<TextField
-									id={`tecnico`}
+									id={`helpDesk`}
 									label="Contacto técnico"
-									value={entity.contacto_tecnico}
+									value={getUserInfo(entity.contacto_tecnico)}
 									onChange={handleChange("contacto_tecnico")}
 									InputLabelProps={{
 										shrink: true,
 									}}
 									margin="normal"
 									variant="outlined"
+									InputProps={
+										({ readOnly: true },
+										{
+											endAdornment: (
+												<Tooltip title="Select contact">
+													<Button
+														onClick={() => {
+															setContactoTecnicoSelected(
+																true
+															);
+															setOpenTableDialog(
+																true
+															);
+														}}
+													>
+														<PersonAddIcon />
+													</Button>
+												</Tooltip>
+											),
+										})
+									}
 								/>
 							</div>
 						</div>
@@ -347,7 +460,9 @@ export default function EditEntitiesPage() {
 								<TextField
 									id={`administrativo`}
 									label="Contacto administrativo"
-									value={entity.contacto_administrativo}
+									value={getUserInfo(
+										entity.contacto_administrativo
+									)}
 									onChange={handleChange(
 										"contacto_administrativo"
 									)}
@@ -356,25 +471,68 @@ export default function EditEntitiesPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									InputProps={
+										({ readOnly: true },
+										{
+											endAdornment: (
+												<Tooltip title="Select contact">
+													<Button
+														onClick={() => {
+															setContactoAdministrativoSelected(
+																true
+															);
+															setOpenTableDialog(
+																true
+															);
+														}}
+													>
+														<PersonAddIcon />
+													</Button>
+												</Tooltip>
+											),
+										})
+									}
 								/>
 							</div>
 							<div className="col-6 gx-3">
 								<TextField
 									id={`helpDesk`}
 									label="Contacto helpDesk"
-									value={entity.contacto_helpdesk}
+									value={getUserInfo(
+										entity.contacto_helpdesk
+									)}
 									onChange={handleChange("contacto_helpdesk")}
 									InputLabelProps={{
 										shrink: true,
 									}}
 									margin="normal"
 									variant="outlined"
+									InputProps={
+										({ readOnly: true },
+										{
+											endAdornment: (
+												<Tooltip title="Select contact">
+													<Button
+														onClick={() => {
+															setContactoHelpDeskSelected(
+																true
+															);
+															setOpenTableDialog(
+																true
+															);
+														}}
+													>
+														<PersonAddIcon />
+													</Button>
+												</Tooltip>
+											),
+										})
+									}
 								/>
 							</div>
 						</div>
 						{loggedUser.role.rango === 0 && (
 							<>
-								<br />
 								<br />
 								<div className="row">
 									<div className="col-3 gx-3">
@@ -414,6 +572,23 @@ export default function EditEntitiesPage() {
 							</>
 						)}
 					</CardBody>
+					<EntityContactsTableDialog
+						open={openTableDialog}
+						setOpen={setOpenTableDialog}
+						usersTable={true}
+						data={users}
+						title="Users"
+						onSelectRow={(item) => {
+							updateContacto(item);
+							setOpenTableDialog(false);
+						}}
+						onUserCreated={(user) => {
+							let newUsers = users;
+							newUsers.push(user);
+							setUsers(newUsers);
+							updateContacto(user);
+						}}
+					/>
 				</Card>
 				<Button
 					onClick={() => history.push("/entities")}

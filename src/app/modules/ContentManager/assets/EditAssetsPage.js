@@ -265,7 +265,7 @@ export default function EditAssetsPage() {
 			return;
 		}
 
-		if (!selectedFile) {
+		if (!assetId && !selectedFile) {
 			alertError({
 				error: null,
 				customMessage: "File is required",

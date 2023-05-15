@@ -40,7 +40,7 @@ const buildDate = (date) => {
     return
 
   if (date.getTime() === new Date("0001-01-01T00:00:00").getTime()) return '---'
-  
+
   const displayDate = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}  ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`
   return displayDate
 }
@@ -74,7 +74,7 @@ const pagination = paginationFactory({
 
 const rowClasses = row => (row.active === false ? "inactive-row" : "");
 
-export default function Table({ data, columns, ...tableProps }) {
+export default function Table({ data, columns, size, ...tableProps }) {
 
   return (
     <ToolkitProvider
@@ -95,7 +95,7 @@ export default function Table({ data, columns, ...tableProps }) {
             classes="table table-head-custom table-vertical-center overflow-hidden"
             bordered={false}
             // remote
-            pagination={ pagination }
+            pagination={pagination}
             striped
             rowClasses={rowClasses}
             {...tableProps}

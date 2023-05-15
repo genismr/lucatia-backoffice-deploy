@@ -825,7 +825,7 @@ export default function EditUsersPage() {
 							<>
 								<br />
 								<div className="row">
-									<div className="col w-25 gx-3">
+									<div className="col-6 gx-3">
 										<TextField
 											id={`password`}
 											label="Password"
@@ -847,7 +847,7 @@ export default function EditUsersPage() {
 											required
 										/>
 									</div>
-									<div className="col w-25 gx-3">
+									<div className="col-6 gx-3">
 										<TextField
 											id={`repeatPassword`}
 											label="Repeat password"
