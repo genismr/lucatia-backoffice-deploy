@@ -10,7 +10,7 @@
         "lint:fix": "eslint src --fix",
         "format": "prettier --write \"src/**/*.{js,css,scss,html}\"",
         "rtl": "webpack",
-        "build": "yarn install && react-scripts build",
+        "build": "CI=false && yarn install && react-scripts build",
         "deploy": "rm -rf /var/www/html/lucatia-admin/* && cp -r ./build/. /var/www/html/lucatia-admin",
         "auto-deploy": "git pull && yarn run build && yarn run deploy"
     },
