@@ -505,7 +505,7 @@ export default function EditUsersPage() {
 					customMessage: "Could not get entities.",
 				});
 			});
-		getAppMetadata("404eb47a-4b1c-408a-fcb7-08db4575ec5a")
+		getAppMetadata("404eb47a-4b1c-408a-fcb7-08db4575ec5a", loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setAppMetadata(res.data);
