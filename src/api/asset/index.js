@@ -1,29 +1,29 @@
 import { authClient, API } from '../index'
 import { uploadSingleFile } from '../files';
 
-export const postAsset = async (asset, file) => {
+export const postAsset = async (asset, file, accessToken) => {
   if (file) {
 		const response = await uploadSingleFile(file);
 		asset.url = response.data;
 	}
 
-  return authClient().post(`${API}/asset`, asset)
+  return authClient(accessToken).post(`${API}/asset`, asset)
 }
 
-export const assignTags = (assetId, tags) => {
-  return authClient().post(`${API}/asset/${assetId}/assign-tags`, tags)
+export const assignTags = (assetId, tags, accessToken) => {
+  return authClient(accessToken).post(`${API}/asset/${assetId}/assign-tags`, tags)
 }
 
-export const unassignTags = (assetId, tags) => {
-  return authClient().post(`${API}/asset/${assetId}/unassign-tags`, tags)
+export const unassignTags = (assetId, tags, accessToken) => {
+  return authClient(accessToken).post(`${API}/asset/${assetId}/unassign-tags`, tags)
 }
 
-export const getAssets = () => {
-  return authClient().get(`${API}/asset`)
+export const getAssets = (accessToken) => {
+  return authClient(accessToken).get(`${API}/asset`)
 }
 
-export const getAssetById = (id) => {
-  return authClient().get(`${API}/asset/${id}`)
+export const getAssetById = (id, accessToken) => {
+  return authClient(accessToken).get(`${API}/asset/${id}`)
 }
 
 export const getTypes = () => {
@@ -45,16 +45,16 @@ export const getTags = () => {
   return authClient().get(`${API}/tag`)
 }
 
-export const updateAsset = async (id, asset, file) => {
+export const updateAsset = async (id, asset, file, accessToken) => {
   if (file) {
 		const response = await uploadSingleFile(file);
 		asset.url = response.data;
 	}
-  return authClient().put(`${API}/asset/${id}`, asset)
+  return authClient(accessToken).put(`${API}/asset/${id}`, asset)
 }
 
 
-export const deleteAsset = (id) => {
-  return authClient().delete(`${API}/asset/${id}`)
+export const deleteAsset = (id, accessToken) => {
+  return authClient(accessToken).delete(`${API}/asset/${id}`)
 }
 

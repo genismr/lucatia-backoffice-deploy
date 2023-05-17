@@ -10,6 +10,7 @@ import PeopleIcon from "@material-ui/icons/People";
 import BuildingIcon from "@material-ui/icons/AccountBalance";
 import AppIcon from "@material-ui/icons/PhoneIphone";
 import AssetIcon from "@material-ui/icons/WebAsset";
+import StoreIcon from "@material-ui/icons/Store";
 import { shallowEqual, useSelector } from "react-redux";
 
 export function AsideMenuList({ layoutProps }) {
@@ -67,7 +68,7 @@ export function AsideMenuList({ layoutProps }) {
 				<li className="menu-section">
 					<h4 className="menu-text">USERS</h4>
 					<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
-				</li>				
+				</li>
 				<li
 					className={`menu-item ${getMenuItemActive(
 						"/users",
@@ -104,6 +105,32 @@ export function AsideMenuList({ layoutProps }) {
 								<span className="menu-text">Entities</span>
 							</NavLink>
 						</li>
+						{user.role.rango === 0 && (
+							<>
+								<li
+									className={`menu-item ${getMenuItemActive(
+										"/external-entities",
+										false
+									)} ${getMenuItemActive(
+										"/edit-external-entity",
+										false
+									)}`}
+									aria-haspopup="true"
+								>
+									<NavLink
+										className="menu-link"
+										to="/external-entities"
+									>
+										<span className="menu-icon">
+											<StoreIcon />
+										</span>
+										<span className="menu-text">
+											External Entities
+										</span>
+									</NavLink>
+								</li>
+							</>
+						)}
 						<li className="menu-section">
 							<h4 className="menu-text">APPS</h4>
 							<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
@@ -124,7 +151,8 @@ export function AsideMenuList({ layoutProps }) {
 						</li>
 					</>
 				)}
-				{(user.role.rango === 0 || user.role.descripcion === "Designer") && (
+				{(user.role.rango === 0 ||
+					user.role.descripcion === "Designer") && (
 					<>
 						<li className="menu-section">
 							<h4 className="menu-text">ASSETS</h4>

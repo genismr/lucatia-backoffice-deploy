@@ -1,32 +1,31 @@
 import { authClient, API } from '../index'
 
-export const postEntity = (entity) => {
-  return authClient().post(`${API}/entity`, entity)
+export const postEntity = (entity, accessToken) => {
+  return authClient(accessToken).post(`${API}/entity`, entity)
 }
 
 export const getEntities = (accessToken) => {
-  return authClient().get(`${API}/entity?accessToken=${accessToken}`)
+  return authClient(accessToken).get(`${API}/entity`)
 }
 
-export const getEntityById = (entityId) => {
-  return authClient().get(`${API}/entity/${entityId}`)
+export const getEntityById = (entityId, accessToken) => {
+  return authClient(accessToken).get(`${API}/entity/${entityId}`)
 }
 
-export const updateEntity = async (id, entity) => {
-  console.log(entity)
-  return authClient().put(`${API}/entity/${id}`, entity)
+export const updateEntity = async (id, entity, accessToken) => {
+  return authClient(accessToken).put(`${API}/entity/${id}`, entity)
 }
 
-export const setEntityActive = async (id) => {
-	return authClient().put(`${API}/entity/${id}/set-active`, {});
+export const setEntityActive = async (id, accessToken) => {
+	return authClient(accessToken).put(`${API}/entity/${id}/set-active`, {});
 };
 
-export const setEntityInactive = async (id) => {
-	return authClient().put(`${API}/entity/${id}/set-inactive`, {});
+export const setEntityInactive = async (id, accessToken) => {
+	return authClient(accessToken).put(`${API}/entity/${id}/set-inactive`, {});
 };
 
-export const deleteEntity = (id) => {
-  return authClient().delete(`${API}/entity/${id}`)
+export const deleteEntity = (id, accessToken) => {
+  return authClient(accessToken).delete(`${API}/entity/${id}`)
 }
 
 

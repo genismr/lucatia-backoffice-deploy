@@ -26,8 +26,8 @@ const PreviewDialog = (props) => {
               className={(isBlob || type === 'file') ? "preview-file" : ""}
               style={{ width: type === 'file' && '100vh', height: type === 'file' && '70vh' }}
               src={src}
-              height={(isBlob || type === 'file') ? "100%" : "auto"}
-              width={(isBlob || type === 'file') ? "100%" : "auto"}
+              height={(isBlob || type === 'file') ? "100%" : "65%"}
+              width={(isBlob || type === 'file') ? "100%" : "65%"}
             />}
         </div>
       </DialogContent>

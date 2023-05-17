@@ -202,7 +202,7 @@ export default function AppsPage() {
 						setOpen={setOpenConfirmDialog}
 						onConfirm={() => {
 							if (!app?.activo) {
-								setAppActive(app.id)
+								setAppActive(app.id, loggedUser.accessToken)
 									.then((res) => {
 										if (
 											res.status === 200 ||
@@ -234,7 +234,7 @@ export default function AppsPage() {
 										});
 									});
 							} else {
-								setAppInactive(app.id)
+								setAppInactive(app.id, loggedUser.accessToken)
 									.then((res) => {
 										if (
 											res.status === 200 ||

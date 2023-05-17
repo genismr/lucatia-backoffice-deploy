@@ -11,7 +11,6 @@ import Table, {
 } from "../../../components/tables/table";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { getEntities, setEntityActive, setEntityInactive } from "../../../../api/entity";
-import { getRoles } from "../../../../api/role";
 import {
 	Button,
 	Tooltip,
@@ -179,7 +178,7 @@ export default function EntitiesPage() {
 						setOpen={setOpenConfirmDialog}
 						onConfirm={() => {
 							if (!entity?.activo) {
-								setEntityActive(entity.id)
+								setEntityActive(entity.id, loggedUser.accessToken)
 									.then((res) => {
 										if (
 											res.status === 200 ||
@@ -211,7 +210,7 @@ export default function EntitiesPage() {
 										});
 									});
 							} else {
-								setEntityInactive(entity.id)
+								setEntityInactive(entity.id, loggedUser.accessToken)
 									.then((res) => {
 										if (
 											res.status === 200 ||

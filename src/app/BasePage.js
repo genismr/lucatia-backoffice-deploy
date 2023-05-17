@@ -15,6 +15,9 @@ import EditAssetsPage from "./modules/ContentManager/assets/EditAssetsPage";
 import AppsPage from "./modules/ContentManager/apps/AppsPage";
 import ViewAppsPage from "./modules/ContentManager/apps/ViewAppsPage";
 import EditAppsPage from "./modules/ContentManager/apps/EditAppsPage";
+import ExternalEntitiesPage from "./modules/ContentManager/external-entities/ExternalEntitiesPage";
+import ViewExternalEntitiesPage from "./modules/ContentManager/external-entities/ViewExternalEntitiesPage";
+import EditExternalEntitiesPage from "./modules/ContentManager/external-entities/EditExternalEntitiesPage";
 
 export default function BasePage() {
 	const user = useSelector(
@@ -47,6 +50,16 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-entity/:id?"
 				component={EditEntitiesPage}
+			/>
+			{/* External Entities */}
+			<ContentRoute from="/external-entities" component={ExternalEntitiesPage} />
+			<ContentRoute
+				from="/view-external-entity/:id?"
+				component={ViewExternalEntitiesPage}
+			/>
+			<ContentRoute
+				from="/edit-external-entity/:id?"
+				component={EditExternalEntitiesPage}
 			/>
 
 			{/* APPS */}

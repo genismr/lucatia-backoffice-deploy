@@ -130,7 +130,7 @@ export default function EditAppsPage() {
 			disableLoadingData();
 			return;
 		}
-		getAppById(appId)
+		getAppById(appId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setInitialOwnedEntities(
@@ -196,7 +196,7 @@ export default function EditAppsPage() {
 		}
 
 		if (!appId || newAssignedEntities.length) {
-			assignEntities(assignedAppId, newAssignedEntitiesBody)
+			assignEntities(assignedAppId, newAssignedEntitiesBody, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 200) {
 						alertSuccess({
@@ -207,7 +207,7 @@ export default function EditAppsPage() {
 					}
 				})
 				.catch((error) => {
-					deleteApp(assignedAppId);
+					if (!appId) deleteApp(assignedAppId, loggedUser.accessToken);
 					alertError({
 						error: error,
 						customMessage: "Could not assign entities.",
@@ -243,7 +243,7 @@ export default function EditAppsPage() {
 		}
 
 		if (changedEntities != null) {
-			changeEntityOwnership(assignedAppId, changedEntities)
+			changeEntityOwnership(assignedAppId, changedEntities, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 200) {
 						alertSuccess({
@@ -254,7 +254,7 @@ export default function EditAppsPage() {
 					}
 				})
 				.catch((error) => {
-					deleteApp(assignedAppId);
+					if (!appId) deleteApp(assignedAppId, loggedUser.accessToken);
 					alertError({
 						error: error,
 						customMessage: "Could not assign entities.",
@@ -283,7 +283,7 @@ export default function EditAppsPage() {
 		let unassignedEntities = unassignedOwned.concat(unassignedDelegated);
 
 		if (unassignedEntities.length) {
-			unassignEntities(assignedAppId, unassignedEntities)
+			unassignEntities(assignedAppId, unassignedEntities, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 204) {
 						alertSuccess({
@@ -294,7 +294,7 @@ export default function EditAppsPage() {
 					}
 				})
 				.catch((error) => {
-					deleteApp(assignedAppId);
+					if (!appId) deleteApp(assignedAppId, loggedUser.accessToken);
 					alertError({
 						error: error,
 						customMessage: "Could not assign entities.",
@@ -325,7 +325,7 @@ export default function EditAppsPage() {
 		if (!appId) {
 			saveApp.fecha_alta = new Date();
 			saveApp.user_alta_id = loggedUser.userID;
-			postApp(saveApp)
+			postApp(saveApp, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 201) {
 						handleEntitiesAssignment(res.data.id);
@@ -343,7 +343,7 @@ export default function EditAppsPage() {
 					});
 				});
 		} else {
-			updateApp(appId, saveApp)
+			updateApp(appId, saveApp, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 204) {
 						handleEntitiesAssignment(appId);

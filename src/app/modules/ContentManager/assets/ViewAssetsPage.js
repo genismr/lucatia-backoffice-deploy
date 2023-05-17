@@ -38,7 +38,7 @@ export default function ViewAssetsPage() {
 			history.push("/assets");
 			return;
 		}
-		getAssetById(assetId)
+		getAssetById(assetId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setAsset(res.data);

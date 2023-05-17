@@ -33,7 +33,7 @@ export default function ViewAppsPage() {
 			history.push("/apps");
 			return;
 		}
-		getAppById(appId)
+		getAppById(appId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setApp(res.data);

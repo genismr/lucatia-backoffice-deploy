@@ -15,6 +15,10 @@ import {
 	MenuItem,
 	Select,
 	FormHelperText,
+	Chip,
+	Paper,
+	styled,
+	InputAdornment,
 } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import {
@@ -38,7 +42,9 @@ import PreviewDialog from "../../../components/dialogs/PreviewDialog";
 import { buttonsStyle } from "../../../components/tables/table";
 import { checkIsEmpty, getFileType } from "../../../../utils/helpers";
 import Visibility from "@material-ui/icons/Visibility";
-import { uploadSingleFile } from "../../../../api/files";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import TagIcon from "@material-ui/icons/LocalOffer";
+import TagsTableDialog from "../../../components/dialogs/TagsTableDialog";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -102,6 +108,8 @@ export default function EditAssetsPage() {
 	const [formats, setFormats] = useState(null);
 	const [extensions, setExtensions] = useState(null);
 	const [tags, setTags] = useState(null);
+
+	const [openTableDialog, setOpenTableDialog] = useState(null);
 
 	const [initialAssignedTags, setInitialAssignedTags] = useState(null);
 
@@ -186,7 +194,7 @@ export default function EditAssetsPage() {
 			disableLoadingData();
 			return;
 		}
-		getAssetById(assetId)
+		getAssetById(assetId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setInitialAssignedTags(res.data.tags.map((t) => t.id));
@@ -212,7 +220,7 @@ export default function EditAssetsPage() {
 		}
 
 		if (!assetId || newAssignedTags.length) {
-			assignTags(assignedAssetId, newAssignedTags)
+			assignTags(assignedAssetId, newAssignedTags, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 200) {
 						alertSuccess({
@@ -223,7 +231,7 @@ export default function EditAssetsPage() {
 					}
 				})
 				.catch((error) => {
-					deleteAsset(assignedAssetId);
+					deleteAsset(assignedAssetId, loggedUser.accessToken);
 					alertError({
 						error: error,
 						customMessage: "Could not assign tags.",
@@ -238,7 +246,7 @@ export default function EditAssetsPage() {
 			);
 
 		if (unassignedTags != null) {
-			unassignTags(assignedAssetId, unassignedTags).then((res) => {
+			unassignTags(assignedAssetId, unassignedTags, loggedUser.accessToken).then((res) => {
 				if (res.status === 204) {
 					alertSuccess({
 						title: "Saved!",
@@ -277,7 +285,7 @@ export default function EditAssetsPage() {
 		if (!assetId) {
 			saveAsset.fecha_alta = new Date();
 			saveAsset.user_alta_id = loggedUser.userID;
-			postAsset(saveAsset, selectedFile)
+			postAsset(saveAsset, selectedFile, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 201) {
 						if (asset.tags.length) {
@@ -298,7 +306,7 @@ export default function EditAssetsPage() {
 					});
 				});
 		} else {
-			updateAsset(assetId, saveAsset, selectedFile)
+			updateAsset(assetId, saveAsset, selectedFile, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 204) {
 						handleTagAssignment(assetId);
@@ -317,6 +325,54 @@ export default function EditAssetsPage() {
 		let text = event.target.value;
 		setAsset({ ...asset, [element]: text });
 	};
+
+	function renderTagSelector() {
+		return (
+			<>
+				<div className="d-flex justify-content-between">
+					<Button
+						onClick={() => {
+							setOpenTableDialog(true);
+						}}
+					>
+						<TagIcon />
+					</Button>
+					<div className="w-100">
+						<Autocomplete
+							multiple
+							id="autocomplete-tags"
+							filterSelectedOptions
+							options={tags}
+							value={tags.filter((x) =>
+								asset?.tags.includes(x.id)
+							)}
+							//disableCloseOnSelect
+							getOptionLabel={(option) => option.descripcion}
+							/*onChange={(event, selected) => {
+								asset.tags = selected;
+							}}*/
+							open={false}
+							readOnly
+							freeSolo
+							disableClearable
+							renderInput={(params) => (
+								<TextField
+									{...params}
+									label="Asset Tags"
+									margin="normal"
+									variant="outlined"
+									InputProps={{
+										readOnly: true,
+										...params.InputProps,
+									}}
+								/>
+							)}
+						/>
+					</div>
+				</div>
+			</>
+		);
+	}
 
 	if (isLoadingData) return <ContentSkeleton />;
 	else
@@ -455,26 +511,7 @@ export default function EditAssetsPage() {
 							</div>
 						</div>
 						<br />
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Asset tags
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={asset.tags || ""}
-								multiple
-								onChange={handleChange("tags")}
-								MenuProps={MenuProps}
-							>
-								{tags?.map((tag) => (
-									<MenuItem key={tag.id} value={tag.id}>
-										{tag.descripcion}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select tags</FormHelperText>
-						</FormControl>
+						{renderTagSelector()}
 						<br />
 						<br />
 						<label htmlFor={"upload-file"}>
@@ -534,6 +571,17 @@ export default function EditAssetsPage() {
 							</>
 						)}
 					</CardBody>
+					<TagsTableDialog
+						open={openTableDialog}
+						setOpen={setOpenTableDialog}
+						data={tags}
+						tagsSelected={asset.tags}
+						onSaveSelectedTags={(selectedTags, allTags) => {
+							asset.tags = selectedTags;
+							setTags(allTags);
+							console.log("tagss", tags, selectedTags);
+						}}
+					/>
 				</Card>
 				<Button
 					onClick={() => history.push("/assets")}

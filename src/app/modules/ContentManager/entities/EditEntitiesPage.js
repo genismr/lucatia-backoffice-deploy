@@ -151,7 +151,7 @@ export default function EditEntitiesPage() {
 			disableLoadingData();
 			return;
 		}
-		getEntityById(entityId)
+		getEntityById(entityId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setEntity(res.data);
@@ -180,7 +180,7 @@ export default function EditEntitiesPage() {
 		if (entity.entidad_padre_id == 0) saveEntity.entidad_padre_id = null;
 		if (!entityId) {
 			saveEntity.user_alta_id = loggedUser.userID;
-			postEntity(saveEntity)
+			postEntity(saveEntity, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 201) {
 						alertSuccess({
@@ -199,7 +199,7 @@ export default function EditEntitiesPage() {
 		} else {
 			if (entity.entidad_padre_id == 0) saveEntity.entidad_padre_id = null;
 
-			updateEntity(entityId, saveEntity)
+			updateEntity(entityId, saveEntity, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 204) {
 						alertSuccess({
@@ -575,7 +575,6 @@ export default function EditEntitiesPage() {
 					<EntityContactsTableDialog
 						open={openTableDialog}
 						setOpen={setOpenTableDialog}
-						usersTable={true}
 						data={users}
 						title="Users"
 						onSelectRow={(item) => {

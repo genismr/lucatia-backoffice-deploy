@@ -30,7 +30,6 @@ export const updateUserAppMetadata = async (id, metadata, accessToken) => {
 
 // Update user
 export const updateUser = async (id, user, accessToken) => {
-  console.log('update', user)
   return authClient(accessToken).put(`${API}/user/${id}`, user)
 }
 
@@ -42,8 +41,6 @@ export const setUserInactive = async (id, accessToken) => {
 	return authClient(accessToken).put(`${API}/user/${id}/set-inactive`);
 };
 
-
-// Count all admins
 export const countAdmins = () => {
   const role = "admin"
 	return authClient().get(`${API}/user/count/${role}`)

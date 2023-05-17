@@ -93,7 +93,7 @@ export default function AssetsPage() {
 	const [filterOptions, setFilterOptions] = useState(initialFilters);
 
 	const history = useHistory();
-	const user = useSelector(
+	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
 		shallowEqual
 	);
@@ -259,12 +259,10 @@ export default function AssetsPage() {
 					customMessage: "Could not get assets.",
 				});
 			});
-		getAssets()
+		getAssets(loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setData(res.data);
-					console.log("assets");
-					console.log(res.data);
 					setFilteredData(res.data);
 					setRefresh(false);
 				}

@@ -14,8 +14,10 @@ import {
 	MenuItem,
 	Select,
 	FormHelperText,
+	FormControlLabel,
 } from "@material-ui/core";
 import Table, {
+	booleanFormatter,
 	buttonsStyle,
 	dateFormatter,
 	substringFormatter,
@@ -30,10 +32,7 @@ import { useHistory } from "react-router-dom";
 import { shallowEqual, useSelector } from "react-redux";
 import { alertError, alertSuccess } from "../../../utils/logger";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
-import PeopleIcon from "@material-ui/icons/People";
-import SettingsIcon from "@material-ui/icons/Settings";
 import RoleIcon from "@material-ui/icons/AccountCircle";
-import AssignmentIndIcon from "@material-ui/icons/AssignmentInd";
 import { getRoles } from "../../../api/role";
 import { checkIsEmpty } from "../../../utils/helpers";
 import { postUser } from "../../../api/user";
@@ -78,9 +77,10 @@ function getEmptyPassword() {
 }
 
 const EntityContactsTableDialog = (props) => {
-	const { title, open, setOpen, data, onSelectRow, onUserCreated } = props;
+	const { open, setOpen, data, onSelectRow, onUserCreated } = props;
+	const [refresh, setRefresh] = useState(false);
 
-	const [renderUserInputFields, setRenderUserInputFields] = useState(null);
+	const [renderInputFields, setRenderInputFields] = useState(null);
 	const [roles, setRoles] = useState(null);
 
 	const [user, setUser] = useState(getEmptyUser());
@@ -140,6 +140,7 @@ const EntityContactsTableDialog = (props) => {
 	}
 
 	function buttonFormatter(cell) {
+		const elem = data.find((item) => item.id === cell);
 		return (
 			<>
 				<Tooltip title={"Select"}>
@@ -147,9 +148,7 @@ const EntityContactsTableDialog = (props) => {
 						style={buttonsStyle}
 						size="small"
 						onClick={() => {
-							let _cell;
-							_cell = data.find((item) => item.id === cell);
-							onSelectRow(_cell);
+							onSelectRow(elem);
 						}}
 					>
 						<PersonAddIcon />
@@ -178,6 +177,7 @@ const EntityContactsTableDialog = (props) => {
 	const handleChange = (element) => (event) => {
 		let text = event.target.value;
 		if (event.target.value.trim() == "") text = null;
+
 		setUser({ ...user, [element]: text });
 	};
 
@@ -228,7 +228,7 @@ const EntityContactsTableDialog = (props) => {
 					});
 					setNewPassword(getEmptyPassword());
 					setUser(getEmptyUser());
-					setRenderUserInputFields(null);
+					setRenderInputFields(null);
 					setOpen(false);
 				}
 			})
@@ -359,10 +359,10 @@ const EntityContactsTableDialog = (props) => {
 				<div className="d-flex justify-content-end">
 					<Button
 						onClick={() => {
-							setRenderUserInputFields(null);
+							setRenderInputFields(null);
 							setNewPassword(getEmptyPassword());
 							setUser(getEmptyUser());
-							setRenderUserInputFields(null);
+							setRenderInputFields(null);
 						}}
 						variant="outlined"
 						style={{ marginRight: "20px" }}
@@ -393,42 +393,40 @@ const EntityContactsTableDialog = (props) => {
 		>
 			<DialogContent>
 				<Card>
-					<CardHeader title="Users list">
+					<CardHeader title={"Users list"}>
 						<CardHeaderToolbar>
 							<button
 								type="button"
 								className="btn btn-primary"
-								onClick={() => setRenderUserInputFields(true)}
+								onClick={() => setRenderInputFields(true)}
 							>
 								Add new
 							</button>
 						</CardHeaderToolbar>
 					</CardHeader>
 					<CardBody>
-						{renderUserInputFields && renderUserFields()}
+						{renderInputFields && renderUserFields()}
 						{!data || !data.length ? (
 							<p>{"No users found."}</p>
 						) : (
-							<Table data={data} columns={columns} size={7} />
+							<Table data={data} columns={columns} />
 						)}
 					</CardBody>
 				</Card>
 			</DialogContent>
-			<DialogActions>
-				<MuiThemeProvider theme={theme}>
-					<Button
-						onClick={() => {
-							setNewPassword(getEmptyPassword());
-							setUser(getEmptyUser());
-							setRenderUserInputFields(null);
-							setOpen(false);
-						}}
-						variant="outlined"
-						color="secondary"
-					>
-						Cancel
-					</Button>
-				</MuiThemeProvider>
+			<DialogActions>				
+				<Button
+					onClick={() => {
+						setNewPassword(getEmptyPassword());
+						setUser(getEmptyUser());
+						setRenderInputFields(null);
+						setOpen(false);
+					}}
+					variant="outlined"
+					color="secondary"
+				>
+					Accept
+				</Button>
 			</DialogActions>
 		</Dialog>
 	);

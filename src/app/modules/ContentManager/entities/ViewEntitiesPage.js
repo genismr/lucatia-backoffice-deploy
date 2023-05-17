@@ -48,7 +48,7 @@ export default function ViewEntitiesPage() {
 					customMessage: "Could not get users.",
 				});
 			});
-		getEntityById(entityId)
+		getEntityById(entityId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					setEntity(res.data);
@@ -96,12 +96,8 @@ export default function ViewEntitiesPage() {
 								<p>{entity.razon_social || "---"}</p>
 							</div>
 							<div className="col-4 gx-3">
-								<h5>Estado</h5>
-								{entity.activo ? (
-									<p>Activo</p>
-								) : (
-									<p>Inactivo</p>
-								)}
+								<h5>NIF</h5>
+								{entity.nif || "---"}
 							</div>
 						</div>
 						<div className="row">
@@ -129,7 +125,9 @@ export default function ViewEntitiesPage() {
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Contacto propietario</h5>
-								<p>{getUserInfo(entity.contacto_propietario)}</p>
+								<p>
+									{getUserInfo(entity.contacto_propietario)}
+								</p>
 							</div>
 						</div>
 						<div className="row">
@@ -139,7 +137,11 @@ export default function ViewEntitiesPage() {
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Contacto administrativo</h5>
-								<p>{getUserInfo(entity.contacto_administrativo)}</p>
+								<p>
+									{getUserInfo(
+										entity.contacto_administrativo
+									)}
+								</p>
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Contacto helpDesk</h5>
@@ -172,6 +174,8 @@ export default function ViewEntitiesPage() {
 								</p>
 							</div>
 						</div>
+						<h5>Estado</h5>
+						{entity.activo ? <p>Activo</p> : <p>Inactivo</p>}
 					</CardBody>
 				</Card>
 				<div style={{ display: "flex", flexDirection: "row" }}>
