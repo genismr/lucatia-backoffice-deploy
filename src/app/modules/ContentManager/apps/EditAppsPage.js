@@ -31,6 +31,7 @@ import {
 	changeEntityOwnership,
 } from "../../../../api/app";
 import { getEntities } from "../../../../api/entity";
+import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -40,18 +41,6 @@ const theme = createMuiTheme({
 		},
 	},
 });
-
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-	PaperProps: {
-		style: {
-			maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-			width: 250,
-		},
-	},
-	getContentAnchorEl: () => null,
-};
 
 function getEmptyApp() {
 	return {
@@ -196,7 +185,11 @@ export default function EditAppsPage() {
 		}
 
 		if (!appId || newAssignedEntities.length) {
-			assignEntities(assignedAppId, newAssignedEntitiesBody, loggedUser.accessToken)
+			assignEntities(
+				assignedAppId,
+				newAssignedEntitiesBody,
+				loggedUser.accessToken
+			)
 				.then((res) => {
 					if (res.status === 200) {
 						alertSuccess({
@@ -207,7 +200,8 @@ export default function EditAppsPage() {
 					}
 				})
 				.catch((error) => {
-					if (!appId) deleteApp(assignedAppId, loggedUser.accessToken);
+					if (!appId)
+						deleteApp(assignedAppId, loggedUser.accessToken);
 					alertError({
 						error: error,
 						customMessage: "Could not assign entities.",
@@ -243,7 +237,11 @@ export default function EditAppsPage() {
 		}
 
 		if (changedEntities != null) {
-			changeEntityOwnership(assignedAppId, changedEntities, loggedUser.accessToken)
+			changeEntityOwnership(
+				assignedAppId,
+				changedEntities,
+				loggedUser.accessToken
+			)
 				.then((res) => {
 					if (res.status === 200) {
 						alertSuccess({
@@ -254,7 +252,8 @@ export default function EditAppsPage() {
 					}
 				})
 				.catch((error) => {
-					if (!appId) deleteApp(assignedAppId, loggedUser.accessToken);
+					if (!appId)
+						deleteApp(assignedAppId, loggedUser.accessToken);
 					alertError({
 						error: error,
 						customMessage: "Could not assign entities.",
@@ -283,7 +282,11 @@ export default function EditAppsPage() {
 		let unassignedEntities = unassignedOwned.concat(unassignedDelegated);
 
 		if (unassignedEntities.length) {
-			unassignEntities(assignedAppId, unassignedEntities, loggedUser.accessToken)
+			unassignEntities(
+				assignedAppId,
+				unassignedEntities,
+				loggedUser.accessToken
+			)
 				.then((res) => {
 					if (res.status === 204) {
 						alertSuccess({
@@ -294,7 +297,8 @@ export default function EditAppsPage() {
 					}
 				})
 				.catch((error) => {
-					if (!appId) deleteApp(assignedAppId, loggedUser.accessToken);
+					if (!appId)
+						deleteApp(assignedAppId, loggedUser.accessToken);
 					alertError({
 						error: error,
 						customMessage: "Could not assign entities.",
@@ -419,60 +423,70 @@ export default function EditAppsPage() {
 						<br />
 						<div className="row">
 							<div className="col-6 gx-3">
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Entidades propietarias
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={app.ownedEntities || ""}
-										multiple
-										onChange={handleChange("ownedEntities")}
-										MenuProps={MenuProps}
-									>
-										{entities?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
-											>
-												{option.nombre}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>
-										Select entities
-									</FormHelperText>
-								</FormControl>
+								<Autocomplete
+									id="autocomplete-owned-entities"
+									multiple
+									disableCloseOnSelect
+									options={entities}
+									getOptionLabel={(option) => option.nombre}
+									value={entities.filter((x) =>
+										app.ownedEntities.includes(x.id)
+									)}
+									filterSelectedOptions
+									onChange={(event, selected) => {
+										setApp({
+											...app,
+											ownedEntities: selected.map(
+												(x) => x.id
+											),
+										});
+									}}
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Entidades propietarias"
+											placeholder="Entidades"
+											InputLabelProps={{
+												shrink: true,
+											}}
+											margin="normal"
+											variant="outlined"
+										/>
+									)}
+								/>
 							</div>
 							<div className="col-6 gx-3">
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Entidades con acceso delegado
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={app.delegatedEntities || ""}
-										multiple
-										onChange={handleChange(
-											"delegatedEntities"
-										)}
-										MenuProps={MenuProps}
-									>
-										{entities?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
-											>
-												{option.nombre}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>
-										Select entities
-									</FormHelperText>
-								</FormControl>
+								<Autocomplete
+									id="autocomplete-owned-entities"
+									multiple
+									disableCloseOnSelect
+									options={entities}
+									getOptionLabel={(option) => option.nombre}
+									value={entities.filter((x) =>
+										app.delegatedEntities.includes(x.id)
+									)}
+									filterSelectedOptions
+									onChange={(event, selected) => {
+										setApp({
+											...app,
+											delegatedEntities: selected.map(
+												(x) => x.id
+											),
+										});
+									}}
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Entidades con acceso delegado"
+											placeholder="Entidades"
+											InputLabelProps={{
+												shrink: true,
+											}}
+											margin="normal"
+											variant="outlined"
+										/>
+									)}
+								/>
 							</div>
 						</div>
 					</CardBody>

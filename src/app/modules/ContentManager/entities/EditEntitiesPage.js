@@ -36,6 +36,7 @@ import PersonAddIcon from "@material-ui/icons/PersonAdd";
 import LinkIcon from "@material-ui/icons/Link";
 import EntityContactsTableDialog from "../../../components/dialogs/EntityContactsTableDialog";
 import { checkIsEmpty } from "../../../../utils/helpers";
+import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -45,18 +46,6 @@ const theme = createMuiTheme({
 		},
 	},
 });
-
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-	PaperProps: {
-		style: {
-			maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-			width: 250,
-		},
-	},
-	getContentAnchorEl: () => null,
-};
 
 function getEmptyEntity() {
 	return {
@@ -168,6 +157,7 @@ export default function EditEntitiesPage() {
 	}, [entityId, disableLoadingData, history]);
 
 	function saveEntity() {
+		console.log("entidadpadre", entity.entidad_padre_id);
 		if (checkIsEmpty(entity.nombre) || checkIsEmpty(entity.razon_social)) {
 			alertError({
 				error: null,
@@ -197,7 +187,8 @@ export default function EditEntitiesPage() {
 					});
 				});
 		} else {
-			if (entity.entidad_padre_id == 0) saveEntity.entidad_padre_id = null;
+			if (entity.entidad_padre_id == 0)
+				saveEntity.entidad_padre_id = null;
 
 			updateEntity(entityId, saveEntity, loggedUser.accessToken)
 				.then((res) => {
@@ -533,40 +524,40 @@ export default function EditEntitiesPage() {
 						</div>
 						{loggedUser.role.rango === 0 && (
 							<>
-								<br />
 								<div className="row">
-									<div className="col-3 gx-3">
-										<FormControl style={{ width: "100%" }}>
-											<InputLabel id="demo-simple-select-standard-label">
-												Entidad padre
-											</InputLabel>
-											<Select
-												labelId="demo-simple-select-standard-label"
-												id="demo-simple-select-standard"
-												value={
-													entity.entidad_padre_id ||
-													""
-												}
-												onClick={handleChange(
-													"entidad_padre_id"
-												)}
-												MenuProps={MenuProps}
-											>
-												{parentEntities?.map(
-													(option) => (
-														<MenuItem
-															key={option.id}
-															value={option.id}
-														>
-															{option.nombre}
-														</MenuItem>
-													)
-												)}
-											</Select>
-											<FormHelperText>
-												Select a parent entity
-											</FormHelperText>
-										</FormControl>
+									<div className="col-6 gx-3">
+										<Autocomplete
+											id="autocomplete-parent-entity"
+											autoSelect
+											disablePortal
+											options={parentEntities}
+											getOptionLabel={(option) =>
+												option.nombre
+											}
+											onChange={(event, selected) => {
+												setEntity({
+													...entity,
+													entidad_padre_id:
+														selected?.id,
+												});
+											}}
+											value={parentEntities.find(
+												(x) =>
+													x.id ==
+													entity.entidad_padre_id
+											)}
+											renderInput={(params) => (
+												<TextField
+													{...params}
+													label="Entidad padre"
+													margin="normal"
+													variant="outlined"
+													InputLabelProps={{
+														shrink: true,
+													}}
+												/>
+											)}
+										/>
 									</div>
 								</div>
 							</>

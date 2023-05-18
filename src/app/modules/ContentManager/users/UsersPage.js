@@ -10,11 +10,7 @@ import Table, {
 	buttonsStyle,
 } from "../../../components/tables/table";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import {
-	getUsers,
-	setUserActive,
-	setUserInactive,
-} from "../../../../api/user";
+import { getUsers, setUserActive, setUserInactive } from "../../../../api/user";
 import { getRoles } from "../../../../api/role";
 import {
 	Button,
@@ -63,10 +59,10 @@ function getData(users, loggedUser) {
 
 			elem.nombreApellidos = users[i].nombre + apellidos;
 			elem.email = users[i].email;
-			elem.faviconRol = "??";
+			elem.faviconRol = "WIP";
 			elem.rol = users[i].role.descripcion;
-			elem.faviconEntityOwner = "??";
-			elem.faviconEntityManager = "??";
+			elem.faviconEntityOwner = "WIP";
+			elem.faviconEntityManager = "WIP";
 			elem.lastLogin = users[i].last_login;
 			elem.activo = users[i].activo;
 			elem.id = users[i].id;

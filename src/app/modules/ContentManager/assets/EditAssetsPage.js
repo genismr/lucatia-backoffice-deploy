@@ -43,7 +43,7 @@ import { buttonsStyle } from "../../../components/tables/table";
 import { checkIsEmpty, getFileType } from "../../../../utils/helpers";
 import Visibility from "@material-ui/icons/Visibility";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import TagIcon from "@material-ui/icons/LocalOffer";
+import AddTagIcon from "@material-ui/icons/PlaylistAdd";
 import TagsTableDialog from "../../../components/dialogs/TagsTableDialog";
 
 const ITEM_HEIGHT = 48;
@@ -246,7 +246,11 @@ export default function EditAssetsPage() {
 			);
 
 		if (unassignedTags != null) {
-			unassignTags(assignedAssetId, unassignedTags, loggedUser.accessToken).then((res) => {
+			unassignTags(
+				assignedAssetId,
+				unassignedTags,
+				loggedUser.accessToken
+			).then((res) => {
 				if (res.status === 204) {
 					alertSuccess({
 						title: "Saved!",
@@ -306,7 +310,12 @@ export default function EditAssetsPage() {
 					});
 				});
 		} else {
-			updateAsset(assetId, saveAsset, selectedFile, loggedUser.accessToken)
+			updateAsset(
+				assetId,
+				saveAsset,
+				selectedFile,
+				loggedUser.accessToken
+			)
 				.then((res) => {
 					if (res.status === 204) {
 						handleTagAssignment(assetId);
@@ -335,7 +344,7 @@ export default function EditAssetsPage() {
 							setOpenTableDialog(true);
 						}}
 					>
-						<TagIcon />
+						<AddTagIcon />
 					</Button>
 					<div className="w-100">
 						<Autocomplete
@@ -579,7 +588,6 @@ export default function EditAssetsPage() {
 						onSaveSelectedTags={(selectedTags, allTags) => {
 							asset.tags = selectedTags;
 							setTags(allTags);
-							console.log("tagss", tags, selectedTags);
 						}}
 					/>
 				</Card>

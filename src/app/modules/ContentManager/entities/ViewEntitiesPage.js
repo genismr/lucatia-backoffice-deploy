@@ -6,7 +6,7 @@ import {
 } from "../../../../_metronic/_partials/controls";
 import { Button } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
-import { getEntityById } from "../../../../api/entity";
+import { getEntities, getEntityById } from "../../../../api/entity";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
@@ -16,6 +16,8 @@ export default function ViewEntitiesPage() {
 	const [entity, setEntity] = useState(null);
 	const entityId = useParams().id;
 	const history = useHistory();
+
+	const [parentEntities, setParentEntities] = useState(null);
 
 	const [users, setUsers] = useState(null);
 
@@ -47,6 +49,19 @@ export default function ViewEntitiesPage() {
 					error: error,
 					customMessage: "Could not get users.",
 				});
+			});
+		getEntities(loggedUser.accessToken)
+			.then((res) => {
+				if (res.status === 200) {
+					setParentEntities(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get entities.",
+				});
+				history.push("/entities");
 			});
 		getEntityById(entityId, loggedUser.accessToken)
 			.then((res) => {
@@ -151,7 +166,11 @@ export default function ViewEntitiesPage() {
 						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Entidad padre</h5>
-								<p>{entity.entidad_padre_id || "---"}</p>
+								<p>
+									{parentEntities.find(
+										(x) => x.id == entity.entidad_padre_id
+									).nombre || "---"}
+								</p>
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Apps en propiedad</h5>

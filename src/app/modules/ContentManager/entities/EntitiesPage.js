@@ -10,7 +10,11 @@ import Table, {
 	buttonsStyle,
 } from "../../../components/tables/table";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { getEntities, setEntityActive, setEntityInactive } from "../../../../api/entity";
+import {
+	getEntities,
+	setEntityActive,
+	setEntityInactive,
+} from "../../../../api/entity";
 import {
 	Button,
 	Tooltip,
@@ -38,7 +42,7 @@ function getData(entities) {
 		elem.favicon = entities[i].icono_id;
 		elem.nombre = entities[i].nombre;
 		elem.faviconParentEntity = entities[i].parentEntity?.icono_id;
-		elem.ownerName = "??";
+		elem.ownerName = "WIP";
 		elem.activo = entities[i].activo;
 		elem.id = entities[i].id;
 
@@ -156,7 +160,8 @@ export default function EntitiesPage() {
 		<>
 			<Card>
 				<CardHeader title="Entities list">
-					{(loggedUser.role.rango === 0 || loggedUser.role.rango === 10) && (
+					{(loggedUser.role.rango === 0 ||
+						loggedUser.role.rango === 10) && (
 						<CardHeaderToolbar>
 							<button
 								type="button"
@@ -178,7 +183,10 @@ export default function EntitiesPage() {
 						setOpen={setOpenConfirmDialog}
 						onConfirm={() => {
 							if (!entity?.activo) {
-								setEntityActive(entity.id, loggedUser.accessToken)
+								setEntityActive(
+									entity.id,
+									loggedUser.accessToken
+								)
 									.then((res) => {
 										if (
 											res.status === 200 ||
@@ -210,7 +218,10 @@ export default function EntitiesPage() {
 										});
 									});
 							} else {
-								setEntityInactive(entity.id, loggedUser.accessToken)
+								setEntityInactive(
+									entity.id,
+									loggedUser.accessToken
+								)
 									.then((res) => {
 										if (
 											res.status === 200 ||

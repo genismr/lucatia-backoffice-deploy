@@ -35,6 +35,7 @@ import { shallowEqual, useSelector } from "react-redux";
 import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import DownloadIcon from "@material-ui/icons/GetApp";
+import CopyClipboardIcon from "@material-ui/icons/FileCopy";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -109,6 +110,11 @@ export default function AssetsPage() {
 				>
 					<DownloadIcon />
 				</Button>
+				<Tooltip title="Copy URL to Clipboard">
+					<Button style={buttonsStyle} size="small">
+						<CopyClipboardIcon />
+					</Button>
+				</Tooltip>
 			</>
 		);
 	}

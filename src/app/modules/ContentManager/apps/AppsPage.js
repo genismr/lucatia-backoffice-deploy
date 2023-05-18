@@ -50,13 +50,15 @@ function getData(apps) {
 		elem.faviconApp = apps[i].icono_id;
 		elem.nombre = apps[i].nombre;
 		elem.tecnologia = apps[i].tecnologia;
-		elem.faviconOwnerEntity = apps[i].ownedEntities?.map(e => e.icono_id);
-		elem.faviconsDelegatedEntities = apps[i].delegatedEntities?.map(e => e.icono_id);
+		elem.faviconOwnerEntity = apps[i].ownedEntities?.map((e) => e.icono_id);
+		elem.faviconsDelegatedEntities = apps[i].delegatedEntities?.map(
+			(e) => e.icono_id
+		);
 		elem.activo = apps[i].activo;
 		elem.id = apps[i].id;
 		data = data.concat(elem);
 	}
-	console.log(data)
+	console.log(data);
 	return data;
 }
 

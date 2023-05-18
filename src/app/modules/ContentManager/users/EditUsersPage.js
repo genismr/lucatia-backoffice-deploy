@@ -38,6 +38,7 @@ import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { checkIsEmpty } from "../../../../utils/helpers";
 import { getAppMetadata } from "../../../../api/app";
+import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -505,7 +506,10 @@ export default function EditUsersPage() {
 					customMessage: "Could not get entities.",
 				});
 			});
-		getAppMetadata("404eb47a-4b1c-408a-fcb7-08db4575ec5a", loggedUser.accessToken)
+		getAppMetadata(
+			"404eb47a-4b1c-408a-fcb7-08db4575ec5a",
+			loggedUser.accessToken
+		)
 			.then((res) => {
 				if (res.status === 200) {
 					setAppMetadata(res.data);
@@ -732,7 +736,9 @@ export default function EditUsersPage() {
 		return (
 			<>
 				<Card>
-					<CardHeader title={myProfile ? "Edit profile" : "Edit user"}></CardHeader>
+					<CardHeader
+						title={myProfile ? "Edit profile" : "Edit user"}
+					></CardHeader>
 					<CardBody>
 						<div className="row">
 							<div className="col-4 gx-3">
@@ -969,92 +975,103 @@ export default function EditUsersPage() {
 							</div>
 						</div>
 						<br />
-						<br />
 						<div className="row">
-							<div className="col-4 gx-3">
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Entidades propietarias
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={user.owned_entities || ""}
-										multiple
-										onChange={handleChange(
-											"owned_entities"
-										)}
-										MenuProps={MenuProps}
-									>
-										{entities?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
-											>
-												{option.nombre}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>
-										Select entities
-									</FormHelperText>
-								</FormControl>
+							<div className="col-6 gx-3">
+								<Autocomplete
+									id="autocomplete-owned-entities"
+									multiple
+									disableCloseOnSelect
+									options={entities}
+									getOptionLabel={(option) => option.nombre}
+									value={entities.filter((x) =>
+										user.owned_entities.includes(x.id)
+									)}
+									filterSelectedOptions
+									onChange={(event, selected) => {
+										setUser({
+											...user,
+											owned_entities: selected.map(
+												(x) => x.id
+											),
+										});
+									}}
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Entidades propietarias"
+											placeholder="Entidades"
+											InputLabelProps={{
+												shrink: true,
+											}}
+											margin="normal"
+											variant="outlined"
+										/>
+									)}
+								/>
 							</div>
-							<div className="col-4 gx-3">
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Entidades gestionadas
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={user.managed_entities || ""}
-										multiple
-										onChange={handleChange(
-											"managed_entities"
-										)}
-										MenuProps={MenuProps}
-									>
-										{entities?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
-											>
-												{option.nombre}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>
-										Select entities
-									</FormHelperText>
-								</FormControl>
-							</div>
-							<div className="col-4 gx-3">
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Apps asignadas
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={user.apps || ""}
-										multiple
-										onChange={handleChange("apps")}
-										MenuProps={MenuProps}
-									>
-										{getPermittedApps()?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
-											>
-												{option.nombre}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>Select apps</FormHelperText>
-								</FormControl>
+							<div className="col-6 gx-3">
+								<Autocomplete
+									id="autocomplete-managed-entities"
+									multiple
+									disableCloseOnSelect
+									options={entities}
+									getOptionLabel={(option) => option.nombre}
+									value={entities.filter((x) =>
+										user.managed_entities.includes(x.id)
+									)}
+									filterSelectedOptions
+									onChange={(event, selected) => {
+										setUser({
+											...user,
+											managed_entities: selected.map(
+												(x) => x.id
+											),
+										});
+									}}
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Entidades gestionadas"
+											placeholder="Entidades"
+											InputLabelProps={{
+												shrink: true,
+											}}
+											margin="normal"
+											variant="outlined"
+										/>
+									)}
+								/>
 							</div>
 						</div>
+						<Autocomplete
+							id="autocomplete-assigned-apps"
+							multiple
+							disableCloseOnSelect
+							options={getPermittedApps()}
+							getOptionLabel={(option) => option.nombre}
+							value={getPermittedApps()?.filter((x) =>
+								user.apps.includes(x.id)
+							)}
+							filterSelectedOptions
+							onChange={(event, selected) => {
+								setUser({
+									...user,
+									apps: selected.map((x) => x.id),
+								});
+							}}
+							renderInput={(params) => (
+								<TextField
+									{...params}
+									label="Apps asignadas"
+									placeholder="Apps"
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+								/>
+							)}
+						/>
 					</CardBody>
 				</Card>
 				<Card>
