@@ -110,8 +110,14 @@ export default function AssetsPage() {
 				>
 					<DownloadIcon />
 				</Button>
-				<Tooltip title="Copy URL to Clipboard">
-					<Button style={buttonsStyle} size="small">
+				<Tooltip title={"Copy URL to clipboard"}>
+					<Button
+						style={buttonsStyle}
+						size="small"
+						onClick={(event) => {
+							navigator.clipboard.writeText(elem.url);
+						}}
+					>
 						<CopyClipboardIcon />
 					</Button>
 				</Tooltip>
@@ -194,6 +200,8 @@ export default function AssetsPage() {
 		{
 			dataField: "id",
 			text: "File",
+			align: "center",
+			headerAlign: "center",
 			formatter: urlFormatter,
 		},
 		{ dataField: "id", text: "", formatter: buttonFormatter },
