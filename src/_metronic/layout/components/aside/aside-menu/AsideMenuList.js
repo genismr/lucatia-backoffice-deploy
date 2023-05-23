@@ -7,14 +7,16 @@ import SVG from "react-inlinesvg";
 import { toAbsoluteUrl, checkIsActive } from "../../../../_helpers";
 import RecentActorsIcon from "@material-ui/icons/RecentActors";
 import PeopleIcon from "@material-ui/icons/People";
+import PatientIcon from "@material-ui/icons/DirectionsWalk";
 import BuildingIcon from "@material-ui/icons/AccountBalance";
 import AppIcon from "@material-ui/icons/PhoneIphone";
 import AssetIcon from "@material-ui/icons/WebAsset";
 import StoreIcon from "@material-ui/icons/Store";
 import { shallowEqual, useSelector } from "react-redux";
+import { SERVER_URL } from "../../../../../api";
 
 export function AsideMenuList({ layoutProps }) {
-	const user = useSelector(
+	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
 		shallowEqual
 	);
@@ -50,14 +52,14 @@ export function AsideMenuList({ layoutProps }) {
 				</li>
 				<li
 					className={`menu-item ${getMenuItemActive(
-						"/edit-user",
+						"/my-area/edit-user",
 						false
 					)}`}
 					aria-haspopup="true"
 				>
 					<NavLink
 						className="menu-link"
-						to={"/my-area/edit-user/" + user?.userID}
+						to={"/my-area/edit-user/" + loggedUser?.userID}
 					>
 						<span className="menu-icon">
 							<RecentActorsIcon />
@@ -69,23 +71,49 @@ export function AsideMenuList({ layoutProps }) {
 					<h4 className="menu-text">USERS</h4>
 					<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
 				</li>
+				{(loggedUser.role.rango === 0 ||
+					loggedUser.role.rango === 10) && (
+					<>
+						<li
+							className={`menu-item ${getMenuItemActive(
+								"/users",
+								false
+							)} ${getMenuItemActive(
+								"/view-user",
+								false
+							)} ${getMenuItemActive("#/edit-user", false)}`}
+							aria-haspopup="true"
+						>
+							<NavLink className="menu-link" to="/users">
+								<span className="menu-icon">
+									<PeopleIcon />
+								</span>
+								<span className="menu-text">Users</span>
+							</NavLink>
+						</li>
+					</>
+				)}
 				<li
 					className={`menu-item ${getMenuItemActive(
-						"/users",
+						"/patients",
 						false
-					)}`}
+					)} ${getMenuItemActive(
+						"/view-patient",
+						false
+					)} ${getMenuItemActive("/edit-patient", false)}`}
 					aria-haspopup="true"
 				>
-					<NavLink className="menu-link" to="/users">
+					<NavLink className="menu-link" to="/patients">
 						<span className="menu-icon">
-							<PeopleIcon />
+							<PatientIcon />
 						</span>
-						<span className="menu-text">Users</span>
+						<span className="menu-text">Patients</span>
 					</NavLink>
 				</li>
-				{(user.role.rango === 0 ||
-					(user.role.rango === 10 &&
-						user.managedEntities.length)) && (
+
+				{(loggedUser.role.rango === 0 ||
+					(loggedUser.role.rango === 10 &&
+						loggedUser.managedEntities.length)) && (
 					<>
 						<li className="menu-section">
 							<h4 className="menu-text">ENTITIES</h4>
@@ -94,6 +122,9 @@ export function AsideMenuList({ layoutProps }) {
 						<li
 							className={`menu-item ${getMenuItemActive(
 								"/entities",
+								false
+							)} ${getMenuItemActive(
+								"/view-entity",
 								false
 							)} ${getMenuItemActive("/edit-entity", false)}`}
 							aria-haspopup="true"
@@ -105,11 +136,14 @@ export function AsideMenuList({ layoutProps }) {
 								<span className="menu-text">Entities</span>
 							</NavLink>
 						</li>
-						{user.role.rango === 0 && (
+						{loggedUser.role.rango === 0 && (
 							<>
 								<li
 									className={`menu-item ${getMenuItemActive(
 										"/external-entities",
+										false
+									)} ${getMenuItemActive(
+										"/view-external-entity",
 										false
 									)} ${getMenuItemActive(
 										"/edit-external-entity",
@@ -139,6 +173,9 @@ export function AsideMenuList({ layoutProps }) {
 							className={`menu-item ${getMenuItemActive(
 								"/apps",
 								false
+							)} ${getMenuItemActive(
+								"/view-app",
+								false
 							)} ${getMenuItemActive("/edit-app", false)}`}
 							aria-haspopup="true"
 						>
@@ -151,8 +188,8 @@ export function AsideMenuList({ layoutProps }) {
 						</li>
 					</>
 				)}
-				{(user.role.rango === 0 ||
-					user.role.descripcion === "Designer") && (
+				{(loggedUser.role.rango === 0 ||
+					loggedUser.role.descripcion === "Designer") && (
 					<>
 						<li className="menu-section">
 							<h4 className="menu-text">ASSETS</h4>
@@ -161,6 +198,9 @@ export function AsideMenuList({ layoutProps }) {
 						<li
 							className={`menu-item ${getMenuItemActive(
 								"/assets",
+								false
+							)} ${getMenuItemActive(
+								"/view-asset",
 								false
 							)} ${getMenuItemActive("/edit-asset", false)}`}
 							aria-haspopup="true"

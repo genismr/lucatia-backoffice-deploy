@@ -285,11 +285,8 @@ export default function EditAssetsPage() {
 			return;
 		}
 
-		let saveAsset = asset;
 		if (!assetId) {
-			saveAsset.fecha_alta = new Date();
-			saveAsset.user_alta_id = loggedUser.userID;
-			postAsset(saveAsset, selectedFile, loggedUser.accessToken)
+			postAsset(asset, selectedFile, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 201) {
 						if (asset.tags.length) {
@@ -312,7 +309,7 @@ export default function EditAssetsPage() {
 		} else {
 			updateAsset(
 				assetId,
-				saveAsset,
+				asset,
 				selectedFile,
 				loggedUser.accessToken
 			)

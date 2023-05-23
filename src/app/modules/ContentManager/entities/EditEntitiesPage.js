@@ -37,6 +37,7 @@ import LinkIcon from "@material-ui/icons/Link";
 import EntityContactsTableDialog from "../../../components/dialogs/EntityContactsTableDialog";
 import { checkIsEmpty } from "../../../../utils/helpers";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
+import { getRoles } from "../../../../api/role";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -71,6 +72,7 @@ function getEmptyEntity() {
 
 export default function EditEntitiesPage() {
 	const [entity, setEntity] = useState(getEmptyEntity());
+
 	const [parentEntities, setParentEntities] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 	const [refresh, setRefresh] = useState(false);
@@ -94,6 +96,7 @@ export default function EditEntitiesPage() {
 		null
 	);
 
+	const [roles, setRoles] = useState(null);
 	const [users, setUsers] = useState(null);
 
 	const entityId = useParams().id;
@@ -109,6 +112,24 @@ export default function EditEntitiesPage() {
 		disableLoading: disableLoadingData,
 		ContentSkeleton,
 	} = useSkeleton();
+
+	function getPermittedRoles(roles) {
+		let data = [];
+		for (let i = 0; i < roles.length; ++i) {
+			if (
+				loggedUser.role.rango === 0 ||
+				roles[i].rango > loggedUser.role.rango
+			) {
+				let elem = {};
+				elem.id = roles[i].id;
+				elem.descripcion = roles[i].descripcion;
+
+				data = data.concat(elem);
+			}
+		}
+
+		return data;
+	}
 
 	useEffect(() => {
 		getEntities(loggedUser.accessToken)
@@ -136,6 +157,18 @@ export default function EditEntitiesPage() {
 					customMessage: "Could not get users.",
 				});
 			});
+		getRoles()
+			.then((res) => {
+				if (res.status === 200) {
+					setRoles(getPermittedRoles(res.data));
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get roles.",
+				});
+			});
 		if (!entityId) {
 			disableLoadingData();
 			return;
@@ -143,7 +176,7 @@ export default function EditEntitiesPage() {
 		getEntityById(entityId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
-					setEntity(res.data);
+					setEntity(res.data);					
 					disableLoadingData();
 				}
 			})
@@ -157,7 +190,6 @@ export default function EditEntitiesPage() {
 	}, [entityId, disableLoadingData, history]);
 
 	function saveEntity() {
-		console.log("entidadpadre", entity.entidad_padre_id);
 		if (checkIsEmpty(entity.nombre) || checkIsEmpty(entity.razon_social)) {
 			alertError({
 				error: null,
@@ -169,7 +201,6 @@ export default function EditEntitiesPage() {
 		let saveEntity = entity;
 		if (entity.entidad_padre_id == 0) saveEntity.entidad_padre_id = null;
 		if (!entityId) {
-			saveEntity.user_alta_id = loggedUser.userID;
 			postEntity(saveEntity, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 201) {
@@ -541,11 +572,13 @@ export default function EditEntitiesPage() {
 														selected?.id,
 												});
 											}}
-											value={parentEntities.find(
-												(x) =>
-													x.id ==
-													entity.entidad_padre_id
-											)}
+											value={
+												parentEntities?.find(
+													(x) =>
+														x.id ==
+														entity.entidad_padre_id
+												) || ""
+											}
 											renderInput={(params) => (
 												<TextField
 													{...params}
@@ -567,6 +600,7 @@ export default function EditEntitiesPage() {
 						open={openTableDialog}
 						setOpen={setOpenTableDialog}
 						data={users}
+						roles={roles}
 						title="Users"
 						onSelectRow={(item) => {
 							updateContacto(item);

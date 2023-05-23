@@ -18,13 +18,15 @@ import EditAppsPage from "./modules/ContentManager/apps/EditAppsPage";
 import ExternalEntitiesPage from "./modules/ContentManager/external-entities/ExternalEntitiesPage";
 import ViewExternalEntitiesPage from "./modules/ContentManager/external-entities/ViewExternalEntitiesPage";
 import EditExternalEntitiesPage from "./modules/ContentManager/external-entities/EditExternalEntitiesPage";
+import PatientsPage from "./modules/ContentManager/patients/PatientsPage";
+import ViewPatientsPage from "./modules/ContentManager/patients/ViewPatientsPage";
+import EditPatientsPage from "./modules/ContentManager/patients/EditPatientsPage";
 
 export default function BasePage() {
-	const user = useSelector(
+	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
 		shallowEqual
 	);
-	const isAdmin = user || user?.role !== "admin";
 
 	return (
 		<Switch>
@@ -32,7 +34,14 @@ export default function BasePage() {
 			<Redirect exact from="/" to="/dashboard" />
 			<ContentRoute path="/dashboard" component={DashboardPage} />
 
-			<ContentRoute from="/my-area/edit-user/:id?" component={EditUsersPage} />
+			<ContentRoute
+				from="/my-area/edit-user/:id?"
+				component={EditUsersPage}
+			/>
+			<ContentRoute
+				from="/my-area/edit-patient/:id?"
+				component={EditPatientsPage}
+			/>
 
 			{/* USERS */}
 			{/* Users */}
@@ -40,45 +49,131 @@ export default function BasePage() {
 			<ContentRoute from="/view-user/:id?" component={ViewUsersPage} />
 			<ContentRoute from="/edit-user/:id?" component={EditUsersPage} />
 
+			{/* Patients */}
+			<ContentRoute from="/patients" component={PatientsPage} />
+			<ContentRoute
+				from="/view-patient/:id?"
+				component={ViewPatientsPage}
+			/>
+			<ContentRoute
+				from="/edit-patient/:id?"
+				component={EditPatientsPage}
+			/>
+
 			{/* ENTITIES */}
 			{/* Entities */}
-			<ContentRoute from="/entities" component={EntitiesPage} />
+			<ContentRoute
+				from="/entities"
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 10
+						? EntitiesPage
+						: DashboardPage
+				}
+			/>
 			<ContentRoute
 				from="/view-entity/:id?"
-				component={ViewEntitiesPage}
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 10
+						? ViewEntitiesPage
+						: DashboardPage
+				}
 			/>
 			<ContentRoute
 				from="/edit-entity/:id?"
-				component={EditEntitiesPage}
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 10
+						? EditEntitiesPage
+						: DashboardPage
+				}
 			/>
 			{/* External Entities */}
-			<ContentRoute from="/external-entities" component={ExternalEntitiesPage} />
+			<ContentRoute
+				from="/external-entities"
+				component={
+					loggedUser?.role.rango === 0
+						? ExternalEntitiesPage
+						: DashboardPage
+				}
+			/>
 			<ContentRoute
 				from="/view-external-entity/:id?"
-				component={ViewExternalEntitiesPage}
+				component={
+					loggedUser?.role.rango === 0
+						? ViewExternalEntitiesPage
+						: DashboardPage
+				}
 			/>
 			<ContentRoute
 				from="/edit-external-entity/:id?"
-				component={EditExternalEntitiesPage}
+				component={
+					loggedUser?.role.rango === 0
+						? EditExternalEntitiesPage
+						: DashboardPage
+				}
 			/>
 
 			{/* APPS */}
 			{/* Apps */}
-			<ContentRoute from="/apps" component={AppsPage} />
+			<ContentRoute
+				from="/apps"
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 10
+						? AppsPage
+						: DashboardPage
+				}
+			/>
 			<ContentRoute
 				from="/view-app/:id?"
-				component={ViewAppsPage}
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 10
+						? ViewAppsPage
+						: DashboardPage
+				}
 			/>
 			<ContentRoute
 				from="/edit-app/:id?"
-				component={EditAppsPage}
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 10
+						? EditAppsPage
+						: DashboardPage
+				}
 			/>
 
 			{/* ASSETS */}
 			{/* Assets */}
-			<ContentRoute from="/assets" component={AssetsPage} />
-			<ContentRoute from="/view-asset/:id?" component={ViewAssetsPage} />
-			<ContentRoute from="/edit-asset/:id?" component={EditAssetsPage} />
+			<ContentRoute
+				from="/assets"
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 100
+						? AssetsPage
+						: DashboardPage
+				}
+			/>
+			<ContentRoute
+				from="/view-asset/:id?"
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 100
+						? ViewAssetsPage
+						: DashboardPage
+				}
+			/>
+			<ContentRoute
+				from="/edit-asset/:id?"
+				component={
+					loggedUser?.role.rango === 0 ||
+					loggedUser?.role.rango === 100
+						? EditAssetsPage
+						: DashboardPage
+				}
+			/>
 
 			<Redirect to="/error" />
 		</Switch>

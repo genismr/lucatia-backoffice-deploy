@@ -61,7 +61,7 @@ const MenuProps = {
 	getContentAnchorEl: () => null,
 };
 
-function getEmptyUser() {
+function getEmptyPatient() {
 	return {
 		nombre: "",
 		apellidos: null,
@@ -108,11 +108,8 @@ function getAppsRelatedToEntities(entities) {
 	return data;
 }
 
-export default function EditUsersPage() {
-	const [user, setUser] = useState(getEmptyUser());
-
-	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-	const [openDatePicker, setOpenDatePicker] = useState(false);
+export default function EditPatientsPage() {
+	const [patient, setPatient] = useState(getEmptyPatient());
 
 	const [newPassword, setNewPassword] = useState({
 		password: null,
@@ -134,20 +131,14 @@ export default function EditUsersPage() {
 	const [initialAssignedApps, setInitialAssignedApps] = useState(null);
 
 	const [success, setSuccess] = useState(false);
-	const myProfile = window.location.href.toString().includes("my-area");
 
-	const userId = useParams().id;
+	const patientId = useParams().id;
 	const history = useHistory();
 
 	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
 		shallowEqual
 	);
-
-	const loggedUserAuthorized =
-		loggedUser.role.rango === 0 || loggedUser.role.rango === 10;
-
-	const showPatients = window.location.href.toString().includes("patient");
 
 	const {
 		isLoading: isLoadingData,
@@ -160,16 +151,14 @@ export default function EditUsersPage() {
 		for (let i = 0; i < roles.length; ++i) {
 			if (
 				loggedUser.role.rango == 0 ||
-				roles[i].rango > loggedUser.role.rango ||
-				(myProfile && roles[i].rango === loggedUser.role.rango)
+				roles[i].rango > loggedUser.role.rango
 			) {
-				if (roles[i].rango !== 30) {
-					let elem = {};
-					elem.id = roles[i].id;
-					elem.descripcion = roles[i].descripcion;
+				let elem = {};
+				elem.id = roles[i].id;
+				elem.descripcion = roles[i].descripcion;
+				elem.rango = roles[i].rango;
 
-					data = data.concat(elem);
-				}
+				data = data.concat(elem);
 			}
 		}
 
@@ -177,14 +166,14 @@ export default function EditUsersPage() {
 	}
 
 	function handleOwnedEntitiesAssignment(assignedUserId) {
-		let newAssignedEntities = user.owned_entities;
+		let newAssignedEntities = patient.owned_entities;
 		if (initialAssignedEntities != null) {
-			newAssignedEntities = user.owned_entities.filter(
+			newAssignedEntities = patient.owned_entities.filter(
 				(e) => !initialAssignedEntities.includes(e)
 			);
 		}
 
-		if (!userId || newAssignedEntities.length) {
+		if (!patientId || newAssignedEntities.length) {
 			assignOwnerEntity(
 				assignedUserId,
 				newAssignedEntities,
@@ -197,7 +186,7 @@ export default function EditUsersPage() {
 				})
 				.catch((error) => {
 					setSuccess(false);
-					if (!userId) deleteUser(assignedUserId);
+					if (!patientId) deleteUser(assignedUserId);
 					alertError({
 						error: error,
 						customMessage: "Could not save user.",
@@ -208,7 +197,7 @@ export default function EditUsersPage() {
 		let unassignedEntities = null;
 		if (initialAssignedEntities != null)
 			unassignedEntities = initialAssignedEntities.filter(
-				(e) => !user.owned_entities.includes(e)
+				(e) => !patient.owned_entities.includes(e)
 			);
 
 		if (unassignedEntities != null) {
@@ -225,14 +214,14 @@ export default function EditUsersPage() {
 	}
 
 	function handleManagedEntitiesAssignment(assignedUserId) {
-		let newAssignedEntities = user.managed_entities;
+		let newAssignedEntities = patient.managed_entities;
 		if (initialManagedEntities != null) {
-			newAssignedEntities = user.managed_entities.filter(
+			newAssignedEntities = patient.managed_entities.filter(
 				(e) => !initialManagedEntities.includes(e)
 			);
 		}
 
-		if (!userId || newAssignedEntities.length) {
+		if (!patientId || newAssignedEntities.length) {
 			assignManagedEntity(
 				assignedUserId,
 				newAssignedEntities,
@@ -245,7 +234,7 @@ export default function EditUsersPage() {
 				})
 				.catch((error) => {
 					setSuccess(false);
-					if (!userId) deleteUser(assignedUserId);
+					if (!patientId) deleteUser(assignedUserId);
 					alertError({
 						error: error,
 						customMessage: "Could not save user.",
@@ -256,7 +245,7 @@ export default function EditUsersPage() {
 		let unassignedEntities = null;
 		if (initialManagedEntities != null)
 			unassignedEntities = initialManagedEntities.filter(
-				(e) => !user.managed_entities.includes(e)
+				(e) => !patient.managed_entities.includes(e)
 			);
 
 		if (unassignedEntities != null) {
@@ -275,19 +264,23 @@ export default function EditUsersPage() {
 	function handleAppAssignment(assignedUserId) {
 		let permittedApps = getPermittedApps();
 
-		for (let i = 0; user.apps != undefined && i < user.apps.length; ++i) {
-			if (!permittedApps.find((x) => x.id == user.apps[i]))
-				user.apps.splice(i, 1);
+		for (
+			let i = 0;
+			patient.apps != undefined && i < patient.apps.length;
+			++i
+		) {
+			if (!permittedApps.find((x) => x.id == patient.apps[i]))
+				patient.apps.splice(i, 1);
 		}
 
-		let newAssignedApps = user.apps;
+		let newAssignedApps = patient.apps;
 		if (initialAssignedApps != null) {
-			newAssignedApps = user.apps.filter(
+			newAssignedApps = patient.apps.filter(
 				(e) => !initialAssignedApps.includes(e)
 			);
 		}
 
-		if (!userId || newAssignedApps.length) {
+		if (!patientId || newAssignedApps.length) {
 			assignUserApp(
 				assignedUserId,
 				newAssignedApps,
@@ -300,7 +293,7 @@ export default function EditUsersPage() {
 				})
 				.catch((error) => {
 					setSuccess(false);
-					if (!userId) deleteUser(assignedUserId);
+					if (!patientId) deleteUser(assignedUserId);
 					alertError({
 						error: error,
 						customMessage: "Could not save user.",
@@ -311,7 +304,7 @@ export default function EditUsersPage() {
 		let unassignedApps = null;
 		if (initialAssignedApps != null)
 			unassignedApps = initialAssignedApps.filter(
-				(e) => !user.apps.includes(e)
+				(e) => !patient.apps.includes(e)
 			);
 
 		if (unassignedApps != null) {
@@ -327,10 +320,10 @@ export default function EditUsersPage() {
 		}
 	}
 
-	function saveUserMetadata(metadataUserId) {
-		let saveNewMetadata = user.app_metadata;
+	function savePatientMetadata(metadataUserId) {
+		let saveNewMetadata = patient.app_metadata;
 		if (initialAppMetadata != null) {
-			saveNewMetadata = user.app_metadata.filter(
+			saveNewMetadata = patient.app_metadata.filter(
 				(e) =>
 					!initialAppMetadata.find(
 						(y) => y.app_metadata_id == e.app_metadata_id
@@ -358,7 +351,7 @@ export default function EditUsersPage() {
 				});
 		}
 
-		let saveMetadata = user.app_metadata.filter(
+		let saveMetadata = patient.app_metadata.filter(
 			(e) =>
 				!saveNewMetadata.find(
 					(y) => y.app_metadata_id == e.app_metadata_id
@@ -384,12 +377,8 @@ export default function EditUsersPage() {
 			});
 	}
 
-	function saveUser() {
-		if (
-			checkIsEmpty(user.nombre) ||
-			checkIsEmpty(user.email) ||
-			checkIsEmpty(user.user_rol_id)
-		) {
+	function savePatient() {
+		if (checkIsEmpty(patient.nombre) || checkIsEmpty(patient.email)) {
 			alertError({
 				error: null,
 				customMessage: "Some required fields are missing",
@@ -397,8 +386,8 @@ export default function EditUsersPage() {
 			return;
 		}
 		if (
-			user.fecha_nacimiento != null &&
-			isNaN(Date.parse(user.fecha_nacimiento))
+			patient.fecha_nacimiento != null &&
+			isNaN(Date.parse(patient.fecha_nacimiento))
 		) {
 			alertError({
 				error: null,
@@ -407,8 +396,8 @@ export default function EditUsersPage() {
 			return;
 		}
 
-		let saveUser = user;
-		if (!userId) {
+		let savePatient = patient;
+		if (!patientId) {
 			if (!newPassword.password || !newPassword.repeatPassword) {
 				alertError({
 					error: null,
@@ -423,19 +412,20 @@ export default function EditUsersPage() {
 				});
 				return;
 			}
-			saveUser = { ...saveUser, password: newPassword.password };
+			savePatient = { ...savePatient, password: newPassword.password };
 		}
 
-		if (!userId) {
-			postUser(saveUser, loggedUser.accessToken)
+		if (!patientId) {
+			savePatient.user_rol_id = roles.find((x) => x.rango === 30).id;
+			postUser(savePatient, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 201) {
-						if (user.app_metadata.length) {
-							saveUserMetadata(res.data.id);
+						if (patient.app_metadata.length) {
+							savePatientMetadata(res.data.id);
 						}
 						if (
-							user.owned_entities.length ||
-							user.managed_entities.length
+							patient.owned_entities.length ||
+							patient.managed_entities.length
 						) {
 							handleOwnedEntitiesAssignment(res.data.id);
 							handleManagedEntitiesAssignment(res.data.id);
@@ -462,15 +452,15 @@ export default function EditUsersPage() {
 					});
 				});
 		} else {
-			updateUser(userId, saveUser, loggedUser.accessToken)
+			updateUser(patientId, savePatient, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 204) {
-						if (user.app_metadata.length) {
-							saveUserMetadata(userId);
+						if (patient.app_metadata.length) {
+							savePatientMetadata(patientId);
 						}
-						handleOwnedEntitiesAssignment(userId);
-						handleManagedEntitiesAssignment(userId);
-						handleAppAssignment(userId);
+						handleOwnedEntitiesAssignment(patientId);
+						handleManagedEntitiesAssignment(patientId);
+						handleAppAssignment(patientId);
 						if ({ ...success }) {
 							alertSuccess({
 								title: "Saved!",
@@ -503,41 +493,39 @@ export default function EditUsersPage() {
 				});
 				history.push("/users");
 			});
-		if (loggedUserAuthorized) {
-			getEntities(loggedUser.accessToken)
-				.then((res) => {
-					if (res.status === 200) {
-						setEntities(res.data);
-						setApps(getAppsRelatedToEntities(res.data));
-					}
-				})
-				.catch((error) => {
-					alertError({
-						error: error,
-						customMessage: "Could not get entities.",
-					});
+		getEntities(loggedUser.accessToken)
+			.then((res) => {
+				if (res.status === 200) {
+					setEntities(res.data);
+					setApps(getAppsRelatedToEntities(res.data));
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get entities.",
 				});
-			getAppMetadata(
-				"404eb47a-4b1c-408a-fcb7-08db4575ec5a",
-				loggedUser.accessToken
-			)
-				.then((res) => {
-					if (res.status === 200) {
-						setAppMetadata(res.data);
-					}
-				})
-				.catch((error) => {
-					alertError({
-						error: error,
-						customMessage: "Could not get app metadata.",
-					});
+			});
+		getAppMetadata(
+			"404eb47a-4b1c-408a-fcb7-08db4575ec5a",
+			loggedUser.accessToken
+		)
+			.then((res) => {
+				if (res.status === 200) {
+					setAppMetadata(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get app metadata.",
 				});
-		}
-		if (!userId) {
+			});
+		if (!patientId) {
 			disableLoadingData();
 			return;
 		}
-		getUserById(userId, loggedUser.accessToken)
+		getUserById(patientId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
 					let roleId = res.data.role.id;
@@ -564,7 +552,7 @@ export default function EditUsersPage() {
 					setInitialAssignedEntities(user.owned_entities);
 					setInitialManagedEntities(user.managed_entities);
 					setInitialAssignedApps([...user.apps]);
-					setUser(user);
+					setPatient(user);
 					setInitialAppMetadata(user.app_metadata);
 
 					disableLoadingData();
@@ -577,13 +565,13 @@ export default function EditUsersPage() {
 				});
 				history.push("/users");
 			});
-	}, [userId, disableLoadingData, history]);
+	}, [patientId, disableLoadingData, history]);
 
 	function getPermittedApps() {
 		if (apps != null) {
 			let userEntities = [
-				...user.owned_entities,
-				...user.managed_entities,
+				...patient.owned_entities,
+				...patient.managed_entities,
 			];
 			let result = apps.filter((x) => userEntities.includes(x.entity_id));
 
@@ -600,11 +588,11 @@ export default function EditUsersPage() {
 			event.target.value.trim() == ""
 		)
 			text = null;
-		setUser({ ...user, [element]: text });
+		setPatient({ ...patient, [element]: text });
 	};
 
 	const handleChangeMetadata = (element, app_metadata_id) => (event) => {
-		let metadataUser = [...user.app_metadata];
+		let metadataUser = [...patient.app_metadata];
 		if (
 			metadataUser.filter((u) => u.app_metadata_id === app_metadata_id)
 				.length === 0
@@ -640,13 +628,13 @@ export default function EditUsersPage() {
 				element
 			] = event.target.value;
 		}
-		setUser({ ...user, ["app_metadata"]: metadataUser });
+		setPatient({ ...patient, ["app_metadata"]: metadataUser });
 	};
 
 	function getMetadataValue(attribute, app_metadata_id) {
 		let value = "";
-		if (user.app_metadata.length) {
-			let found = user.app_metadata.find(
+		if (patient.app_metadata.length) {
+			let found = patient.app_metadata.find(
 				(u) => u.app_metadata_id == app_metadata_id
 			);
 			if (attribute === "metadata_valor_select_id") {
@@ -657,108 +645,6 @@ export default function EditUsersPage() {
 		}
 
 		return value;
-	}
-
-	function renderEntitiesAndAppsFields() {
-		return (
-			<>
-				<div className="row">
-					<div className="col-6 gx-3">
-						<Autocomplete
-							id="autocomplete-owned-entities"
-							multiple
-							disableCloseOnSelect
-							options={entities}
-							getOptionLabel={(option) => option.nombre}
-							value={entities?.filter((x) =>
-								user.owned_entities.includes(x.id)
-							)}
-							filterSelectedOptions
-							onChange={(event, selected) => {
-								setUser({
-									...user,
-									owned_entities: selected.map((x) => x.id),
-								});
-							}}
-							renderInput={(params) => (
-								<TextField
-									{...params}
-									label="Entidades propietarias"
-									placeholder="Entidades"
-									InputLabelProps={{
-										shrink: true,
-									}}
-									margin="normal"
-									variant="outlined"
-								/>
-							)}
-						/>
-					</div>
-					<div className="col-6 gx-3">
-						<Autocomplete
-							id="autocomplete-managed-entities"
-							multiple
-							disableCloseOnSelect
-							options={entities}
-							getOptionLabel={(option) => option.nombre}
-							value={entities?.filter((x) =>
-								user.managed_entities.includes(x.id)
-							)}
-							filterSelectedOptions
-							onChange={(event, selected) => {
-								setUser({
-									...user,
-									managed_entities: selected.map((x) => x.id),
-								});
-							}}
-							renderInput={(params) => (
-								<TextField
-									{...params}
-									label="Entidades gestionadas"
-									placeholder="Entidades"
-									InputLabelProps={{
-										shrink: true,
-									}}
-									margin="normal"
-									variant="outlined"
-								/>
-							)}
-						/>
-					</div>
-				</div>
-				<Autocomplete
-					id="autocomplete-assigned-apps"
-					multiple
-					disableCloseOnSelect
-					options={getPermittedApps()}
-					getOptionLabel={(option) => option.nombre}
-					value={
-						getPermittedApps()?.filter((x) =>
-							user.apps.includes(x.id)
-						) || ""
-					}
-					filterSelectedOptions
-					onChange={(event, selected) => {
-						setUser({
-							...user,
-							apps: selected.map((x) => x.id),
-						});
-					}}
-					renderInput={(params) => (
-						<TextField
-							{...params}
-							label="Apps asignadas"
-							placeholder="Apps"
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-						/>
-					)}
-				/>
-			</>
-		);
 	}
 
 	function renderMetadataFields() {
@@ -850,17 +736,16 @@ export default function EditUsersPage() {
 		return (
 			<>
 				<Card>
-					<CardHeader
-						title={myProfile ? "Edit profile" : "Edit user"}
-					></CardHeader>
+					<CardHeader title="Edit patient"></CardHeader>
 					<CardBody>
+						{" "}
 						<form autoComplete="off">
 							<div className="row">
 								<div className="col-4 gx-3">
 									<TextField
 										id={`nombre`}
 										label="Nombre"
-										value={user?.nombre || ""}
+										value={patient?.nombre || ""}
 										onChange={handleChange("nombre")}
 										InputLabelProps={{
 											shrink: true,
@@ -874,7 +759,7 @@ export default function EditUsersPage() {
 									<TextField
 										id={`apellidos`}
 										label="Apellidos"
-										value={user?.apellidos || ""}
+										value={patient?.apellidos || ""}
 										onChange={handleChange("apellidos")}
 										InputLabelProps={{
 											shrink: true,
@@ -887,7 +772,7 @@ export default function EditUsersPage() {
 									<TextField
 										id={`email`}
 										label="Email"
-										value={user?.email || ""}
+										value={patient?.email || ""}
 										onChange={handleChange("email")}
 										InputLabelProps={{
 											shrink: true,
@@ -895,7 +780,7 @@ export default function EditUsersPage() {
 										margin="normal"
 										variant="outlined"
 										required
-										disabled={userId}
+										disabled={patientId}
 									/>
 								</div>
 							</div>
@@ -904,7 +789,7 @@ export default function EditUsersPage() {
 									<TextField
 										id={`codigo`}
 										label="Código"
-										value={user?.codigo_hexa || ""}
+										value={patient?.codigo_hexa || ""}
 										onChange={handleChange("nombre")}
 										InputLabelProps={{
 											shrink: true,
@@ -918,7 +803,7 @@ export default function EditUsersPage() {
 									<TextField
 										id={`telefono`}
 										label="Teléfono"
-										value={user?.telefono || ""}
+										value={patient?.telefono || ""}
 										onChange={handleChange("telefono")}
 										InputLabelProps={{
 											shrink: true,
@@ -931,7 +816,7 @@ export default function EditUsersPage() {
 									<TextField
 										id={`fecha`}
 										label="Fecha de nacimiento"
-										value={user?.fecha_nacimiento}
+										value={patient?.fecha_nacimiento}
 										onChange={handleChange(
 											"fecha_nacimiento"
 										)}
@@ -945,7 +830,7 @@ export default function EditUsersPage() {
 								</div>
 							</div>
 						</form>
-						{!userId && (
+						{!patientId && (
 							<>
 								<br />
 								<div className="row">
@@ -1000,38 +885,11 @@ export default function EditUsersPage() {
 							</>
 						)}
 						<div className="row">
-							<div className="col-4 gx-3">
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Role *
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={user.user_rol_id || ""}
-										onChange={handleChange("user_rol_id")}
-										MenuProps={MenuProps}
-										disabled={myProfile}
-									>
-										{roles?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
-											>
-												{option.descripcion}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>
-										Select a role
-									</FormHelperText>
-								</FormControl>
-							</div>
-							<div className="col-4 gx-3">
+							<div className="col-6 gx-3">
 								<TextField
 									id={`direccion`}
 									label="Dirección"
-									value={user.direccion}
+									value={patient.direccion}
 									onChange={handleChange("direccion")}
 									InputLabelProps={{
 										shrink: true,
@@ -1040,11 +898,11 @@ export default function EditUsersPage() {
 									variant="outlined"
 								/>
 							</div>
-							<div className="col-4 gx-3">
+							<div className="col-6 gx-3">
 								<TextField
 									id={`poblacion`}
 									label="Población"
-									value={user.poblacion}
+									value={patient.poblacion}
 									onChange={handleChange("poblacion")}
 									InputLabelProps={{
 										shrink: true,
@@ -1059,7 +917,7 @@ export default function EditUsersPage() {
 								<TextField
 									id={`cp`}
 									label="Código postal"
-									value={user.cp}
+									value={patient.cp}
 									onChange={handleChange("cp")}
 									InputLabelProps={{
 										shrink: true,
@@ -1072,7 +930,7 @@ export default function EditUsersPage() {
 								<TextField
 									id={`provincia`}
 									label="Província"
-									value={user.provincia}
+									value={patient.provincia}
 									onChange={handleChange("provincia")}
 									InputLabelProps={{
 										shrink: true,
@@ -1085,7 +943,7 @@ export default function EditUsersPage() {
 								<TextField
 									id={`pais`}
 									label="País"
-									value={user.pais}
+									value={patient.pais}
 									onChange={handleChange("pais")}
 									InputLabelProps={{
 										shrink: true,
@@ -1096,24 +954,89 @@ export default function EditUsersPage() {
 							</div>
 						</div>
 						<br />
-						{loggedUserAuthorized && renderEntitiesAndAppsFields()}
+						<div className="row">
+							<div className="col-6 gx-3">
+								<Autocomplete
+									id="autocomplete-owned-entities"
+									multiple
+									disableCloseOnSelect
+									options={entities}
+									getOptionLabel={(option) => option.nombre}
+									value={entities?.filter((x) =>
+										patient.owned_entities.includes(x.id)
+									)}
+									filterSelectedOptions
+									onChange={(event, selected) => {
+										setPatient({
+											...patient,
+											owned_entities: selected.map(
+												(x) => x.id
+											),
+										});
+									}}
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Entidades propietarias"
+											placeholder="Entidades"
+											InputLabelProps={{
+												shrink: true,
+											}}
+											margin="normal"
+											variant="outlined"
+										/>
+									)}
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<Autocomplete
+									id="autocomplete-assigned-apps"
+									multiple
+									disableCloseOnSelect
+									options={getPermittedApps()}
+									getOptionLabel={(option) => option.nombre}
+									value={
+										getPermittedApps()?.filter((x) =>
+											patient.apps.includes(x.id)
+										) || ""
+									}
+									filterSelectedOptions
+									onChange={(event, selected) => {
+										setPatient({
+											...patient,
+											apps: selected.map((x) => x.id),
+										});
+									}}
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Apps asignadas"
+											placeholder="Apps"
+											InputLabelProps={{
+												shrink: true,
+											}}
+											margin="normal"
+											variant="outlined"
+										/>
+									)}
+								/>
+							</div>
+						</div>
 					</CardBody>
 				</Card>
-				{loggedUserAuthorized && (
-					<Card>
-						<CardHeader title="Additional information"></CardHeader>
-						<CardBody>{renderMetadataFields()}</CardBody>
-					</Card>
-				)}
+				<Card>
+					<CardHeader title="Additional information"></CardHeader>
+					<CardBody>{renderMetadataFields()}</CardBody>
+				</Card>
 				<Button
-					onClick={() => history.push("/users")}
+					onClick={() => history.push("/patients")}
 					variant="outlined"
 					style={{ marginRight: "20px" }}
 				>
 					Back
 				</Button>
 				<Button
-					onClick={() => saveUser()}
+					onClick={() => savePatient()}
 					variant="outlined"
 					color="primary"
 					style={{ marginRight: "20px" }}

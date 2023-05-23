@@ -188,7 +188,7 @@ export default function EditExternalEntitiesPage() {
 							<div className="col-4 gx-3">
 								<TextField
 									id={`razonSocial`}
-									label="Razónn social"
+									label="Razón social"
 									value={externalEntity.razon_social}
 									onChange={handleChange("razon_social")}
 									InputLabelProps={{

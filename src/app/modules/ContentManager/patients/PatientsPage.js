@@ -10,7 +10,7 @@ import Table, {
 	buttonsStyle,
 } from "../../../components/tables/table";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { getUsers, setUserActive, setUserInactive } from "../../../../api/user";
+import { getUsers, getUsersByRank, setUserActive, setUserInactive } from "../../../../api/user";
 import { getRoles } from "../../../../api/role";
 import {
 	Button,
@@ -28,28 +28,16 @@ import EntitiesIcon from "@material-ui/icons/Group";
 import { alertError, alertSuccess } from "../../../../utils/logger";
 import { useHistory } from "react-router-dom";
 import { shallowEqual, useSelector } from "react-redux";
-import FiltersCard from "../../../components/filters/Filter";
 import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-	PaperProps: {
-		style: {
-			maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-			width: 250,
-		},
-	},
-	getContentAnchorEl: () => null,
-};
 
 function getData(users, loggedUser) {
 	let data = [];
 	for (let i = 0; i < users.length; ++i) {
-		if (users[i].id !== loggedUser.userID && users[i].role.rango !== 30) {
+		if (users[i].role.rango === 30 && users[i].id !== loggedUser.userID) {
 			const elem = {};
 
 			let apellidos = users[i].apellidos;
@@ -72,38 +60,12 @@ function getData(users, loggedUser) {
 	return data;
 }
 
-function getPermittedRoles(roles, loggedUser) {
-	let data = [];
-	for (let i = 0; i < roles.length; ++i) {
-		if (
-			(loggedUser.role.rango === 0 ||
-			roles[i].rango > loggedUser.role.rango)  && roles[i].rango !== 30
-		) {
-			let elem = {};
-			elem.id = roles[i].id;
-			elem.descripcion = roles[i].descripcion;
-
-			data = data.concat(elem);
-		}
-	}
-
-	return data;
-}
-
-const initialFilters = {
-	roles: [],
-};
-
-export default function UsersPage() {
+export default function PatientsPage() {
 	const [data, setData] = useState([]);
 	const [user, setSelectedUser] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 	const [refresh, setRefresh] = useState(false);
 	const [roles, setRoles] = useState(null);
-
-	const [filteredData, setFilteredData] = useState([]);
-	const [collapsed, setCollapsed] = useState(true);
-	const [filterOptions, setFilterOptions] = useState(initialFilters);
 
 	const history = useHistory();
 	const loggedUser = useSelector(
@@ -132,7 +94,7 @@ export default function UsersPage() {
 					<Button
 						style={buttonsStyle}
 						size="small"
-						onClick={() => history.push("/view-user/" + cell)}
+						onClick={() => history.push("/view-patient/" + cell)}
 					>
 						<ViewIcon />
 					</Button>
@@ -145,7 +107,7 @@ export default function UsersPage() {
 								style={buttonsStyle}
 								size="small"
 								onClick={() =>
-									history.push("/edit-user/" + cell)
+									history.push("/edit-patient/" + cell)
 								}
 							>
 								<EditIcon />
@@ -192,24 +154,10 @@ export default function UsersPage() {
 	];
 
 	useEffect(() => {
-		getRoles()
-			.then((res) => {
-				if (res.status === 200) {
-					setRoles(getPermittedRoles(res.data, loggedUser));
-					setRefresh(false);
-				}
-			})
-			.catch((error) => {
-				alertError({
-					error: error,
-					customMessage: "Could not get roles.",
-				});
-			});
-		getUsers(loggedUser.accessToken)
+		getUsersByRank(loggedUser.accessToken, 30)
 			.then((res) => {
 				if (res.status === 200) {
 					setData(res.data);
-					setFilteredData(res.data);
 					setRefresh(false);
 				}
 			})
@@ -221,89 +169,29 @@ export default function UsersPage() {
 			});
 	}, [refresh]);
 
-	const handleSearch = async () => {
-		if (!data.length) return;
-		setFilteredData(
-			data.filter((item) => {
-				let filter = true;
-				if (filterOptions.roles && filterOptions.roles.length)
-					filter =
-						filter && filterOptions.roles.includes(item.role.id);
-				if (filter) return item;
-				return false;
-			})
-		);
-	};
-
-	const handleClearFilters = () => {
-		setFilterOptions(initialFilters);
-		setRefresh(true);
-	};
-
-	const handleChange = (element) => (event) => {
-		setFilterOptions({ ...filterOptions, [element]: event.target.value });
-		console.log(filterOptions);
-	};
-
-	const renderFiltersContent = () => {
-		return (
-			<>
-				<FormControl style={{ width: "100%" }}>
-					<InputLabel id="demo-simple-select-standard-label">
-						Role
-					</InputLabel>
-					<Select
-						labelId="demo-simple-select-standard-label"
-						id="demo-simple-select-standard"
-						value={filterOptions.roles || []}
-						multiple
-						onChange={handleChange("roles")}
-						MenuProps={MenuProps}
-					>
-						{roles?.map((role) => (
-							<MenuItem key={role.id} value={role.id}>
-								{role.descripcion}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-				<br />
-				<br />
-			</>
-		);
-	};
-
 	return (
 		<>
 			<Card>
-				<CardHeader title="Users list">
+				<CardHeader title="Patients list">
 					<CardHeaderToolbar>
 						<button
 							type="button"
 							className="btn btn-primary"
-							onClick={() => history.push("/edit-user")}
+							onClick={() => history.push("/edit-patient")}
 						>
 							Add new
 						</button>
 					</CardHeaderToolbar>
 				</CardHeader>
 				<CardBody>
-					<FiltersCard
-						filtersContent={renderFiltersContent}
-						collapsed={collapsed}
-						setCollapsed={setCollapsed}
-						handleClearFilters={handleClearFilters}
-						handleSearch={handleSearch}
-					/>
-
 					<Table
-						data={getData(filteredData, loggedUser)}
+						data={getData(data, loggedUser)}
 						columns={columns}
 					/>
 					<ConfirmDialog
 						title={`Are you sure you want to ${
 							user?.activo ? "disable" : "enable"
-						} this user?`}
+						} this patient?`}
 						open={openConfirmDialog === 1}
 						setOpen={setOpenConfirmDialog}
 						onConfirm={() => {
@@ -336,7 +224,7 @@ export default function UsersPage() {
 												user?.activo
 													? "disable"
 													: "enable"
-											} user.`,
+											} patient.`,
 										});
 									});
 							} else {
@@ -368,7 +256,7 @@ export default function UsersPage() {
 												user?.activo
 													? "disable"
 													: "enable"
-											} user.`,
+											} patient.`,
 										});
 									});
 							}

@@ -5,6 +5,10 @@ export const getUsers = (accessToken) => {
   return authClient(accessToken).get(`${API}/user`)
 }
 
+export const getUsersByRank = (accessToken, rank) => {
+  return authClient(accessToken).get(`${API}/user?rank=${rank}`)
+}
+
 // Get user by id
 export const getUserById = (id, accessToken) => {
   return authClient(accessToken).get(`${API}/user/${id}`)

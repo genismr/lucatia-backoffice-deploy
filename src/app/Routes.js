@@ -21,7 +21,7 @@ export function Routes() {
 	);
   
 	// Checking wether we have credentials in cookies before going to login
-	useEffect(() => {
+	/*useEffect(() => {
 	  function fetchMyCredentials() {
 		setLoading(true)
 		setTimeout(async () => {
@@ -43,7 +43,7 @@ export function Routes() {
 		}, 1000)
 	  }
 	  fetchMyCredentials()
-	}, [dispatch])
+	}, [dispatch])*/
   
 	// Refresh interval every 15 minutes if logged
 	useEffect(() => {
@@ -73,7 +73,7 @@ export function Routes() {
 				<Redirect from="/auth" to="/" />
 			)}
 
-			<Route path="/error" component={ErrorsPage} />
+			<Redirect from="/error" to="/" />
 			<Route path="/logout" component={Logout} />
 
 			{!isLogged ? (

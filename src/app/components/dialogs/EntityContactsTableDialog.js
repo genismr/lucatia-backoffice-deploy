@@ -65,6 +65,13 @@ function getEmptyUser() {
 		email: "",
 		password: "",
 		user_rol_id: "",
+		fecha_nacimiento: null,
+		telefono: null,
+		direccion: null,
+		cp: null,
+		poblacion: null,
+		provincia: null,
+		pais: null,
 		activo: true,
 	};
 }
@@ -77,11 +84,10 @@ function getEmptyPassword() {
 }
 
 const EntityContactsTableDialog = (props) => {
-	const { open, setOpen, data, onSelectRow, onUserCreated } = props;
+	const { open, setOpen, data, roles, onSelectRow, onUserCreated } = props;
 	const [refresh, setRefresh] = useState(false);
 
 	const [renderInputFields, setRenderInputFields] = useState(null);
-	const [roles, setRoles] = useState(null);
 
 	const [user, setUser] = useState(getEmptyUser());
 
@@ -91,40 +97,6 @@ const EntityContactsTableDialog = (props) => {
 		(store) => store.authentication?.user,
 		shallowEqual
 	);
-
-	function getPermittedRoles(roles) {
-		let data = [];
-		for (let i = 0; i < roles.length; ++i) {
-			if (
-				loggedUser.role.rango === 0 ||
-				roles[i].rango > loggedUser.role.rango
-			) {
-				let elem = {};
-				elem.id = roles[i].id;
-				elem.descripcion = roles[i].descripcion;
-
-				data = data.concat(elem);
-			}
-		}
-
-		return data;
-	}
-
-	useEffect(() => {
-		getRoles()
-			.then((res) => {
-				if (res.status === 200) {
-					setRoles(getPermittedRoles(res.data));
-				}
-			})
-			.catch((error) => {
-				alertError({
-					error: error,
-					customMessage: "Could not get roles.",
-				});
-				setOpen(false);
-			});
-	});
 
 	function roleFormatter(cell) {
 		const elem = data.find((item) => item.id === cell);
@@ -247,27 +219,157 @@ const EntityContactsTableDialog = (props) => {
 	function renderUserFields() {
 		return (
 			<>
+				<form autoComplete="off">
+					<div className="row">
+						<div className="col-4">
+							<TextField
+								id={"nombre"}
+								label={"Nombre"}
+								value={user.nombre}
+								onChange={handleChange("nombre")}
+								InputLabelProps={{
+									shrink: true,
+								}}
+								margin="normal"
+								variant="outlined"
+								required
+							/>
+						</div>
+						<div className="col-4">
+							<TextField
+								id={"apellidos"}
+								label={"Apellidos"}
+								value={user.apellidos}
+								onChange={handleChange("apellidos")}
+								InputLabelProps={{
+									shrink: true,
+								}}
+								margin="normal"
+								variant="outlined"
+							/>
+						</div>
+						<div className="col-4">
+							<TextField
+								id={"email"}
+								label={"Email"}
+								value={user.email}
+								onChange={handleChange("email")}
+								InputLabelProps={{
+									shrink: true,
+								}}
+								margin="normal"
+								variant="outlined"
+								required
+							/>
+						</div>
+					</div>
+					<div className="row">
+						<div className="col-4">
+							<TextField
+								id={`telefono`}
+								label="Teléfono"
+								value={user?.telefono || ""}
+								onChange={handleChange("telefono")}
+								InputLabelProps={{
+									shrink: true,
+								}}
+								margin="normal"
+								variant="outlined"
+							/>
+						</div>
+						<div className="col-4">
+							<TextField
+								id={`fecha`}
+								label="Fecha de nacimiento"
+								value={user?.fecha_nacimiento}
+								onChange={handleChange("fecha_nacimiento")}
+								InputLabelProps={{
+									shrink: true,
+								}}
+								type="date"
+								margin="normal"
+								variant="outlined"
+							/>
+						</div>
+						<div className="col-4">
+							<FormControl style={{ width: "100%" }}>
+								<InputLabel id="demo-simple-select-standard-label">
+									Role *
+								</InputLabel>
+								<Select
+									labelId="demo-simple-select-standard-label"
+									id="demo-simple-select-standard"
+									value={user.user_rol_id || ""}
+									onChange={handleChange("user_rol_id")}
+									MenuProps={MenuProps}
+								>
+									{roles?.map((option) => (
+										<MenuItem
+											key={option.id}
+											value={option.id}
+										>
+											{option.descripcion}
+										</MenuItem>
+									))}
+								</Select>
+								<FormHelperText>Select a role</FormHelperText>
+							</FormControl>
+						</div>
+					</div>
+				</form>
+				<form autoComplete="off">
+					<div className="row">
+						<div className="col-6">
+							<TextField
+								id={"password"}
+								label={"Password"}
+								value={newPassword.password}
+								onChange={(event) => {
+									if (event.target.value !== " ")
+										setNewPassword({
+											...newPassword,
+											password: event.target.value,
+										});
+								}}
+								InputLabelProps={{
+									shrink: true,
+								}}
+								type="password"
+								margin="normal"
+								variant="outlined"
+								required
+							/>
+						</div>
+						<div className="col-6">
+							<TextField
+								id={"repeatPassword"}
+								label={"Repeat Password"}
+								value={newPassword.repeatPassword}
+								onChange={(event) => {
+									if (event.target.value !== " ")
+										setNewPassword({
+											...newPassword,
+											repeatPassword: event.target.value,
+										});
+								}}
+								InputLabelProps={{
+									shrink: true,
+								}}
+								type="password"
+								margin="normal"
+								variant="outlined"
+								required
+							/>
+						</div>
+					</div>
+				</form>
 				<div className="row">
-					<div className="col-4">
+					<div className="col-6">
 						<TextField
-							id={"nombre"}
-							label={"Nombre"}
-							value={user.nombre}
-							onChange={handleChange("nombre")}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							margin="normal"
-							variant="outlined"
-							required
-						/>
-					</div>
-					<div className="col-4">
-						<TextField
-							id={"apellidos"}
-							label={"Apellidos"}
-							value={user.apellidos}
-							onChange={handleChange("apellidos")}
+							id={`direccion`}
+							label="Dirección"
+							value={user.direccion}
+							onChange={handleChange("direccion")}
 							InputLabelProps={{
 								shrink: true,
 							}}
@@ -275,84 +377,59 @@ const EntityContactsTableDialog = (props) => {
 							variant="outlined"
 						/>
 					</div>
-					<div className="col-4">
+					<div className="col-6">
 						<TextField
-							id={"email"}
-							label={"Email"}
-							value={user.email}
-							onChange={handleChange("email")}
+							id={`poblacion`}
+							label="Población"
+							value={user.poblacion}
+							onChange={handleChange("poblacion")}
 							InputLabelProps={{
 								shrink: true,
 							}}
 							margin="normal"
 							variant="outlined"
-							required
 						/>
 					</div>
 				</div>
 				<div className="row">
-					<div className="col-4">
+					<div className="col-4 gx-3">
 						<TextField
-							id={"password"}
-							label={"Password"}
-							value={newPassword.password}
-							onChange={(event) => {
-								if (event.target.value !== " ")
-									setNewPassword({
-										...newPassword,
-										password: event.target.value,
-									});
-							}}
+							id={`cp`}
+							label="Código postal"
+							value={user.cp}
+							onChange={handleChange("cp")}
 							InputLabelProps={{
 								shrink: true,
 							}}
-							type="password"
 							margin="normal"
 							variant="outlined"
-							required
 						/>
 					</div>
-					<div className="col-4">
+					<div className="col-4 gx-3">
 						<TextField
-							id={"repeatPassword"}
-							label={"Repeat Password"}
-							value={newPassword.repeatPassword}
-							onChange={(event) => {
-								if (event.target.value !== " ")
-									setNewPassword({
-										...newPassword,
-										repeatPassword: event.target.value,
-									});
-							}}
+							id={`provincia`}
+							label="Província"
+							value={user.provincia}
+							onChange={handleChange("provincia")}
 							InputLabelProps={{
 								shrink: true,
 							}}
-							type="password"
 							margin="normal"
 							variant="outlined"
-							required
 						/>
 					</div>
-					<div className="col-4">
-						<FormControl style={{ width: "100%" }}>
-							<InputLabel id="demo-simple-select-standard-label">
-								Role *
-							</InputLabel>
-							<Select
-								labelId="demo-simple-select-standard-label"
-								id="demo-simple-select-standard"
-								value={user.user_rol_id || ""}
-								onChange={handleChange("user_rol_id")}
-								MenuProps={MenuProps}
-							>
-								{roles?.map((option) => (
-									<MenuItem key={option.id} value={option.id}>
-										{option.descripcion}
-									</MenuItem>
-								))}
-							</Select>
-							<FormHelperText>Select a role</FormHelperText>
-						</FormControl>
+					<div className="col-4 gx-3">
+						<TextField
+							id={`pais`}
+							label="País"
+							value={user.pais}
+							onChange={handleChange("pais")}
+							InputLabelProps={{
+								shrink: true,
+							}}
+							margin="normal"
+							variant="outlined"
+						/>
 					</div>
 				</div>
 				<br />
@@ -414,7 +491,7 @@ const EntityContactsTableDialog = (props) => {
 					</CardBody>
 				</Card>
 			</DialogContent>
-			<DialogActions>				
+			<DialogActions>
 				<Button
 					onClick={() => {
 						setNewPassword(getEmptyPassword());
