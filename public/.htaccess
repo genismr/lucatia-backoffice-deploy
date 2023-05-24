@@ -1,19 +1,9 @@
-# Trying to no-cache only html files
-<FilesMatch "\.(html)$">
-  FileETag None
-  <ifModule mod_headers.c>
-     Header unset ETag
-     Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
-     Header set Pragma "no-cache"
-     Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
-  </ifModule>
-</FilesMatch>
-
+<IfModule mod_rewrite.c>
 RewriteEngine On
-
-RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f [OR]
-RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -d
-RewriteRule ^ - [L]
-
-# Fallback all other routes to index.html
-RewriteRule ^ /index.html
+RewriteBase /subdirectory
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteRule . /index.html [L]
+</IfModule>
