@@ -88,7 +88,7 @@ const pagination = paginationFactory({
 	onSizePerPageChange: function(page, sizePerPage) {},
 });
 
-const rowClasses = (row) => (row.active === false ? "inactive-row" : "");
+const rowClasses = row => (row.activo === false ? "inactive-row" : "");
 
 export default function Table({ data, columns, selectRow, ...tableProps }) {
 	return (

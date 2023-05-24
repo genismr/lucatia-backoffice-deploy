@@ -4,7 +4,7 @@ import {
 	CardBody,
 	CardHeader,
 } from "../../../../_metronic/_partials/controls";
-import { Button } from "@material-ui/core";
+import { Button, Chip } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError } from "../../../../utils/logger";
@@ -73,23 +73,45 @@ export default function ViewAppsPage() {
 						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Entidades propietarias</h5>
-								<p>
-									{app.ownedEntities.length
-										? app.ownedEntities
-												.map((e) => e.nombre)
-												.join(", ")
-										: "---"}
-								</p>
+								{!app.ownedEntities.length && <p>{"---"}</p>}
+								{app.ownedEntities.length > 0 && (
+									<>
+										<div className="row ml-0">
+											{app.ownedEntities.map((data) => {
+												return (
+													<Chip
+														label={data.nombre}
+														className="mr-2 mt-2"
+													/>
+												);
+											})}
+										</div>
+										<br />
+									</>
+								)}
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Entidades delegadas</h5>
-								<p>
-									{app.delegatedEntities.length
-										? app.delegatedEntities
-												.map((e) => e.nombre)
-												.join(", ")
-										: "---"}
-								</p>
+								{!app.delegatedEntities.length && (
+									<p>{"---"}</p>
+								)}
+								{app.delegatedEntities.length > 0 && (
+									<>
+										<div className="row ml-0">
+											{app.delegatedEntities.map(
+												(data) => {
+													return (
+														<Chip
+															label={data.nombre}
+															className="mr-2 mt-2"
+														/>
+													);
+												}
+											)}
+										</div>
+										<br />
+									</>
+								)}
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Estado</h5>

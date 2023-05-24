@@ -4,7 +4,7 @@ import {
 	CardBody,
 	CardHeader,
 } from "../../../../_metronic/_partials/controls";
-import { Button } from "@material-ui/core";
+import { Button, Chip } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import { getEntityById } from "../../../../api/entity";
 import { useSkeleton } from "../../../hooks/useSkeleton";
@@ -106,9 +106,7 @@ export default function ViewEntitiesPage() {
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Contacto propietario</h5>
-								<p>
-									{getUserInfo(entity.contactoPropietario)}
-								</p>
+								<p>{getUserInfo(entity.contactoPropietario)}</p>
 							</div>
 						</div>
 						<div className="row">
@@ -119,9 +117,7 @@ export default function ViewEntitiesPage() {
 							<div className="col-4 gx-3">
 								<h5>Contacto administrativo</h5>
 								<p>
-									{getUserInfo(
-										entity.contactoAdministrativo
-									)}
+									{getUserInfo(entity.contactoAdministrativo)}
 								</p>
 							</div>
 							<div className="col-4 gx-3">
@@ -132,29 +128,57 @@ export default function ViewEntitiesPage() {
 						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Entidad padre</h5>
-								<p>
-									{entity.parentEntity?.nombre || "---"}
-								</p>
+								{!entity.parentEntity?.nombre && <p>{"---"}</p>}
+								{entity.parentEntity?.nombre && (
+									<>
+										<Chip
+											label={entity.parentEntity.nombre}
+											className="mr-2 mt-2"
+										></Chip>
+										<br />
+										<br />
+									</>
+								)}
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Apps en propiedad</h5>
-								<p>
-									{entity.ownedApps.length
-										? entity.ownedApps
-												.map((e) => e.nombre)
-												.join(", ")
-										: "---"}
-								</p>
+								{!entity.ownedApps.length && <p>{"---"}</p>}
+								{entity.ownedApps.length > 0 && (
+									<>
+										<div className="row ml-0">
+											{entity.ownedApps.map((data) => {
+												return (
+													<Chip
+														label={data.nombre}
+														className="mr-2 mt-2"
+													/>
+												);
+											})}
+										</div>
+										<br />
+									</>
+								)}
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Apps con acceso delegado</h5>
-								<p>
-									{entity.delegatedApps.length
-										? entity.delegatedApps
-												.map((e) => e.nombre)
-												.join(", ")
-										: "---"}
-								</p>
+								{!entity.delegatedApps.length && <p>{"---"}</p>}
+								{entity.delegatedApps.length > 0 && (
+									<>
+										<div className="row ml-0">
+											{entity.delegatedApps.map(
+												(data) => {
+													return (
+														<Chip
+															label={data.nombre}
+															className="mr-2 mt-2"
+														/>
+													);
+												}
+											)}
+										</div>
+										<br />
+									</>
+								)}
 							</div>
 						</div>
 						<h5>Estado</h5>

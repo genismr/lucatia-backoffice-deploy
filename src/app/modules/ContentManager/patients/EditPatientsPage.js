@@ -436,7 +436,7 @@ export default function EditPatientsPage() {
 								title: "Saved!",
 								customMessage: "User successfully created.",
 							});
-							history.push("/users");
+							history.push("/patients");
 						}
 					}
 				})
@@ -466,7 +466,7 @@ export default function EditPatientsPage() {
 								title: "Saved!",
 								customMessage: "User successfully saved.",
 							});
-							history.push("/users");
+							history.push("/patients");
 						}
 					}
 				})
@@ -491,7 +491,7 @@ export default function EditPatientsPage() {
 					error: error,
 					customMessage: "Could not get roles.",
 				});
-				history.push("/users");
+				history.push("/patients");
 			});
 		getEntities(loggedUser.accessToken)
 			.then((res) => {
@@ -563,7 +563,7 @@ export default function EditPatientsPage() {
 					error: error,
 					customMessage: "Could not get user.",
 				});
-				history.push("/users");
+				history.push("/patients");
 			});
 	}, [patientId, disableLoadingData, history]);
 

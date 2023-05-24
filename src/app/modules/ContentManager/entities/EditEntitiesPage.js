@@ -176,7 +176,7 @@ export default function EditEntitiesPage() {
 		getEntityById(entityId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
-					setEntity(res.data);					
+					setEntity(res.data);
 					disableLoadingData();
 				}
 			})

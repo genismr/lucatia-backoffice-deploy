@@ -4,7 +4,7 @@ import {
 	CardBody,
 	CardHeader,
 } from "../../../../_metronic/_partials/controls";
-import { Button, Tooltip } from "@material-ui/core";
+import { Button, Tooltip, Chip } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import { getAssetById } from "../../../../api/asset";
 import { useSkeleton } from "../../../hooks/useSkeleton";
@@ -120,13 +120,22 @@ export default function ViewAssetsPage() {
 						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Tags</h5>
-								<p>
-									{asset.tags.length
-										? asset.tags
-												.map((t) => t.descripcion)
-												.join(", ")
-										: "---"}
-								</p>
+								{!asset.tags.length && <p>{"---"}</p>}
+								{asset.tags.length > 0 && (
+									<>
+										<div className="row ml-0">
+											{asset.tags.map((data) => {
+												return (
+													<Chip
+														label={data.descripcion}
+														className="mr-2 mt-2"
+													/>
+												);
+											})}
+										</div>
+										<br />
+									</>
+								)}
 							</div>
 						</div>
 					</CardBody>

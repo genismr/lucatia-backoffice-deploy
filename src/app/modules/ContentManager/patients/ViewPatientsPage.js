@@ -4,7 +4,7 @@ import {
 	CardBody,
 	CardHeader,
 } from "../../../../_metronic/_partials/controls";
-import { Button } from "@material-ui/core";
+import { Button, Chip } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import { getUserById } from "../../../../api/user";
 import { useSkeleton } from "../../../hooks/useSkeleton";
@@ -39,13 +39,13 @@ export default function ViewPatientsPage() {
 			}
 		}
 
-		return commonEntities.join(", ");
+		return commonEntities;
 	}
 
 	useEffect(() => {
 		if (!userId) {
 			disableLoadingData();
-			history.push("/users");
+			history.push("/patients");
 			return;
 		}
 		getUserById(userId, loggedUser.accessToken)
@@ -67,7 +67,7 @@ export default function ViewPatientsPage() {
 					error: error,
 					customMessage: "Could not get user info.",
 				});
-				history.push("/users");
+				history.push("/patients");
 			});
 	}, [userId, disableLoadingData, history]);
 
@@ -134,30 +134,42 @@ export default function ViewPatientsPage() {
 								<p>{user.pais || "---"}</p>
 							</div>
 						</div>
-						<div className="row">
-							<div className="col-4 gx-3">
-								<h5>Entidades asignadas</h5>
-								{user.owned_entities.length ? (
-									<p>
-										{getCommonEntities(user.owned_entities)}
-									</p>
-								) : (
-									<p>{"---"}</p>
-								)}
-							</div>
-							<div className="col-4 gx-3">
-								<h5>Apps asignadas</h5>
-								{user.apps.length ? (
-									<p>
-										{user.apps
-											.map((a) => a.nombre)
-											.join(", ")}
-									</p>
-								) : (
-									<p>{"---"}</p>
-								)}
-							</div>
-						</div>
+						<h5>Entidades asignadas</h5>
+						{!user.owned_entities.length && <p>{"---"}</p>}
+						{user.owned_entities.length > 0 && (
+							<>
+								<div className="row ml-0">
+									{getCommonEntities(user.owned_entities).map(
+										(data) => {
+											return (
+												<Chip
+													label={data}
+													className="mr-2 mt-2"
+												/>
+											);
+										}
+									)}
+								</div>
+								<br />
+							</>
+						)}
+						<h5>Apps asignadas</h5>
+						{!user.apps.length && <p>{"---"}</p>}
+						{user.apps.length > 0 && (
+							<>
+								<div className="row ml-0">
+									{user.apps.map((data) => {
+										return (
+											<Chip
+												label={data.nombre}
+												className="mr-2 mt-2"
+											/>
+										);
+									})}
+								</div>
+								<br />
+							</>
+						)}
 						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Estado</h5>
