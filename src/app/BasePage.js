@@ -65,8 +65,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/entities"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 10
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 10
 						? EntitiesPage
 						: DashboardPage
 				}
@@ -74,8 +74,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/view-entity/:id?"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 10
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 10
 						? ViewEntitiesPage
 						: DashboardPage
 				}
@@ -83,8 +83,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-entity/:id?"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 10
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 10
 						? EditEntitiesPage
 						: DashboardPage
 				}
@@ -93,7 +93,7 @@ export default function BasePage() {
 			<ContentRoute
 				from="/external-entities"
 				component={
-					loggedUser?.role.rango === 0
+					loggedUser?.role?.rango === 0
 						? ExternalEntitiesPage
 						: DashboardPage
 				}
@@ -101,7 +101,7 @@ export default function BasePage() {
 			<ContentRoute
 				from="/view-external-entity/:id?"
 				component={
-					loggedUser?.role.rango === 0
+					loggedUser?.role?.rango === 0
 						? ViewExternalEntitiesPage
 						: DashboardPage
 				}
@@ -109,7 +109,7 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-external-entity/:id?"
 				component={
-					loggedUser?.role.rango === 0
+					loggedUser?.role?.rango === 0
 						? EditExternalEntitiesPage
 						: DashboardPage
 				}
@@ -120,8 +120,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/apps"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 10
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 10
 						? AppsPage
 						: DashboardPage
 				}
@@ -129,8 +129,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/view-app/:id?"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 10
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 10
 						? ViewAppsPage
 						: DashboardPage
 				}
@@ -138,8 +138,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-app/:id?"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 10
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 10
 						? EditAppsPage
 						: DashboardPage
 				}
@@ -150,8 +150,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/assets"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 100
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 100
 						? AssetsPage
 						: DashboardPage
 				}
@@ -159,8 +159,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/view-asset/:id?"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 100
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 100
 						? ViewAssetsPage
 						: DashboardPage
 				}
@@ -168,8 +168,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-asset/:id?"
 				component={
-					loggedUser?.role.rango === 0 ||
-					loggedUser?.role.rango === 100
+					loggedUser?.role?.rango === 0 ||
+					loggedUser?.role?.rango === 100
 						? EditAssetsPage
 						: DashboardPage
 				}

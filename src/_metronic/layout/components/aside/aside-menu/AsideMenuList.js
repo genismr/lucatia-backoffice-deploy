@@ -71,8 +71,8 @@ export function AsideMenuList({ layoutProps }) {
 					<h4 className="menu-text">USERS</h4>
 					<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
 				</li>
-				{(loggedUser.role.rango === 0 ||
-					loggedUser.role.rango === 10) && (
+				{(loggedUser.role?.rango === 0 ||
+					loggedUser.role?.rango === 10) && (
 					<>
 						<li
 							className={`menu-item ${getMenuItemActive(
@@ -111,9 +111,9 @@ export function AsideMenuList({ layoutProps }) {
 					</NavLink>
 				</li>
 
-				{(loggedUser.role.rango === 0 ||
-					(loggedUser.role.rango === 10 &&
-						loggedUser.managedEntities.length)) && (
+				{(loggedUser.role?.rango === 0 ||
+					(loggedUser.role?.rango === 10 &&
+						loggedUser.managedEntities?.length)) && (
 					<>
 						<li className="menu-section">
 							<h4 className="menu-text">ENTITIES</h4>
@@ -136,7 +136,7 @@ export function AsideMenuList({ layoutProps }) {
 								<span className="menu-text">Entities</span>
 							</NavLink>
 						</li>
-						{loggedUser.role.rango === 0 && (
+						{loggedUser.role?.rango === 0 && (
 							<>
 								<li
 									className={`menu-item ${getMenuItemActive(
@@ -188,8 +188,8 @@ export function AsideMenuList({ layoutProps }) {
 						</li>
 					</>
 				)}
-				{(loggedUser.role.rango === 0 ||
-					loggedUser.role.descripcion === "Designer") && (
+				{(loggedUser.role?.rango === 0 ||
+					loggedUser.role?.descripcion === "Designer") && (
 					<>
 						<li className="menu-section">
 							<h4 className="menu-text">ASSETS</h4>

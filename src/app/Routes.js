@@ -25,36 +25,37 @@ export function Routes() {
 
 	// Checking wether we have credentials in cookies before going to login
 	useEffect(() => {
-	  function fetchMyCredentials() {
-		setLoading(true)
-		setTimeout(async () => {
-		  try {
-			const response = await getCredentials()
-			if (response)
-			  dispatch(authActions.loginActionSuccess(response?.data))
-			  const languages = await getLanguages();
-			  if (languages?.data) {
-				  dispatch(authActions.getLanguagesSuccess(languages?.data));
-				  setLoading(false);
-			  }
-		  } catch (error) {
-			logError({ error, customMessage:'Cannot get credentials, please login.' })
-			// alertError({error})
-			dispatch(authActions.logoutAction())
-		  }
-		  setLoading(false)
-		}, 1000)
-	  }
-	  fetchMyCredentials()
-	}, [dispatch])
+		function fetchMyCredentials() {
+			setLoading(true);
+			setTimeout(async () => {
+				try {
+					const response = await refreshTokens(loggedUser.refreshToken);
+					if (response) {					
+						dispatch(authActions.loginActionSuccess(response?.data));
+					}
+				} catch (error) {
+					logError({
+						error,
+						customMessage: "Cannot get credentials, please login.",
+					});
+					// alertError({error})
+					dispatch(authActions.logoutAction());
+				}
+				setLoading(false);
+			}, 1000);
+		}
+		fetchMyCredentials();
+	}, [dispatch]);
 
 	// Refresh interval every 15 minutes if logged
 	useEffect(() => {
 		if (isLogged) {
 			const interval = setInterval(async () => {
 				try {
-					const response = await refreshTokens(loggedUser.refreshToken);
-					loggedUser.accessToken = response.data.accessToken;
+					const response = await refreshTokens(
+						loggedUser.refreshToken
+					);
+					loggedUser.accessToken = response.data?.accessToken;
 				} catch (error) {
 					logError({
 						error,
