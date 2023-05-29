@@ -10,7 +10,12 @@ import Table, {
 	buttonsStyle,
 } from "../../../components/tables/table";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { getUsers, getUsersByRank, setUserActive, setUserInactive } from "../../../../api/user";
+import {
+	getUsers,
+	getUsersByRank,
+	setUserActive,
+	setUserInactive,
+} from "../../../../api/user";
 import { getRoles } from "../../../../api/role";
 import {
 	Button,
@@ -32,7 +37,6 @@ import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
-
 
 function getData(users, loggedUser) {
 	let data = [];
@@ -174,20 +178,19 @@ export default function PatientsPage() {
 			<Card>
 				<CardHeader title="Patients list">
 					<CardHeaderToolbar>
-						<button
-							type="button"
-							className="btn btn-primary"
-							onClick={() => history.push("/edit-patient")}
-						>
-							Add new
-						</button>
+						{loggedUser.role.rango < 30 && (
+							<button
+								type="button"
+								className="btn btn-primary"
+								onClick={() => history.push("/edit-patient")}
+							>
+								Add new
+							</button>
+						)}
 					</CardHeaderToolbar>
 				</CardHeader>
 				<CardBody>
-					<Table
-						data={getData(data, loggedUser)}
-						columns={columns}
-					/>
+					<Table data={getData(data, loggedUser)} columns={columns} />
 					<ConfirmDialog
 						title={`Are you sure you want to ${
 							user?.activo ? "disable" : "enable"

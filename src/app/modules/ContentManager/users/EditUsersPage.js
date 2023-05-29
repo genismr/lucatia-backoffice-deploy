@@ -163,7 +163,7 @@ export default function EditUsersPage() {
 				roles[i].rango > loggedUser.role.rango ||
 				(myProfile && roles[i].rango === loggedUser.role.rango)
 			) {
-				if (roles[i].rango !== 30) {
+				if (myProfile || roles[i].rango !== 30) {
 					let elem = {};
 					elem.id = roles[i].id;
 					elem.descripcion = roles[i].descripcion;
@@ -845,6 +845,8 @@ export default function EditUsersPage() {
 		);
 	}
 
+	const provincias = [{ label: "WIP" }, { label: "WIP" }];
+
 	if (isLoadingData) return <ContentSkeleton />;
 	else
 		return (
@@ -1001,31 +1003,40 @@ export default function EditUsersPage() {
 						)}
 						<div className="row">
 							<div className="col-4 gx-3">
-								<FormControl style={{ width: "100%" }}>
-									<InputLabel id="demo-simple-select-standard-label">
-										Role *
-									</InputLabel>
-									<Select
-										labelId="demo-simple-select-standard-label"
-										id="demo-simple-select-standard"
-										value={user.user_rol_id || ""}
-										onChange={handleChange("user_rol_id")}
-										MenuProps={MenuProps}
-										disabled={myProfile}
-									>
-										{roles?.map((option) => (
-											<MenuItem
-												key={option.id}
-												value={option.id}
-											>
-												{option.descripcion}
-											</MenuItem>
-										))}
-									</Select>
-									<FormHelperText>
-										Select a role
-									</FormHelperText>
-								</FormControl>
+								<Autocomplete
+									id="autocomplete-role"
+									disablePortal
+									filterSelectedOptions
+									options={roles}
+									getOptionLabel={(option) =>
+										option.descripcion
+									}
+									value={
+										roles.find(
+											(x) => x.id === user?.user_rol_id
+										) || ""
+									}
+									onChange={(event, selected) => {
+										setUser({
+											...user,
+											user_rol_id: selected
+												? selected.id
+												: "",
+										});
+									}}
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Role"
+											margin="normal"
+											variant="outlined"
+											InputLabelProps={{
+												shrink: true,
+											}}
+											required
+										/>
+									)}
+								/>
 							</div>
 							<div className="col-4 gx-3">
 								<TextField
@@ -1069,16 +1080,26 @@ export default function EditUsersPage() {
 								/>
 							</div>
 							<div className="col-4 gx-3">
-								<TextField
-									id={`provincia`}
-									label="Província"
-									value={user.provincia}
-									onChange={handleChange("provincia")}
-									InputLabelProps={{
-										shrink: true,
+								<Autocomplete
+									id="autocomplete-provincia"
+									disablePortal
+									filterSelectedOptions
+									options={provincias}
+									getOptionLabel={(option) => option.label}
+									onChange={(event, selected) => {
+										console.log(selected);
 									}}
-									margin="normal"
-									variant="outlined"
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Província"
+											margin="normal"
+											variant="outlined"
+											InputLabelProps={{
+												shrink: true,
+											}}
+										/>
+									)}
 								/>
 							</div>
 							<div className="col-4 gx-3">

@@ -67,49 +67,57 @@ export function AsideMenuList({ layoutProps }) {
 						<span className="menu-text">My area</span>
 					</NavLink>
 				</li>
-				<li className="menu-section">
-					<h4 className="menu-text">USERS</h4>
-					<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
-				</li>
-				{(loggedUser.role?.rango === 0 ||
-					loggedUser.role?.rango === 10) && (
+
+				{loggedUser.role?.rango <= 30 && (
 					<>
+						<li className="menu-section">
+							<h4 className="menu-text">USERS</h4>
+							<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
+						</li>
+						{(loggedUser.role?.rango === 0 ||
+							loggedUser.role?.rango === 10) && (
+							<>
+								<li
+									className={`menu-item ${getMenuItemActive(
+										"/users",
+										false
+									)} ${getMenuItemActive(
+										"/view-user",
+										false
+									)} ${getMenuItemActive(
+										"#/edit-user",
+										false
+									)}`}
+									aria-haspopup="true"
+								>
+									<NavLink className="menu-link" to="/users">
+										<span className="menu-icon">
+											<PeopleIcon />
+										</span>
+										<span className="menu-text">Users</span>
+									</NavLink>
+								</li>
+							</>
+						)}
 						<li
 							className={`menu-item ${getMenuItemActive(
-								"/users",
+								"/patients",
 								false
 							)} ${getMenuItemActive(
-								"/view-user",
+								"/view-patient",
 								false
-							)} ${getMenuItemActive("#/edit-user", false)}`}
+							)} ${getMenuItemActive("/edit-patient", false)}`}
 							aria-haspopup="true"
 						>
-							<NavLink className="menu-link" to="/users">
+							<NavLink className="menu-link" to="/patients">
 								<span className="menu-icon">
-									<PeopleIcon />
+									<PatientIcon />
 								</span>
-								<span className="menu-text">Users</span>
+								<span className="menu-text">Patients</span>
 							</NavLink>
 						</li>
 					</>
 				)}
-				<li
-					className={`menu-item ${getMenuItemActive(
-						"/patients",
-						false
-					)} ${getMenuItemActive(
-						"/view-patient",
-						false
-					)} ${getMenuItemActive("/edit-patient", false)}`}
-					aria-haspopup="true"
-				>
-					<NavLink className="menu-link" to="/patients">
-						<span className="menu-icon">
-							<PatientIcon />
-						</span>
-						<span className="menu-text">Patients</span>
-					</NavLink>
-				</li>
 
 				{(loggedUser.role?.rango === 0 ||
 					(loggedUser.role?.rango === 10 &&

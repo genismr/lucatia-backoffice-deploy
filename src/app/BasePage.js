@@ -50,14 +50,27 @@ export default function BasePage() {
 			<ContentRoute from="/edit-user/:id?" component={EditUsersPage} />
 
 			{/* Patients */}
-			<ContentRoute from="/patients" component={PatientsPage} />
+			<ContentRoute
+				from="/patients"
+				component={
+					loggedUser?.role?.rango <= 30 ? PatientsPage : DashboardPage
+				}
+			/>
 			<ContentRoute
 				from="/view-patient/:id?"
-				component={ViewPatientsPage}
+				component={
+					loggedUser?.role?.rango <= 30
+						? ViewPatientsPage
+						: DashboardPage
+				}
 			/>
 			<ContentRoute
 				from="/edit-patient/:id?"
-				component={EditPatientsPage}
+				component={
+					loggedUser?.role?.rango < 30
+						? EditPatientsPage
+						: DashboardPage
+				}
 			/>
 
 			{/* ENTITIES */}

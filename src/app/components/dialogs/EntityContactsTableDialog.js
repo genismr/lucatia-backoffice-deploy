@@ -33,9 +33,9 @@ import { shallowEqual, useSelector } from "react-redux";
 import { alertError, alertSuccess } from "../../../utils/logger";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
 import RoleIcon from "@material-ui/icons/AccountCircle";
-import { getRoles } from "../../../api/role";
 import { checkIsEmpty } from "../../../utils/helpers";
 import { postUser } from "../../../api/user";
+import { Autocomplete } from "@material-ui/lab";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -292,28 +292,39 @@ const EntityContactsTableDialog = (props) => {
 							/>
 						</div>
 						<div className="col-4">
-							<FormControl style={{ width: "100%" }}>
-								<InputLabel id="demo-simple-select-standard-label">
-									Role *
-								</InputLabel>
-								<Select
-									labelId="demo-simple-select-standard-label"
-									id="demo-simple-select-standard"
-									value={user.user_rol_id || ""}
-									onChange={handleChange("user_rol_id")}
-									MenuProps={MenuProps}
-								>
-									{roles?.map((option) => (
-										<MenuItem
-											key={option.id}
-											value={option.id}
-										>
-											{option.descripcion}
-										</MenuItem>
-									))}
-								</Select>
-								<FormHelperText>Select a role</FormHelperText>
-							</FormControl>
+							<Autocomplete
+								id="autocomplete-role"
+								disablePortal
+								filterSelectedOptions
+								required
+								options={roles}
+								getOptionLabel={(option) => option.descripcion}
+								value={
+									roles.find(
+										(x) => x.id === user?.user_rol_id
+									) || ""
+								}
+								onChange={(event, selected) => {
+									setUser({
+										...user,
+										user_rol_id: selected
+											? selected.id
+											: "",
+									});
+								}}
+								renderInput={(params) => (
+									<TextField
+										{...params}
+										label="Role"
+										margin="normal"
+										variant="outlined"
+										InputLabelProps={{
+											shrink: true,
+										}}
+										required
+									/>
+								)}
+							/>
 						</div>
 					</div>
 				</form>
