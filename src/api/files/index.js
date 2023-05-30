@@ -7,7 +7,7 @@ export const uploadSingleFile = (file) => {
 	const formData = new FormData()
 	formData.append('file', file)
 	
-	return authClient().post(`${API}/files`, formData)
+	return authClient().post(`${API}/file`, formData)
 }
 
 export const uploadFilesGetLinks = async (files, folder) => {
