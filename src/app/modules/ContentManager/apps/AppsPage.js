@@ -29,6 +29,7 @@ import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
+import { userRoles } from "../../../../utils/helpers";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -151,12 +152,12 @@ export default function AppsPage() {
 		},
 		{
 			dataField: "faviconOwnerEntity",
-			text: "Owner Entity Icon",
+			text: "Owner Entity",
 			formatter: imageFormatter,
 		},
 		{
 			dataField: "faviconsDelegatedEntities",
-			text: "Delegated Entities Icon",
+			text: "Delegated Entity",
 			formatter: imageFormatter,
 		},
 		{ dataField: "id", text: "", formatter: buttonFormatter },
@@ -182,7 +183,7 @@ export default function AppsPage() {
 		<>
 			<Card>
 				<CardHeader title="Apps list">
-					{loggedUser.role.rango === 0 && (
+					{loggedUser.role.rango === userRoles.SUPER_ADMIN && (
 						<CardHeaderToolbar>
 							<button
 								type="button"

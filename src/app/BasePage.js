@@ -21,6 +21,7 @@ import EditExternalEntitiesPage from "./modules/ContentManager/external-entities
 import PatientsPage from "./modules/ContentManager/patients/PatientsPage";
 import ViewPatientsPage from "./modules/ContentManager/patients/ViewPatientsPage";
 import EditPatientsPage from "./modules/ContentManager/patients/EditPatientsPage";
+import { userRoles } from "../utils/helpers";
 
 export default function BasePage() {
 	const loggedUser = useSelector(
@@ -53,13 +54,13 @@ export default function BasePage() {
 			<ContentRoute
 				from="/patients"
 				component={
-					loggedUser?.role?.rango <= 30 ? PatientsPage : DashboardPage
+					loggedUser?.role?.rango <= userRoles.USER ? PatientsPage : DashboardPage
 				}
 			/>
 			<ContentRoute
 				from="/view-patient/:id?"
 				component={
-					loggedUser?.role?.rango <= 30
+					loggedUser?.role?.rango <= userRoles.USER
 						? ViewPatientsPage
 						: DashboardPage
 				}
@@ -67,7 +68,7 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-patient/:id?"
 				component={
-					loggedUser?.role?.rango < 30
+					loggedUser?.role?.rango < userRoles.USER
 						? EditPatientsPage
 						: DashboardPage
 				}
@@ -78,8 +79,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/entities"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 10
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.ADMIN_ENTIDAD
 						? EntitiesPage
 						: DashboardPage
 				}
@@ -87,8 +88,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/view-entity/:id?"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 10
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.ADMIN_ENTIDAD
 						? ViewEntitiesPage
 						: DashboardPage
 				}
@@ -96,8 +97,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-entity/:id?"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 10
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.ADMIN_ENTIDAD
 						? EditEntitiesPage
 						: DashboardPage
 				}
@@ -106,7 +107,7 @@ export default function BasePage() {
 			<ContentRoute
 				from="/external-entities"
 				component={
-					loggedUser?.role?.rango === 0
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN
 						? ExternalEntitiesPage
 						: DashboardPage
 				}
@@ -114,7 +115,7 @@ export default function BasePage() {
 			<ContentRoute
 				from="/view-external-entity/:id?"
 				component={
-					loggedUser?.role?.rango === 0
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN
 						? ViewExternalEntitiesPage
 						: DashboardPage
 				}
@@ -122,7 +123,7 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-external-entity/:id?"
 				component={
-					loggedUser?.role?.rango === 0
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN
 						? EditExternalEntitiesPage
 						: DashboardPage
 				}
@@ -133,8 +134,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/apps"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 10
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.ADMIN_ENTIDAD
 						? AppsPage
 						: DashboardPage
 				}
@@ -142,8 +143,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/view-app/:id?"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 10
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.ADMIN_ENTIDAD
 						? ViewAppsPage
 						: DashboardPage
 				}
@@ -151,8 +152,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-app/:id?"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 10
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.ADMIN_ENTIDAD
 						? EditAppsPage
 						: DashboardPage
 				}
@@ -163,8 +164,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/assets"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 100
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.DESIGNER
 						? AssetsPage
 						: DashboardPage
 				}
@@ -172,8 +173,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/view-asset/:id?"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 100
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.DESIGNER
 						? ViewAssetsPage
 						: DashboardPage
 				}
@@ -181,8 +182,8 @@ export default function BasePage() {
 			<ContentRoute
 				from="/edit-asset/:id?"
 				component={
-					loggedUser?.role?.rango === 0 ||
-					loggedUser?.role?.rango === 100
+					loggedUser?.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser?.role?.rango === userRoles.DESIGNER
 						? EditAssetsPage
 						: DashboardPage
 				}

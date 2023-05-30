@@ -307,12 +307,7 @@ export default function EditAssetsPage() {
 					});
 				});
 		} else {
-			updateAsset(
-				assetId,
-				asset,
-				selectedFile,
-				loggedUser.accessToken
-			)
+			updateAsset(assetId, asset, selectedFile, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 204) {
 						handleTagAssignment(assetId);
@@ -352,15 +347,19 @@ export default function EditAssetsPage() {
 							value={tags.filter((x) =>
 								asset?.tags.includes(x.id)
 							)}
-							//disableCloseOnSelect
 							getOptionLabel={(option) => option.descripcion}
-							/*onChange={(event, selected) => {
-								asset.tags = selected;
-							}}*/
 							open={false}
-							readOnly
 							freeSolo
+							readOnly
 							disableClearable
+							renderTags={(value) =>
+								value.map((option, index) => (
+									<Chip
+										label={option.descripcion}
+										className="m-2"
+									/>
+								))
+							}
 							renderInput={(params) => (
 								<TextField
 									{...params}
@@ -405,7 +404,7 @@ export default function EditAssetsPage() {
 							<div className="col-6 gx-3">
 								<FormControl style={{ width: "100%" }}>
 									<InputLabel id="demo-simple-select-standard-label">
-										Asset type *
+										Type *
 									</InputLabel>
 									<Select
 										labelId="demo-simple-select-standard-label"
@@ -423,15 +422,12 @@ export default function EditAssetsPage() {
 											</MenuItem>
 										))}
 									</Select>
-									<FormHelperText>
-										Select a type
-									</FormHelperText>
 								</FormControl>
 							</div>
 							<div className="col-6 gx-3">
 								<FormControl style={{ width: "100%" }}>
 									<InputLabel id="demo-simple-select-standard-label">
-										Asset format *
+										Format *
 									</InputLabel>
 									<Select
 										labelId="demo-simple-select-standard-label"
@@ -451,9 +447,6 @@ export default function EditAssetsPage() {
 											</MenuItem>
 										))}
 									</Select>
-									<FormHelperText>
-										Select a format
-									</FormHelperText>
 								</FormControl>
 							</div>
 						</div>
@@ -462,7 +455,7 @@ export default function EditAssetsPage() {
 							<div className="col-6 gx-3">
 								<FormControl style={{ width: "100%" }}>
 									<InputLabel id="demo-simple-select-standard-label">
-										Asset category *
+										Category *
 									</InputLabel>
 									<Select
 										labelId="demo-simple-select-standard-label"
@@ -482,15 +475,12 @@ export default function EditAssetsPage() {
 											</MenuItem>
 										))}
 									</Select>
-									<FormHelperText>
-										Select a category
-									</FormHelperText>
 								</FormControl>
 							</div>
 							<div className="col-6 gx-3">
 								<FormControl style={{ width: "100%" }}>
 									<InputLabel id="demo-simple-select-standard-label">
-										Asset extension *
+										Extension *
 									</InputLabel>
 									<Select
 										labelId="demo-simple-select-standard-label"
@@ -510,9 +500,6 @@ export default function EditAssetsPage() {
 											</MenuItem>
 										))}
 									</Select>
-									<FormHelperText>
-										Select a extension
-									</FormHelperText>
 								</FormControl>
 							</div>
 						</div>

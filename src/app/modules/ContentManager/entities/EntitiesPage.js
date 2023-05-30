@@ -33,6 +33,7 @@ import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
+import { userRoles } from "../../../../utils/helpers";
 
 function getData(entities) {
 	let data = [];
@@ -160,8 +161,8 @@ export default function EntitiesPage() {
 		<>
 			<Card>
 				<CardHeader title="Entities list">
-					{(loggedUser.role.rango === 0 ||
-						loggedUser.role.rango === 10) && (
+					{(loggedUser.role.rango === userRoles.SUPER_ADMIN ||
+						loggedUser.role.rango === userRoles.ADMIN_ENTIDAD) && (
 						<CardHeaderToolbar>
 							<button
 								type="button"

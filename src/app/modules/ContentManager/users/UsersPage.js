@@ -33,6 +33,7 @@ import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
+import { userRoles } from "../../../../utils/helpers";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -49,7 +50,7 @@ const MenuProps = {
 function getData(users, loggedUser) {
 	let data = [];
 	for (let i = 0; i < users.length; ++i) {
-		if (users[i].id !== loggedUser.userID && users[i].role.rango !== 30) {
+		if (users[i].id !== loggedUser.userID && users[i].role.rango !== userRoles.USER) {
 			const elem = {};
 
 			let apellidos = users[i].apellidos;
@@ -76,8 +77,9 @@ function getPermittedRoles(roles, loggedUser) {
 	let data = [];
 	for (let i = 0; i < roles.length; ++i) {
 		if (
-			(loggedUser.role.rango === 0 ||
-			roles[i].rango > loggedUser.role.rango)  && roles[i].rango !== 30
+			(loggedUser.role.rango === userRoles.SUPER_ADMIN ||
+				roles[i].rango > loggedUser.role.rango) &&
+			roles[i].rango !== userRoles.USER
 		) {
 			let elem = {};
 			elem.id = roles[i].id;
@@ -137,7 +139,7 @@ export default function UsersPage() {
 						<ViewIcon />
 					</Button>
 				</Tooltip>
-				{(loggedUser.role.rango === 0 ||
+				{(loggedUser.role.rango === userRoles.SUPER_ADMIN ||
 					elem.role.rango !== loggedUser.role.rango) && (
 					<>
 						<Tooltip title="Edit">
@@ -181,8 +183,8 @@ export default function UsersPage() {
 		},
 		{ dataField: "email", text: "Mail", sort: true },
 		{ dataField: "id", text: "Rol", formatter: roleFormatter },
-		{ dataField: "faviconEntityOwner", text: "Icons Owner" },
-		{ dataField: "faviconEntityManager", text: "Icons Manager" },
+		{ dataField: "faviconEntityOwner", text: "Owner" },
+		{ dataField: "faviconEntityManager", text: "Manager" },
 		{
 			dataField: "lastLogin",
 			text: "Last Login",
@@ -242,7 +244,6 @@ export default function UsersPage() {
 
 	const handleChange = (element) => (event) => {
 		setFilterOptions({ ...filterOptions, [element]: event.target.value });
-		console.log(filterOptions);
 	};
 
 	const renderFiltersContent = () => {

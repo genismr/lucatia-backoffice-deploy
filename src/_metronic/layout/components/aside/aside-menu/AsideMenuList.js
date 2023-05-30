@@ -14,6 +14,7 @@ import AssetIcon from "@material-ui/icons/WebAsset";
 import StoreIcon from "@material-ui/icons/Store";
 import { shallowEqual, useSelector } from "react-redux";
 import { SERVER_URL } from "../../../../../api";
+import { userRoles } from "../../../../../utils/helpers";
 
 export function AsideMenuList({ layoutProps }) {
 	const loggedUser = useSelector(
@@ -68,14 +69,14 @@ export function AsideMenuList({ layoutProps }) {
 					</NavLink>
 				</li>
 
-				{loggedUser.role?.rango <= 30 && (
+				{loggedUser.role?.rango <= userRoles.USER && (
 					<>
 						<li className="menu-section">
 							<h4 className="menu-text">USERS</h4>
 							<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
 						</li>
-						{(loggedUser.role?.rango === 0 ||
-							loggedUser.role?.rango === 10) && (
+						{(loggedUser.role?.rango === userRoles.SUPER_ADMIN ||
+							loggedUser.role?.rango === userRoles.ADMIN_ENTIDAD) && (
 							<>
 								<li
 									className={`menu-item ${getMenuItemActive(
@@ -119,8 +120,8 @@ export function AsideMenuList({ layoutProps }) {
 					</>
 				)}
 
-				{(loggedUser.role?.rango === 0 ||
-					(loggedUser.role?.rango === 10 &&
+				{(loggedUser.role?.rango === userRoles.SUPER_ADMIN ||
+					(loggedUser.role?.rango === userRoles.ADMIN_ENTIDAD &&
 						loggedUser.managedEntities?.length)) && (
 					<>
 						<li className="menu-section">
@@ -144,7 +145,7 @@ export function AsideMenuList({ layoutProps }) {
 								<span className="menu-text">Entities</span>
 							</NavLink>
 						</li>
-						{loggedUser.role?.rango === 0 && (
+						{loggedUser.role?.rango === userRoles.SUPER_ADMIN && (
 							<>
 								<li
 									className={`menu-item ${getMenuItemActive(
@@ -196,8 +197,8 @@ export function AsideMenuList({ layoutProps }) {
 						</li>
 					</>
 				)}
-				{(loggedUser.role?.rango === 0 ||
-					loggedUser.role?.descripcion === "Designer") && (
+				{(loggedUser.role?.rango === userRoles.SUPER_ADMIN ||
+					loggedUser.role?.rango === userRoles.DESIGNER) && (
 					<>
 						<li className="menu-section">
 							<h4 className="menu-text">ASSETS</h4>

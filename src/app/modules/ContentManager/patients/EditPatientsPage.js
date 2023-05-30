@@ -36,7 +36,7 @@ import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError, alertSuccess } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { checkIsEmpty } from "../../../../utils/helpers";
+import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
 import { getAppMetadata } from "../../../../api/app";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 
@@ -150,7 +150,7 @@ export default function EditPatientsPage() {
 		let data = [];
 		for (let i = 0; i < roles.length; ++i) {
 			if (
-				loggedUser.role.rango == 0 ||
+				loggedUser.role.rango == userRoles.SUPER_ADMIN ||
 				roles[i].rango > loggedUser.role.rango
 			) {
 				let elem = {};

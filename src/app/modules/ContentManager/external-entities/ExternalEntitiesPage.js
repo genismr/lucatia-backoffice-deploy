@@ -31,6 +31,8 @@ import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 import { getExternalEntities } from "../../../../api/external-entity";
+import { userConstants } from "../../Auth/_redux/authActions";
+import { userRoles } from "../../../../utils/helpers";
 
 function getData(externalEntities) {
 	let data = [];
@@ -117,7 +119,7 @@ export default function ExternalEntitiesPage() {
 		<>
 			<Card>
 				<CardHeader title="External Entities list">
-					{(loggedUser.role.rango === 0 || loggedUser.role.rango === 10) && (
+					{loggedUser.role.rango === userRoles.SUPER_ADMIN && (
 						<CardHeaderToolbar>
 							<button
 								type="button"

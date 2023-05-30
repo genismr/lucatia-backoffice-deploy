@@ -75,3 +75,13 @@ export const getFileType = (fileName) => {
 			return "unknown";
 	}
 };
+
+export const userRoles = {
+	SUPER_ADMIN: 0,
+	ADMIN_ENTIDAD: 10,
+	MEDICO: 20,
+	HELD_DESK: 20,
+	USER: 30,
+	DESIGNER: 100,
+	GAME_CONSTRUCTOR: 100,
+};

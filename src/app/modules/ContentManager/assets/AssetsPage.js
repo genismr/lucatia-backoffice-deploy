@@ -25,6 +25,7 @@ import {
 	MenuItem,
 	FormControl,
 	InputLabel,
+	TextField,
 } from "@material-ui/core";
 import FiltersCard from "../../../components/filters/Filter";
 import EditIcon from "@material-ui/icons/Edit";
@@ -36,6 +37,7 @@ import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import DownloadIcon from "@material-ui/icons/GetApp";
 import CopyClipboardIcon from "@material-ui/icons/FileCopy";
+import { Autocomplete } from "@material-ui/lab";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -170,7 +172,7 @@ export default function AssetsPage() {
 	const columns = [
 		{
 			dataField: "faviconType",
-			text: "Type Icon",
+			text: "Type",
 			formatter: imageFormatter,
 		},
 		{
@@ -189,7 +191,7 @@ export default function AssetsPage() {
 		},
 		{
 			dataField: "faviconFormat",
-			text: "Format Icon",
+			text: "Format",
 			sort: true,
 			formatter: imageFormatter,
 		},
@@ -313,7 +315,7 @@ export default function AssetsPage() {
 					filter =
 						filter &&
 						filterOptions.tags.some((t) =>
-							item.tags.map((tg) => tg.id).includes(t)
+							item.tags.map((tg) => tg.id).includes(t.id)
 						);
 				if (filter) return item;
 				return false;
@@ -328,115 +330,135 @@ export default function AssetsPage() {
 
 	const handleChange = (element) => (event) => {
 		setFilterOptions({ ...filterOptions, [element]: event.target.value });
-		console.log(filterOptions);
 	};
 
 	const renderFiltersContent = () => {
 		return (
 			<>
-				<FormControl style={{ width: "100%" }}>
-					<InputLabel id="demo-simple-select-standard-label">
-						Type
-					</InputLabel>
-					<Select
-						labelId="demo-simple-select-standard-label"
-						id="demo-simple-select-standard"
-						value={filterOptions.types || []}
-						multiple
-						onChange={handleChange("types")}
-						MenuProps={MenuProps}
-					>
-						{types?.map((type) => (
-							<MenuItem key={type.id} value={type.id}>
-								{type.descripcion}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
+				<div className="row">
+					<div className="col">
+						<FormControl style={{ width: "100%" }}>
+							<InputLabel id="demo-simple-select-standard-label">
+								Type
+							</InputLabel>
+							<Select
+								labelId="demo-simple-select-standard-label"
+								id="demo-simple-select-standard"
+								value={filterOptions.types || []}
+								multiple
+								onChange={handleChange("types")}
+								MenuProps={MenuProps}
+							>
+								{types?.map((type) => (
+									<MenuItem key={type.id} value={type.id}>
+										{type.descripcion}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
+					</div>
+					<div className="col">
+						<FormControl style={{ width: "100%" }}>
+							<InputLabel id="demo-simple-select-standard-label">
+								Category
+							</InputLabel>
+							<Select
+								labelId="demo-simple-select-standard-label"
+								id="demo-simple-select-standard"
+								value={filterOptions.categories || []}
+								multiple
+								onChange={handleChange("categories")}
+								MenuProps={MenuProps}
+							>
+								{categories?.map((category) => (
+									<MenuItem
+										key={category.id}
+										value={category.id}
+									>
+										{category.descripcion}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
+					</div>
+				</div>
 				<br />
 				<br />
-				<FormControl style={{ width: "100%" }}>
-					<InputLabel id="demo-simple-select-standard-label">
-						Category
-					</InputLabel>
-					<Select
-						labelId="demo-simple-select-standard-label"
-						id="demo-simple-select-standard"
-						value={filterOptions.categories || []}
-						multiple
-						onChange={handleChange("categories")}
-						MenuProps={MenuProps}
-					>
-						{categories?.map((category) => (
-							<MenuItem key={category.id} value={category.id}>
-								{category.descripcion}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
+				<div className="row">
+					<div className="col">
+						<FormControl style={{ width: "100%" }}>
+							<InputLabel id="demo-simple-select-standard-label">
+								Format
+							</InputLabel>
+							<Select
+								labelId="demo-simple-select-standard-label"
+								id="demo-simple-select-standard"
+								value={filterOptions.formats || []}
+								multiple
+								onChange={handleChange("formats")}
+								MenuProps={MenuProps}
+							>
+								{formats?.map((format) => (
+									<MenuItem key={format.id} value={format.id}>
+										{format.descripcion}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
+					</div>
+					<div className="col">
+						<FormControl style={{ width: "100%" }}>
+							<InputLabel id="demo-simple-select-standard-label">
+								Extension
+							</InputLabel>
+							<Select
+								labelId="demo-simple-select-standard-label"
+								id="demo-simple-select-standard"
+								value={filterOptions.extensions || []}
+								multiple
+								onChange={handleChange("extensions")}
+								MenuProps={MenuProps}
+							>
+								{extensions?.map((extension) => (
+									<MenuItem
+										key={extension.id}
+										value={extension.id}
+									>
+										{extension.descripcion}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
+					</div>
+				</div>
 				<br />
-				<br />
-				<FormControl style={{ width: "100%" }}>
-					<InputLabel id="demo-simple-select-standard-label">
-						Format
-					</InputLabel>
-					<Select
-						labelId="demo-simple-select-standard-label"
-						id="demo-simple-select-standard"
-						value={filterOptions.formats || []}
-						multiple
-						onChange={handleChange("formats")}
-						MenuProps={MenuProps}
-					>
-						{formats?.map((format) => (
-							<MenuItem key={format.id} value={format.id}>
-								{format.descripcion}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-				<br />
-				<br />
-				<FormControl style={{ width: "100%" }}>
-					<InputLabel id="demo-simple-select-standard-label">
-						Extension
-					</InputLabel>
-					<Select
-						labelId="demo-simple-select-standard-label"
-						id="demo-simple-select-standard"
-						value={filterOptions.extensions || []}
-						multiple
-						onChange={handleChange("extensions")}
-						MenuProps={MenuProps}
-					>
-						{extensions?.map((extension) => (
-							<MenuItem key={extension.id} value={extension.id}>
-								{extension.descripcion}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-				<br />
-				<br />
-				<FormControl style={{ width: "100%" }}>
-					<InputLabel id="demo-simple-select-standard-label">
-						Tag
-					</InputLabel>
-					<Select
-						labelId="demo-simple-select-standard-label"
-						id="demo-simple-select-standard"
-						value={filterOptions.tags || []}
-						multiple
-						onChange={handleChange("tags")}
-						MenuProps={MenuProps}
-					>
-						{tags?.map((tag) => (
-							<MenuItem key={tag.id} value={tag.id}>
-								{tag.descripcion}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
+				<Autocomplete
+					multiple
+					id="autocomplete tag"
+					filterSelectedOptions
+					disablePortal
+					disableCloseOnSelect
+					options={tags ? tags : []}
+					getOptionLabel={(option) => option.descripcion}
+					value={filterOptions.tags || []}
+					onChange={(event, selected) => {
+						setFilterOptions({
+							...filterOptions,
+							tags: selected,
+						});
+					}}
+					renderInput={(params) => (
+						<TextField
+							{...params}
+							margin="normal"
+							variant="outlined"
+							InputLabelProps={{
+								shrink: true,
+							}}
+							label="Tag"
+						/>
+					)}
+				/>
 				<br />
 				<br />
 			</>

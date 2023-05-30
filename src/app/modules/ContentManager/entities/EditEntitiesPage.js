@@ -35,7 +35,7 @@ import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
 import LinkIcon from "@material-ui/icons/Link";
 import EntityContactsTableDialog from "../../../components/dialogs/EntityContactsTableDialog";
-import { checkIsEmpty } from "../../../../utils/helpers";
+import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 import { getRoles } from "../../../../api/role";
 
@@ -117,7 +117,7 @@ export default function EditEntitiesPage() {
 		let data = [];
 		for (let i = 0; i < roles.length; ++i) {
 			if (
-				loggedUser.role.rango === 0 ||
+				loggedUser.role.rango === userRoles.SUPER_ADMIN ||
 				roles[i].rango > loggedUser.role.rango
 			) {
 				let elem = {};
@@ -553,7 +553,7 @@ export default function EditEntitiesPage() {
 								/>
 							</div>
 						</div>
-						{loggedUser.role.rango === 0 && (
+						{loggedUser.role.rango === userRoles.SUPER_ADMIN && (
 							<>
 								<div className="row">
 									<div className="col-6 gx-3">

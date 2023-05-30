@@ -10,6 +10,7 @@ import { getUserById } from "../../../../api/user";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
+import { userRoles } from "../../../../utils/helpers";
 
 export default function ViewPatientsPage() {
 	const [user, setUser] = useState(null);
@@ -32,7 +33,7 @@ export default function ViewPatientsPage() {
 
 		for (let i = 0; i < entities.length; ++i) {
 			if (
-				loggedUser.role.rango === 0 ||
+				loggedUser.role.rango === userRoles.SUPER_ADMIN ||
 				loggedUser.managedEntities.includes(entities[i].id)
 			) {
 				commonEntities.push(entities[i].nombre);

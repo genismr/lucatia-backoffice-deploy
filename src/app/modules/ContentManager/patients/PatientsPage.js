@@ -37,11 +37,12 @@ import { CheckBox } from "@material-ui/icons";
 import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
+import { userRoles } from "../../../../utils/helpers";
 
 function getData(users, loggedUser) {
 	let data = [];
 	for (let i = 0; i < users.length; ++i) {
-		if (users[i].role.rango === 30 && users[i].id !== loggedUser.userID) {
+		if (users[i].role.rango === userRoles.USER && users[i].id !== loggedUser.userID) {
 			const elem = {};
 
 			let apellidos = users[i].apellidos;
@@ -103,7 +104,7 @@ export default function PatientsPage() {
 						<ViewIcon />
 					</Button>
 				</Tooltip>
-				{(loggedUser.role.rango === 0 ||
+				{(loggedUser.role.rango === userRoles.SUPER_ADMIN ||
 					elem.role.rango !== loggedUser.role.rango) && (
 					<>
 						<Tooltip title="Edit">
@@ -147,8 +148,8 @@ export default function PatientsPage() {
 		},
 		{ dataField: "email", text: "Mail", sort: true },
 		{ dataField: "id", text: "Rol", formatter: roleFormatter },
-		{ dataField: "faviconEntityOwner", text: "Icons Owner" },
-		{ dataField: "faviconEntityManager", text: "Icons Manager" },
+		{ dataField: "faviconEntityOwner", text: "Owner" },
+		{ dataField: "faviconEntityManager", text: "Manager" },
 		{
 			dataField: "lastLogin",
 			text: "Last Login",
@@ -158,7 +159,7 @@ export default function PatientsPage() {
 	];
 
 	useEffect(() => {
-		getUsersByRank(loggedUser.accessToken, 30)
+		getUsersByRank(loggedUser.accessToken, userRoles.USER)
 			.then((res) => {
 				if (res.status === 200) {
 					setData(res.data);
@@ -178,7 +179,7 @@ export default function PatientsPage() {
 			<Card>
 				<CardHeader title="Patients list">
 					<CardHeaderToolbar>
-						{loggedUser.role.rango < 30 && (
+						{loggedUser.role.rango < userRoles.USER && (
 							<button
 								type="button"
 								className="btn btn-primary"

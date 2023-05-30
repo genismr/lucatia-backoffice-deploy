@@ -36,7 +36,7 @@ import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError, alertSuccess } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
-import { checkIsEmpty } from "../../../../utils/helpers";
+import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
 import { getAppMetadata } from "../../../../api/app";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 
@@ -145,7 +145,7 @@ export default function EditUsersPage() {
 	);
 
 	const loggedUserAuthorized =
-		loggedUser.role.rango === 0 || loggedUser.role.rango === 10;
+		loggedUser.role.rango === userRoles.SUPER_ADMIN || loggedUser.role.rango === userRoles.ADMIN_ENTIDAD;
 
 	const showPatients = window.location.href.toString().includes("patient");
 
@@ -159,11 +159,11 @@ export default function EditUsersPage() {
 		let data = [];
 		for (let i = 0; i < roles.length; ++i) {
 			if (
-				loggedUser.role.rango == 0 ||
+				loggedUser.role.rango == userRoles.SUPER_ADMIN ||
 				roles[i].rango > loggedUser.role.rango ||
 				(myProfile && roles[i].rango === loggedUser.role.rango)
 			) {
-				if (myProfile || roles[i].rango !== 30) {
+				if (myProfile || roles[i].rango !== userRoles.USER) {
 					let elem = {};
 					elem.id = roles[i].id;
 					elem.descripcion = roles[i].descripcion;
@@ -601,7 +601,7 @@ export default function EditUsersPage() {
 		)
 			text = null;
 		setUser({ ...user, [element]: text });
-	};
+	};	
 
 	const handleChangeMetadata = (element, app_metadata_id) => (event) => {
 		let metadataUser = [...user.app_metadata];
@@ -832,7 +832,6 @@ export default function EditUsersPage() {
 													)}
 												</Select>
 											</FormControl>
-
 											<br />
 											<br />
 										</div>
