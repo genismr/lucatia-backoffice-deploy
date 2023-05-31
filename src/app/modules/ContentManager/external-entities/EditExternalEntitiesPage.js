@@ -32,6 +32,8 @@ import {
 	postExternalEntity,
 	updateExternalEntity,
 } from "../../../../api/external-entity";
+import { Autocomplete } from "@material-ui/lab";
+import { getProvincias } from "../../../../api/provincia";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -63,7 +65,7 @@ function getEmptyExternalEntity() {
 		direccion: null,
 		cp: null,
 		poblacion: null,
-		provincia: null,
+		provincia_id: null,
 		pais: null,
 		fecha_alta: "",
 		user_alta_id: "",
@@ -74,6 +76,8 @@ export default function EditExternalEntitiesPage() {
 	const [externalEntity, setExternalEntity] = useState(
 		getEmptyExternalEntity()
 	);
+
+	const [provincias, setProvincias] = useState([]);
 
 	const externalEntityId = useParams().id;
 	const history = useHistory();
@@ -90,6 +94,19 @@ export default function EditExternalEntitiesPage() {
 	} = useSkeleton();
 
 	useEffect(() => {
+		getProvincias()
+			.then((res) => {
+				if (res.status === 200) {
+					setProvincias(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get provincias.",
+				});
+				history.push("/patients");
+			});
 		if (!externalEntityId) {
 			disableLoadingData();
 			return;
@@ -97,7 +114,14 @@ export default function EditExternalEntitiesPage() {
 		getExternalEntityById(externalEntityId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
-					setExternalEntity(res.data);
+					let externalEntity = res.data;
+					
+					externalEntity.provincia_id = externalEntity.provincia
+						? externalEntity.provincia.id
+						: null;
+					delete externalEntity.provincia;
+
+					setExternalEntity(externalEntity);
 					disableLoadingData();
 				}
 			})
@@ -138,7 +162,11 @@ export default function EditExternalEntitiesPage() {
 					});
 				});
 		} else {
-			updateExternalEntity(externalEntityId, externalEntity, loggedUser.accessToken)
+			updateExternalEntity(
+				externalEntityId,
+				externalEntity,
+				loggedUser.accessToken
+			)
 				.then((res) => {
 					if (res.status === 204) {
 						alertSuccess({
@@ -268,16 +296,34 @@ export default function EditExternalEntitiesPage() {
 								/>
 							</div>
 							<div className="col-4 gx-3">
-								<TextField
-									id={`provincia`}
-									label="Província"
-									value={externalEntity.provincia}
-									onChange={handleChange("provincia")}
-									InputLabelProps={{
-										shrink: true,
+								<Autocomplete
+									id="autocomplete-provincia"
+									disablePortal
+									filterSelectedOptions
+									options={provincias}
+									getOptionLabel={(option) => option.nombre}
+									value={provincias.find(
+										(x) =>
+											x.id ===
+											externalEntity?.provincia_id
+									)}
+									onChange={(event, selected) => {
+										setExternalEntity({
+											...externalEntity,
+											provincia_id: selected?.id,
+										});
 									}}
-									margin="normal"
-									variant="outlined"
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Província"
+											margin="normal"
+											variant="outlined"
+											InputLabelProps={{
+												shrink: true,
+											}}
+										/>
+									)}
 								/>
 							</div>
 							<div className="col-4 gx-3">

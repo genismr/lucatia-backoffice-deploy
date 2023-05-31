@@ -39,6 +39,7 @@ import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
 import { getAppMetadata } from "../../../../api/app";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
+import { getProvincias } from "../../../../api/provincia";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -72,7 +73,7 @@ function getEmptyUser() {
 		direccion: null,
 		cp: null,
 		poblacion: null,
-		provincia: null,
+		provincia_id: null,
 		pais: null,
 		fecha_nacimiento: null,
 		fecha_alta: "",
@@ -122,6 +123,8 @@ export default function EditUsersPage() {
 	const [roles, setRoles] = useState(null);
 	const [entities, setEntities] = useState(null);
 	const [apps, setApps] = useState(null);
+	const [provincias, setProvincias] = useState([]);
+
 
 	const [appMetadata, setAppMetadata] = useState(null);
 
@@ -145,7 +148,8 @@ export default function EditUsersPage() {
 	);
 
 	const loggedUserAuthorized =
-		loggedUser.role.rango === userRoles.SUPER_ADMIN || loggedUser.role.rango === userRoles.ADMIN_ENTIDAD;
+		loggedUser.role.rango === userRoles.SUPER_ADMIN ||
+		loggedUser.role.rango === userRoles.ADMIN_ENTIDAD;
 
 	const showPatients = window.location.href.toString().includes("patient");
 
@@ -503,6 +507,19 @@ export default function EditUsersPage() {
 				});
 				history.push("/users");
 			});
+		getProvincias()
+			.then((res) => {
+				if (res.status === 200) {
+					setProvincias(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get provincias.",
+				});
+				history.push("/users");
+			});
 		if (loggedUserAuthorized) {
 			getEntities(loggedUser.accessToken)
 				.then((res) => {
@@ -553,6 +570,9 @@ export default function EditUsersPage() {
 					if (user.last_login === "0001-01-01T00:00:00")
 						user.last_login = null;
 
+					user.provincia_id = user.provincia ? user.provincia.id : null;
+					delete user.provincia;
+
 					delete user.role;
 					user.user_rol_id = roleId;
 					user.owned_entities = user.owned_entities.map((e) => e.id);
@@ -601,7 +621,7 @@ export default function EditUsersPage() {
 		)
 			text = null;
 		setUser({ ...user, [element]: text });
-	};	
+	};
 
 	const handleChangeMetadata = (element, app_metadata_id) => (event) => {
 		let metadataUser = [...user.app_metadata];
@@ -844,8 +864,6 @@ export default function EditUsersPage() {
 		);
 	}
 
-	const provincias = [{ label: "WIP" }, { label: "WIP" }];
-
 	if (isLoadingData) return <ContentSkeleton />;
 	else
 		return (
@@ -1084,9 +1102,10 @@ export default function EditUsersPage() {
 									disablePortal
 									filterSelectedOptions
 									options={provincias}
-									getOptionLabel={(option) => option.label}
+									getOptionLabel={(option) => option.nombre}
+									value={provincias.find(x => x.id === user?.provincia_id)}
 									onChange={(event, selected) => {
-										console.log(selected);
+										setUser({...user, provincia_id: selected?.id})
 									}}
 									renderInput={(params) => (
 										<TextField

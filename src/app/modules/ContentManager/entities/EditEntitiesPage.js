@@ -38,6 +38,7 @@ import EntityContactsTableDialog from "../../../components/dialogs/EntityContact
 import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 import { getRoles } from "../../../../api/role";
+import { getProvincias } from "../../../../api/provincia";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -58,7 +59,7 @@ function getEmptyEntity() {
 		direccion: null,
 		cp: null,
 		poblacion: null,
-		provincia: null,
+		provincia_id: null,
 		pais: null,
 		contacto_propietario: null,
 		contacto_tecnico: null,
@@ -98,6 +99,7 @@ export default function EditEntitiesPage() {
 
 	const [roles, setRoles] = useState(null);
 	const [users, setUsers] = useState(null);
+	const [provincias, setProvincias] = useState([]);
 
 	const entityId = useParams().id;
 	const history = useHistory();
@@ -169,6 +171,19 @@ export default function EditEntitiesPage() {
 					customMessage: "Could not get roles.",
 				});
 			});
+		getProvincias()
+			.then((res) => {
+				if (res.status === 200) {
+					setProvincias(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get provincias.",
+				});
+				history.push("/users");
+			});
 		if (!entityId) {
 			disableLoadingData();
 			return;
@@ -176,7 +191,14 @@ export default function EditEntitiesPage() {
 		getEntityById(entityId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
-					setEntity(res.data);
+					let entity = res.data;
+
+					entity.provincia_id = entity.provincia
+						? entity.provincia.id
+						: null;
+					delete entity.provincia;
+
+					setEntity(entity);
 					disableLoadingData();
 				}
 			})
@@ -376,16 +398,32 @@ export default function EditEntitiesPage() {
 								/>
 							</div>
 							<div className="col-4 gx-3">
-								<TextField
-									id={`provincia`}
-									label="Provincia"
-									value={entity.provincia}
-									onChange={handleChange("provincia")}
-									InputLabelProps={{
-										shrink: true,
+								<Autocomplete
+									id="autocomplete-provincia"
+									disablePortal
+									filterSelectedOptions
+									options={provincias}
+									getOptionLabel={(option) => option.nombre}
+									value={provincias.find(
+										(x) => x.id === entity?.provincia_id
+									)}
+									onChange={(event, selected) => {
+										setEntity({
+											...entity,
+											provincia_id: selected?.id,
+										});
 									}}
-									margin="normal"
-									variant="outlined"
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Província"
+											margin="normal"
+											variant="outlined"
+											InputLabelProps={{
+												shrink: true,
+											}}
+										/>
+									)}
 								/>
 							</div>
 							<div className="col-4 gx-3">
@@ -601,6 +639,7 @@ export default function EditEntitiesPage() {
 						setOpen={setOpenTableDialog}
 						data={users}
 						roles={roles}
+						provincias={provincias}
 						title="Users"
 						onSelectRow={(item) => {
 							updateContacto(item);

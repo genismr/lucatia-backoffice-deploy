@@ -39,6 +39,7 @@ import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
 import { getAppMetadata } from "../../../../api/app";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
+import { getProvincias } from "../../../../api/provincia";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -72,7 +73,7 @@ function getEmptyPatient() {
 		direccion: null,
 		cp: null,
 		poblacion: null,
-		provincia: null,
+		provincia_id: null,
 		pais: null,
 		fecha_nacimiento: null,
 		fecha_alta: "",
@@ -119,6 +120,7 @@ export default function EditPatientsPage() {
 	const [roles, setRoles] = useState(null);
 	const [entities, setEntities] = useState(null);
 	const [apps, setApps] = useState(null);
+	const [provincias, setProvincias] = useState([]);
 
 	const [appMetadata, setAppMetadata] = useState(null);
 
@@ -493,6 +495,19 @@ export default function EditPatientsPage() {
 				});
 				history.push("/patients");
 			});
+		getProvincias()
+			.then((res) => {
+				if (res.status === 200) {
+					setProvincias(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get provincias.",
+				});
+				history.push("/patients");
+			});
 		getEntities(loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
@@ -540,6 +555,11 @@ export default function EditPatientsPage() {
 						user.fecha_nacimiento = null;
 					if (user.last_login === "0001-01-01T00:00:00")
 						user.last_login = null;
+						
+					user.provincia_id = user.provincia
+						? user.provincia.id
+						: null;
+					delete user.provincia;
 
 					delete user.role;
 					user.user_rol_id = roleId;
@@ -927,16 +947,32 @@ export default function EditPatientsPage() {
 								/>
 							</div>
 							<div className="col-4 gx-3">
-								<TextField
-									id={`provincia`}
-									label="Província"
-									value={patient.provincia}
-									onChange={handleChange("provincia")}
-									InputLabelProps={{
-										shrink: true,
+								<Autocomplete
+									id="autocomplete-provincia"
+									disablePortal
+									filterSelectedOptions
+									options={provincias}
+									getOptionLabel={(option) => option.nombre}
+									value={provincias.find(
+										(x) => x.id === patient?.provincia_id
+									)}
+									onChange={(event, selected) => {
+										setPatient({
+											...patient,
+											provincia_id: selected?.id,
+										});
 									}}
-									margin="normal"
-									variant="outlined"
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Província"
+											margin="normal"
+											variant="outlined"
+											InputLabelProps={{
+												shrink: true,
+											}}
+										/>
+									)}
 								/>
 							</div>
 							<div className="col-4 gx-3">

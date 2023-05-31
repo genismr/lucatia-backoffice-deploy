@@ -70,7 +70,7 @@ function getEmptyUser() {
 		direccion: null,
 		cp: null,
 		poblacion: null,
-		provincia: null,
+		provincia_id: null,
 		pais: null,
 		activo: true,
 	};
@@ -84,7 +84,15 @@ function getEmptyPassword() {
 }
 
 const EntityContactsTableDialog = (props) => {
-	const { open, setOpen, data, roles, onSelectRow, onUserCreated } = props;
+	const {
+		open,
+		setOpen,
+		data,
+		roles,
+		provincias,
+		onSelectRow,
+		onUserCreated,
+	} = props;
 	const [refresh, setRefresh] = useState(false);
 
 	const [renderInputFields, setRenderInputFields] = useState(null);
@@ -417,16 +425,32 @@ const EntityContactsTableDialog = (props) => {
 						/>
 					</div>
 					<div className="col-4 gx-3">
-						<TextField
-							id={`provincia`}
-							label="Província"
-							value={user.provincia}
-							onChange={handleChange("provincia")}
-							InputLabelProps={{
-								shrink: true,
+						<Autocomplete
+							id="autocomplete-provincia"
+							disablePortal
+							filterSelectedOptions
+							options={provincias}
+							getOptionLabel={(option) => option.nombre}
+							value={provincias.find(
+								(x) => x.id === user?.provincia_id
+							)}
+							onChange={(event, selected) => {
+								setUser({
+									...user,
+									provincia_id: selected?.id,
+								});
 							}}
-							margin="normal"
-							variant="outlined"
+							renderInput={(params) => (
+								<TextField
+									{...params}
+									label="Província"
+									margin="normal"
+									variant="outlined"
+									InputLabelProps={{
+										shrink: true,
+									}}
+								/>
+							)}
 						/>
 					</div>
 					<div className="col-4 gx-3">

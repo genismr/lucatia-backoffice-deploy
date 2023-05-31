@@ -93,7 +93,7 @@ export default function ViewExternalEntitiesPage() {
 							</div>
 							<div className="col-4 gx-3">
 								<h5>Província</h5>
-								<p>{externalEntity.provincia || "---"}</p>
+								<p>{externalEntity.provincia?.nombre || "---"}</p>
 							</div>
 							<div className="col-4 gx-3">
 								<h5>País</h5>

@@ -127,8 +127,8 @@ export default function ViewPatientsPage() {
 						</div>
 						<div className="row">
 							<div className="col-4 gx-3">
-								<h5>Provincia</h5>
-								<p>{user.provincia || "---"}</p>
+								<h5>Província</h5>
+								<p>{user.provincia?.nombre || "---"}</p>
 							</div>
 							<div className="col-4 gx-3">
 								<h5>País</h5>

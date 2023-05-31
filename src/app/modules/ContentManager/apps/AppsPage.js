@@ -50,7 +50,7 @@ function getData(apps) {
 
 		elem.faviconApp = apps[i].icono_id;
 		elem.nombre = apps[i].nombre;
-		elem.tecnologia = apps[i].tecnologia;
+		elem.tecnologia = apps[i].tecnologia ? apps[i].tecnologia : "---";
 		elem.faviconOwnerEntity = apps[i].ownedEntities?.map((e) => e.icono_id);
 		elem.faviconsDelegatedEntities = apps[i].delegatedEntities?.map(
 			(e) => e.icono_id

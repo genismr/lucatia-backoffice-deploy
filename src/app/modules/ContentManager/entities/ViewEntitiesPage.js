@@ -98,7 +98,7 @@ export default function ViewEntitiesPage() {
 						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Província</h5>
-								<p>{entity.provincia || "---"}</p>
+								<p>{entity.provincia?.nombre || "---"}</p>
 							</div>
 							<div className="col-4 gx-3">
 								<h5>País</h5>
