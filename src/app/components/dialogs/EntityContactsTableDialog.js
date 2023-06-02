@@ -37,27 +37,6 @@ import { checkIsEmpty } from "../../../utils/helpers";
 import { postUser } from "../../../api/user";
 import { Autocomplete } from "@material-ui/lab";
 
-// Create theme for delete button (red)
-const theme = createMuiTheme({
-	palette: {
-		secondary: {
-			main: "#F64E60",
-		},
-	},
-});
-
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-	PaperProps: {
-		style: {
-			maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-			width: 250,
-		},
-	},
-	getContentAnchorEl: () => null,
-};
-
 function getEmptyUser() {
 	return {
 		nombre: "",
@@ -474,7 +453,6 @@ const EntityContactsTableDialog = (props) => {
 							setRenderInputFields(null);
 							setNewPassword(getEmptyPassword());
 							setUser(getEmptyUser());
-							setRenderInputFields(null);
 						}}
 						variant="outlined"
 						style={{ marginRight: "20px" }}
@@ -537,7 +515,7 @@ const EntityContactsTableDialog = (props) => {
 					variant="outlined"
 					color="secondary"
 				>
-					Accept
+					Close
 				</Button>
 			</DialogActions>
 		</Dialog>

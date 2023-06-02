@@ -10,6 +10,7 @@ import PeopleIcon from "@material-ui/icons/People";
 import PatientIcon from "@material-ui/icons/DirectionsWalk";
 import BuildingIcon from "@material-ui/icons/AccountBalance";
 import AppIcon from "@material-ui/icons/PhoneIphone";
+import GameIcon from "@material-ui/icons/Games";
 import AssetIcon from "@material-ui/icons/WebAsset";
 import StoreIcon from "@material-ui/icons/Store";
 import { shallowEqual, useSelector } from "react-redux";
@@ -76,7 +77,8 @@ export function AsideMenuList({ layoutProps }) {
 							<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
 						</li>
 						{(loggedUser.role?.rango === userRoles.SUPER_ADMIN ||
-							loggedUser.role?.rango === userRoles.ADMIN_ENTIDAD) && (
+							loggedUser.role?.rango ===
+								userRoles.ADMIN_ENTIDAD) && (
 							<>
 								<li
 									className={`menu-item ${getMenuItemActive(
@@ -197,6 +199,38 @@ export function AsideMenuList({ layoutProps }) {
 						</li>
 					</>
 				)}
+
+				<li className="menu-section">
+					<h4 className="menu-text">GAMES</h4>
+					<i className="menu-icon ki ki-bold-more-hor icon-md"></i>
+				</li>
+				<li
+					className={`menu-item ${getMenuItemActive(
+						"/games",
+						false
+					)}  ${getMenuItemActive(
+						"/edit-game",
+						false
+					)} ${getMenuItemActive(
+						"/edit-environment",
+						false
+					)} ${getMenuItemActive(
+						"/edit-activity",
+						false
+					)} ${getMenuItemActive(
+						"/edit-question",
+						false
+					)} ${getMenuItemActive("/edit-answer", false)}`}
+					aria-haspopup="true"
+				>
+					<NavLink className="menu-link" to="/games">
+						<span className="menu-icon">
+							<GameIcon />
+						</span>
+						<span className="menu-text">Games</span>
+					</NavLink>
+				</li>
+
 				{(loggedUser.role?.rango === userRoles.SUPER_ADMIN ||
 					loggedUser.role?.rango === userRoles.DESIGNER) && (
 					<>

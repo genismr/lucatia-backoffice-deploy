@@ -21,6 +21,14 @@ export const checkIsEmpty = (field) => {
 	);
 };
 
+export const storeToSession = (key, value) => {
+	window.sessionStorage.setItem(key, JSON.stringify(value));
+};
+
+export const getFromSession = (key) => {
+	return JSON.parse(window.sessionStorage.getItem(key));
+};
+
 export const getFileType = (fileName) => {
 	if (!fileName) return "unknown";
 	const ext = fileName.split(".").pop();

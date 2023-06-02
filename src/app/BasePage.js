@@ -22,6 +22,12 @@ import PatientsPage from "./modules/ContentManager/patients/PatientsPage";
 import ViewPatientsPage from "./modules/ContentManager/patients/ViewPatientsPage";
 import EditPatientsPage from "./modules/ContentManager/patients/EditPatientsPage";
 import { userRoles } from "../utils/helpers";
+import GamesPage from "./modules/ContentManager/games/GamesPage";
+import EditGamesPage from "./modules/ContentManager/games/EditGamesPage";
+import EditEnvironmentsPage from "./modules/ContentManager/game-environments/EditEnvironmentsPage";
+import EditActivitiesPage from "./modules/ContentManager/game-activities/EditActivitiesPage";
+import EditQuestionsPage from "./modules/ContentManager/game-questions/EditQuestionsPage";
+import EditAnswersPage from "./modules/ContentManager/game-answer/EditAnswersPage";
 
 export default function BasePage() {
 	const loggedUser = useSelector(
@@ -54,7 +60,9 @@ export default function BasePage() {
 			<ContentRoute
 				from="/patients"
 				component={
-					loggedUser?.role?.rango <= userRoles.USER ? PatientsPage : DashboardPage
+					loggedUser?.role?.rango <= userRoles.USER
+						? PatientsPage
+						: DashboardPage
 				}
 			/>
 			<ContentRoute
@@ -157,6 +165,31 @@ export default function BasePage() {
 						? EditAppsPage
 						: DashboardPage
 				}
+			/>
+
+			{/* GAMES */}
+			{/* Games */}
+			<ContentRoute from="/games" component={GamesPage} />
+			<ContentRoute from="/edit-game/:id?" component={EditGamesPage} />
+			{/* Environments */}
+			<ContentRoute
+				from="/edit-environment/:id?"
+				component={EditEnvironmentsPage}
+			/>
+			{/* Activities */}
+			<ContentRoute
+				from="/edit-activity/:id?"
+				component={EditActivitiesPage}
+			/>
+			{/* Questions */}
+			<ContentRoute
+				from="/edit-question/:id?"
+				component={EditQuestionsPage}
+			/>
+			{/* Answers */}
+			<ContentRoute
+				from="/edit-answer/:id?"
+				component={EditAnswersPage}
 			/>
 
 			{/* ASSETS */}
