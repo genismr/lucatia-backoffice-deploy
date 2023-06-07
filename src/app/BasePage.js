@@ -191,6 +191,10 @@ export default function BasePage() {
 				from="/edit-answer/:id?"
 				component={EditAnswersPage}
 			/>
+			<ContentRoute
+				from="/edit-answer-question/:id?"
+				component={EditQuestionsPage}
+			/>
 
 			{/* ASSETS */}
 			{/* Assets */}

@@ -25,8 +25,14 @@ export const storeToSession = (key, value) => {
 	window.sessionStorage.setItem(key, JSON.stringify(value));
 };
 
+export const removeFromSession = (key) => {
+	window.sessionStorage.removeItem(key);
+};
+
 export const getFromSession = (key) => {
-	return JSON.parse(window.sessionStorage.getItem(key));
+	let item = window.sessionStorage.getItem(key);
+	if (item == "undefined" || item == null) return null;
+	return JSON.parse(item);
 };
 
 export const getFileType = (fileName) => {

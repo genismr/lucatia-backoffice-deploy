@@ -7,7 +7,10 @@ import {
 } from "../../../../_metronic/_partials/controls";
 import {
 	Button,
+	Checkbox,
 	FormControlLabel,
+	Radio,
+	RadioGroup,
 	TextField,
 	Tooltip,
 } from "@material-ui/core";
@@ -39,10 +42,18 @@ import {
 	postGameQuestion,
 	updateGameQuestion,
 } from "../../../../api/game-question";
-import { CheckBox, Visibility, VolumeUp } from "@material-ui/icons";
+import {
+	CheckBox,
+	Delete,
+	Replay,
+	Visibility,
+	VolumeUp,
+} from "@material-ui/icons";
 import AddResourceIcon from "@material-ui/icons/AddPhotoAlternate";
 import AssetTableDialog from "../../../components/dialogs/AssetTableDialog";
 import PreviewDialog from "../../../components/dialogs/PreviewDialog";
+import { FormControl, FormLabel } from "react-bootstrap";
+import { deleteGameAnswer } from "../../../../api/game-answer";
 
 function getEmptyQuestion() {
 	return {
@@ -66,6 +77,7 @@ function getData(answers) {
 		elem.nombre = answers[i].nombre;
 		elem.descripcion = answers[i].descripcion;
 		elem.icono = answers[i].icono_id;
+		elem.ofrece_reintento = answers[i].ofrece_reintento;
 		elem.id = answers[i].id;
 
 		data = data.concat(elem);
@@ -76,8 +88,11 @@ function getData(answers) {
 
 export default function EditQuestionsPage() {
 	const [question, setQuestion] = useState(getEmptyQuestion());
+	const [selectedAnswer, setSelectedAnswer] = useState(null);
+
 	const [answers, setAnswers] = useState([]);
 
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 	const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
 	const [previewFile, setPreviewFile] = useState(null);
 	const [openTableDialog, setOpenTableDialog] = useState(false);
@@ -94,14 +109,21 @@ export default function EditQuestionsPage() {
 	const [imageSelected, setImageSelected] = useState(null);
 
 	const activityId = getFromSession("activity").id;
+	const answerId = getFromSession("answer");
 
 	const questionId = useParams().id;
 	const history = useHistory();
+
+	const [refresh, setRefresh] = useState(false);
 
 	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
 		shallowEqual
 	);
+
+	const retryQuestion = window.location.href
+		.toString()
+		.includes("edit-answer-question");
 
 	const {
 		isLoading: isLoadingData,
@@ -231,7 +253,7 @@ export default function EditQuestionsPage() {
 				});
 				history.push("/edit-activity/" + activityId);
 			});
-	}, [questionId, disableLoadingData, history]);
+	}, [questionId, disableLoadingData, history, refresh]);
 
 	function saveQuestion() {
 		if (checkIsEmpty(question.nombre)) {
@@ -244,6 +266,7 @@ export default function EditQuestionsPage() {
 
 		if (!questionId) {
 			question.actividad_id = activityId;
+			if (retryQuestion) question.es_reintento = true;
 			postGameQuestion(question)
 				.then((res) => {
 					if (res.status === 201) {
@@ -251,7 +274,13 @@ export default function EditQuestionsPage() {
 							title: "Saved!",
 							customMessage: "Question successfully created.",
 						});
-						history.push("/edit-activity/" + activityId);
+						if (retryQuestion) {
+							storeToSession("retryQuestion", res.data.id);
+							history.push(
+								"/edit-answer/" +
+									(answerId != null ? answerId : "")
+							);
+						} else history.push("/edit-activity/" + activityId);
 					}
 				})
 				.catch((error) => {
@@ -317,6 +346,35 @@ export default function EditQuestionsPage() {
 						}}
 					>
 						<EditIcon />
+					</Button>
+				</Tooltip>
+				{elem.ofrece_reintento && (
+					<Tooltip title="Edit">
+						<Button
+							style={buttonsStyle}
+							size="small"
+							onClick={() => {
+								storeToSession("question", {
+									id: questionId,
+									name: question.nombre,
+								});
+								history.push("/edit-answer/" + cell);
+							}}
+						>
+							<Replay />
+						</Button>
+					</Tooltip>
+				)}
+				<Tooltip title="Delete">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						onClick={() => {
+							setSelectedAnswer(elem);
+							setOpenConfirmDialog(true);
+						}}
+					>
+						<Delete />
 					</Button>
 				</Tooltip>
 			</>
@@ -590,41 +648,103 @@ export default function EditQuestionsPage() {
 							</div>
 						</div>
 						<br />
-						<div className="row ml-0">
-							<div className="col-3">
+						<div className="row">
+							<div className="col ml-4">
 								<FormControlLabel
 									control={
-										<CheckBox
-											checked={question.es_abierta}
-											onClick={() =>
+										<RadioGroup
+											row
+											aria-labelledby="demo-row-radio-buttons-group-label"
+											name="row-radio-buttons-group"
+											onChange={(event) =>
 												setQuestion({
 													...question,
-													es_abierta: !question.es_abierta,
+													es_abierta:
+														event.target.value ===
+														"abierta"
+															? true
+															: false,
 												})
 											}
-											name="checkActive"
-										/>
+										>
+											<FormControlLabel
+												value="abierta"
+												checked={question?.es_abierta}
+												control={<Radio />}
+												label="Abierta"
+											/>
+											<FormControlLabel
+												value="cerrada"
+												checked={!question?.es_abierta}
+												control={<Radio />}
+												label="Cerrada"
+											/>
+										</RadioGroup>
 									}
-									label="Abierta (WIP)"
 								/>
 							</div>
-							<div className="col-3">
-								<FormControlLabel
-									control={
-										<CheckBox
-											checked={question.es_secuencial}
-											onClick={() =>
-												setQuestion({
-													...question,
-													es_secuencial: !question.es_secuencial,
-												})
-											}
-											name="checkActive"
-										/>
-									}
-									label="Secuencial (WIP)"
-								/>
-							</div>
+							{!question?.es_abierta && (
+								<div className="col">
+									<FormControlLabel
+										control={
+											<RadioGroup
+												row
+												aria-labelledby="demo-row-radio-buttons-group-label"
+												name="row-radio-buttons-group"
+												onChange={(event) =>
+													setQuestion({
+														...question,
+														es_secuencial:
+															event.target
+																.value ===
+															"secuencial"
+																? true
+																: false,
+													})
+												}
+											>
+												<FormControlLabel
+													value="secuencial"
+													checked={
+														question?.es_secuencial
+													}
+													control={<Radio />}
+													label="Secuencial"
+												/>
+												<FormControlLabel
+													value="interactiva"
+													checked={
+														!question?.es_secuencial
+													}
+													control={<Radio />}
+													label="Interactiva"
+												/>
+											</RadioGroup>
+										}
+									/>
+								</div>
+							)}
+							{!retryQuestion && (
+								<div className="col">
+									<FormControlLabel
+										control={
+											<Checkbox
+												checked={question.es_reintento}
+												name="checkActive"
+												onChange={(event) =>
+													setQuestion({
+														...question,
+														es_reintento:
+															event.target
+																.checked,
+													})
+												}
+											/>
+										}
+										label="Reintento"
+									/>
+								</div>
+							)}
 						</div>
 					</CardBody>
 					{questionId && (
@@ -734,8 +854,37 @@ export default function EditQuestionsPage() {
 					setOpen={setOpenPreviewDialog}
 					src={previewFile}
 				/>
+				<ConfirmDialog
+					title={"Are you sure you want to delete this answer?"}
+					open={openConfirmDialog}
+					setOpen={setOpenConfirmDialog}
+					onConfirm={() => {
+						deleteGameAnswer(selectedAnswer.id)
+							.then((res) => {
+								if (res.status === 204) {
+									alertSuccess({
+										title: "Deleted!",
+										customMessage:
+											"Answer successfully deleted.",
+									});
+									setRefresh(true);
+								}
+							})
+							.catch((error) => {
+								alertError({
+									error: error,
+									customMessage:
+										"Could not delete answer.",
+								});
+							});
+					}}
+				/>
 				<Button
-					onClick={() => history.push("/edit-activity/" + activityId)}
+					onClick={() =>
+						retryQuestion
+							? history.push("/edit-answer/" + answerId)
+							: history.push("/edit-activity/" + activityId)
+					}
 					variant="outlined"
 					style={{ marginRight: "20px" }}
 				>

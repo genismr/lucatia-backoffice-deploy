@@ -19,9 +19,9 @@ export const buttonsStyle = {
 
 export function booleanFormatter(cell) {
 	return cell ? (
-		<CheckBox style={{ color: "#D91E48" }} />
+		<CheckBox style={{ color: "#0454DC" }} />
 	) : (
-		<CheckBoxOutlineBlank style={{ color: "#D91E48" }} />
+		<CheckBoxOutlineBlank style={{ color: "#0454DC" }} />
 	);
 }
 

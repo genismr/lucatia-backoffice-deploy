@@ -14,6 +14,11 @@ export const getUserById = (id, accessToken) => {
   return authClient(accessToken).get(`${API}/user/${id}`)
 }
 
+// Get user assigned games
+export const getUserAssignedGames = (id, accessToken) => {
+  return authClient(accessToken).get(`${API}/user/${id}/assigned-games`)
+}
+
 // Delete user
 export const deleteUser = (id) => {
   return authClient().delete(`${API}/user/${id}`)

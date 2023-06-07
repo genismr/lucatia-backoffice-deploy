@@ -3,6 +3,7 @@ import {
 	Card,
 	CardBody,
 	CardHeader,
+	CardHeaderToolbar,
 } from "../../../../_metronic/_partials/controls";
 import {
 	Button,
@@ -14,6 +15,7 @@ import {
 	MenuItem,
 	Select,
 	FormHelperText,
+	Tooltip,
 } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import {
@@ -29,6 +31,7 @@ import {
 	updateUserAppMetadata,
 	assignUserApp,
 	unassignUserApp,
+	getUserAssignedGames,
 } from "../../../../api/user";
 import { getEntities } from "../../../../api/entity";
 import { getRoles } from "../../../../api/role";
@@ -40,6 +43,15 @@ import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
 import { getAppMetadata } from "../../../../api/app";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 import { getProvincias } from "../../../../api/provincia";
+import Table, {
+	buttonsStyle,
+	booleanFormatter,
+	dateFormatter,
+} from "../../../components/tables/table";
+import GameTableDialog from "../../../components/dialogs/GameTableDialog";
+import { getGames } from "../../../../api/game";
+import { Replay } from "@material-ui/icons";
+import { postGameSession } from "../../../../api/game-session";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -109,13 +121,43 @@ function getAppsRelatedToEntities(entities) {
 	return data;
 }
 
+function getGameData(assignedGames) {
+	let data = [];
+
+	for (let i = 0; i < assignedGames.length; ++i) {
+		const elem = {};
+
+		elem.juego = assignedGames[i].juego.nombre;
+		elem.preescriptor =
+			assignedGames[i].asignado_por.nombre +
+			" " +
+			assignedGames[i].asignado_por.apellidos;
+		elem.fechaAsignado = assignedGames[i].fecha_asignado;
+		elem.fechaInicio = assignedGames[i].fecha_inicio;
+		elem.fechaFin = assignedGames[i].fecha_fin;
+		elem.jugado = assignedGames[i].jugado;
+		elem.id = assignedGames[i].id;
+
+		data = data.concat(elem);
+	}
+
+	return data;
+}
+
 export default function EditPatientsPage() {
 	const [patient, setPatient] = useState(getEmptyPatient());
+	const [games, setGames] = useState([]);
 
 	const [newPassword, setNewPassword] = useState({
 		password: null,
 		repeatPassword: null,
 	});
+
+	const [assignedGames, setAssignedGames] = useState([]);
+	const [selectedSession, setSelectedSession] = useState([]);
+
+	const [openTableDialog, setOpenTableDialog] = useState(null);
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 
 	const [roles, setRoles] = useState(null);
 	const [entities, setEntities] = useState(null);
@@ -540,6 +582,30 @@ export default function EditPatientsPage() {
 			disableLoadingData();
 			return;
 		}
+		getGames()
+			.then((res) => {
+				if (res.status === 200) {
+					setGames(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get games.",
+				});
+			});
+		getUserAssignedGames(patientId, loggedUser.accessToken)
+			.then((res) => {
+				if (res.status === 200) {
+					setAssignedGames(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assigned games.",
+				});
+			});
 		getUserById(patientId, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
@@ -555,7 +621,7 @@ export default function EditPatientsPage() {
 						user.fecha_nacimiento = null;
 					if (user.last_login === "0001-01-01T00:00:00")
 						user.last_login = null;
-						
+
 					user.provincia_id = user.provincia
 						? user.provincia.id
 						: null;
@@ -751,6 +817,84 @@ export default function EditPatientsPage() {
 		);
 	}
 
+	function buttonFormatter(cell) {
+		const elem = assignedGames.find((item) => item.id === cell);
+		return (
+			<>
+				<Tooltip title="Assign again">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						onClick={() => {
+							setSelectedSession(elem);
+							setOpenConfirmDialog(true);
+						}}
+					>
+						<Replay />
+					</Button>
+				</Tooltip>
+			</>
+		);
+	}
+
+	const columns = [
+		{
+			dataField: "juego",
+			text: "Juego",
+			sort: true,
+		},
+		{
+			dataField: "preescriptor",
+			text: "Preescriptor",
+			sort: true,
+		},
+		{
+			dataField: "fechaAsignado",
+			text: "Asignado",
+			sort: true,
+			formatter: dateFormatter,
+		},
+		{
+			dataField: "jugado",
+			text: "Jugado",
+			sort: true,
+			formatter: booleanFormatter,
+		},
+		{
+			dataField: "id",
+			text: "",
+			formatter: buttonFormatter,
+		},
+	];
+
+	function reAssignGameSession() {
+		let saveSession = [
+			{
+				juego_id: selectedSession.juego.id,
+				asignado_a: selectedSession.asignado_a.id,
+				asignado_por: selectedSession.asignado_por.id,
+			},
+		];
+		postGameSession(saveSession)
+			.then((res) => {
+				if (res.status === 201) {
+					alertSuccess({
+						title: "Saved!",
+						customMessage: "Session successfully created.",
+					});
+					let newAssignedGames = [...assignedGames];
+					newAssignedGames = newAssignedGames.concat(res.data);
+					setAssignedGames(newAssignedGames);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not save session.",
+				});
+			});
+	}
+
 	if (isLoadingData) return <ContentSkeleton />;
 	else
 		return (
@@ -758,7 +902,6 @@ export default function EditPatientsPage() {
 				<Card>
 					<CardHeader title="Edit patient"></CardHeader>
 					<CardBody>
-						{" "}
 						<form autoComplete="off">
 							<div className="row">
 								<div className="col-4 gx-3">
@@ -1064,6 +1207,46 @@ export default function EditPatientsPage() {
 					<CardHeader title="Additional information"></CardHeader>
 					<CardBody>{renderMetadataFields()}</CardBody>
 				</Card>
+				<Card>
+					<CardHeader title="Assigned games">
+						<CardHeaderToolbar>
+							<button
+								type="button"
+								className="btn btn-primary"
+								onClick={() => setOpenTableDialog(true)}
+							>
+								Assign new
+							</button>
+						</CardHeaderToolbar>
+					</CardHeader>
+					<CardBody>
+						{assignedGames.length > 0 && (
+							<Table
+								data={getGameData(assignedGames)}
+								columns={columns}
+							/>
+						)}
+					</CardBody>
+				</Card>
+				<GameTableDialog
+					open={openTableDialog}
+					setOpen={setOpenTableDialog}
+					data={games}
+					patient={patientId}
+					onCreate={(data) => {
+						let newAssignedGames = [...assignedGames];
+						newAssignedGames = newAssignedGames.concat(data);
+						setAssignedGames(newAssignedGames);
+					}}
+				/>
+				<ConfirmDialog
+					title={"Are you sure you want to reassign this game?"}
+					open={openConfirmDialog}
+					setOpen={setOpenConfirmDialog}
+					onConfirm={() => {
+						reAssignGameSession();
+					}}
+				/>
 				<Button
 					onClick={() => history.push("/patients")}
 					variant="outlined"

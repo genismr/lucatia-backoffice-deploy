@@ -11,3 +11,7 @@ export const getGameAnswerById = (id) => {
 export const updateGameAnswer = (id, gameAnswer) => {
   return authClient().put(`${API}/game-answer/${id}`, gameAnswer)
 }
+
+export const deleteGameAnswer = (id) => {
+  return authClient().delete(`${API}/game-answer/${id}`)
+}

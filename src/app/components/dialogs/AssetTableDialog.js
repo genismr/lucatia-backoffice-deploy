@@ -55,8 +55,6 @@ const initialFilters = {
 	tags: [],
 };
 
-
-
 function getEmptyAsset() {
 	return {
 		id: "",
@@ -557,7 +555,16 @@ const AssetTableDialog = (props) => {
 						<Tooltip title={"Preview file"}>
 							<Button
 								size="small"
-								onClick={() => setOpenPreviewDialog(true)}
+								onClick={() => {
+									selectedFile
+										? setPreviewImage(
+												URL.createObjectURL(
+													selectedFile
+												)
+										  )
+										: setPreviewImage(asset.url);
+									setOpenPreviewDialog(true);
+								}}
 								style={{
 									...buttonsStyle,
 									marginRight: "15px",
@@ -566,16 +573,6 @@ const AssetTableDialog = (props) => {
 								<Visibility />
 							</Button>
 						</Tooltip>
-						<PreviewDialog
-							title={"Preview file"}
-							open={openPreviewDialog}
-							setOpen={setOpenPreviewDialog}
-							src={
-								selectedFile
-									? URL.createObjectURL(selectedFile)
-									: asset.url
-							}
-						/>
 						<span>
 							{selectedFile
 								? selectedFile?.name
