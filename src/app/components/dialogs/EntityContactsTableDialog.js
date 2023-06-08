@@ -92,7 +92,7 @@ const EntityContactsTableDialog = (props) => {
 				<Tooltip title={elem.role.descripcion}>
 					<img
 						src={elem.role.icono?.url}
-						style={{ maxWidth: "30px", cursor: "zoom-in" }}
+						style={{ maxWidth: "20px", cursor: "help" }}
 					/>
 				</Tooltip>
 			</>

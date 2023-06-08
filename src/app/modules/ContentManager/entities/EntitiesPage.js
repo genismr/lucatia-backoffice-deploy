@@ -71,7 +71,7 @@ export default function EntitiesPage() {
 			<img
 				src={cell}
 				alt="icon"
-				style={{ width: "50px", height: "50px", cursor: "zoom-in" }}
+				style={{ maxWidth: "50px", cursor: "zoom-in" }}
 				onClick={() => {
 					setPreviewImage(cell);
 					setOpenPreviewDialog(true);

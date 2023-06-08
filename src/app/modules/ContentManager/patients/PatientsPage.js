@@ -57,8 +57,6 @@ function getData(users, loggedUser) {
 			elem.nombreApellidos = users[i].nombre + apellidos;
 			elem.email = users[i].email;
 			elem.rol = users[i].role;
-			elem.faviconEntityOwner = "WIP";
-			elem.faviconEntityManager = "WIP";
 			elem.lastLogin = users[i].last_login;
 			elem.activo = users[i].activo;
 			elem.id = users[i].id;
@@ -88,7 +86,7 @@ export default function PatientsPage() {
 				<Tooltip title={elem.role.descripcion}>
 					<img
 						src={elem.role.icono?.url}
-						style={{ maxWidth: "30px", cursor: "zoom-in" }}
+						style={{ maxWidth: "20px", cursor: "help" }}
 					/>
 				</Tooltip>
 			</>
@@ -152,8 +150,6 @@ export default function PatientsPage() {
 		},
 		{ dataField: "email", text: "Mail", sort: true },
 		{ dataField: "id", text: "Rol", formatter: roleFormatter },
-		{ dataField: "faviconEntityOwner", text: "Owner" },
-		{ dataField: "faviconEntityManager", text: "Manager" },
 		{
 			dataField: "lastLogin",
 			text: "Last Login",
