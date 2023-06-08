@@ -3,6 +3,7 @@ import {
 	Card,
 	CardBody,
 	CardHeader,
+	CardHeaderToolbar,
 } from "../../../../_metronic/_partials/controls";
 import {
 	Button,
@@ -37,7 +38,7 @@ import { alertError, alertSuccess } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
-import { getAppMetadata } from "../../../../api/app";
+import { getAppMetadata, getMetadata } from "../../../../api/app";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 import { getProvincias } from "../../../../api/provincia";
 
@@ -125,8 +126,9 @@ export default function EditUsersPage() {
 	const [apps, setApps] = useState(null);
 	const [provincias, setProvincias] = useState([]);
 
-
+	const [metadata, setMetadata] = useState([]);
 	const [appMetadata, setAppMetadata] = useState(null);
+	const [selectedAppMetadata, setSelectedAppMetadata] = useState(null);
 
 	const [initialAppMetadata, setInitialAppMetadata] = useState(null);
 
@@ -138,6 +140,8 @@ export default function EditUsersPage() {
 
 	const [success, setSuccess] = useState(false);
 	const myProfile = window.location.href.toString().includes("my-area");
+
+	const [refresh, setRefresh] = useState(false);
 
 	const userId = useParams().id;
 	const history = useHistory();
@@ -534,13 +538,10 @@ export default function EditUsersPage() {
 						customMessage: "Could not get entities.",
 					});
 				});
-			getAppMetadata(
-				"404eb47a-4b1c-408a-fcb7-08db4575ec5a",
-				loggedUser.accessToken
-			)
+			getMetadata(loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 200) {
-						setAppMetadata(res.data);
+						setMetadata(res.data);
 					}
 				})
 				.catch((error) => {
@@ -570,7 +571,9 @@ export default function EditUsersPage() {
 					if (user.last_login === "0001-01-01T00:00:00")
 						user.last_login = null;
 
-					user.provincia_id = user.provincia ? user.provincia.id : null;
+					user.provincia_id = user.provincia
+						? user.provincia.id
+						: null;
 					delete user.provincia;
 
 					delete user.role;
@@ -597,7 +600,7 @@ export default function EditUsersPage() {
 				});
 				history.push("/users");
 			});
-	}, [userId, disableLoadingData, history]);
+	}, [userId, disableLoadingData, history, refresh]);
 
 	function getPermittedApps() {
 		if (apps != null) {
@@ -759,6 +762,16 @@ export default function EditUsersPage() {
 					}
 					filterSelectedOptions
 					onChange={(event, selected) => {
+						if (
+							user.apps
+								.filter(
+									(x) =>
+										!selected.map((y) => y.id).includes(x)
+								)
+								.includes(selectedAppMetadata)
+						) {
+							setSelectedAppMetadata(null);
+						}
 						setUser({
 							...user,
 							apps: selected.map((x) => x.id),
@@ -1103,9 +1116,14 @@ export default function EditUsersPage() {
 									filterSelectedOptions
 									options={provincias}
 									getOptionLabel={(option) => option.nombre}
-									value={provincias.find(x => x.id === user?.provincia_id)}
+									value={provincias.find(
+										(x) => x.id === user?.provincia_id
+									)}
 									onChange={(event, selected) => {
-										setUser({...user, provincia_id: selected?.id})
+										setUser({
+											...user,
+											provincia_id: selected?.id,
+										});
 									}}
 									renderInput={(params) => (
 										<TextField
@@ -1139,10 +1157,56 @@ export default function EditUsersPage() {
 					</CardBody>
 				</Card>
 				{loggedUserAuthorized && (
-					<Card>
-						<CardHeader title="Additional information"></CardHeader>
-						<CardBody>{renderMetadataFields()}</CardBody>
-					</Card>
+					<>
+						<Card>
+							<CardHeader title="Additional information">
+								<CardHeaderToolbar>
+									<Autocomplete
+										id="autocomplete-app-metadata"
+										style={{
+											width: 300,
+										}}
+										disableClearable
+										filterSelectedOptions
+										options={getPermittedApps().filter(
+											(x) => user.apps.includes(x.id)
+										)}
+										getOptionLabel={(option) =>
+											option.nombre
+										}
+										value={getPermittedApps().find(
+											(x) => x.id === selectedAppMetadata
+										)}
+										onChange={(event, selected) => {
+											setSelectedAppMetadata(selected.id);
+											let data = metadata.find(
+												(x) => x.app_id === selected.id
+											);
+											setAppMetadata(
+												data !== undefined
+													? data.metadata
+													: []
+											);
+										}}
+										renderInput={(params) => (
+											<TextField
+												{...params}
+												label="App"
+												margin="normal"
+												variant="outlined"
+												InputLabelProps={{
+													shrink: true,
+												}}
+											/>
+										)}
+									/>
+								</CardHeaderToolbar>
+							</CardHeader>
+							<CardBody>
+								{selectedAppMetadata && renderMetadataFields()}
+							</CardBody>
+						</Card>
+					</>
 				)}
 				<Button
 					onClick={() => history.push("/users")}

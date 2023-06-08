@@ -18,6 +18,10 @@ export const getApps = (accessToken) => {
   return authClient(accessToken).get(`${API}/app`)
 }
 
+export const getMetadata = (accessToken) => {
+  return authClient(accessToken).get(`${API}/app/metadata`)
+}
+
 export const getAppMetadata = (id, accessToken) => {
   return authClient(accessToken).get(`${API}/app/${id}/metadata`)
 }

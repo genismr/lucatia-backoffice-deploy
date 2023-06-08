@@ -40,7 +40,7 @@ import { alertError, alertSuccess } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
-import { getAppMetadata } from "../../../../api/app";
+import { getAppMetadata, getMetadata } from "../../../../api/app";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 import { getProvincias } from "../../../../api/provincia";
 import Table, {
@@ -164,7 +164,9 @@ export default function EditPatientsPage() {
 	const [apps, setApps] = useState(null);
 	const [provincias, setProvincias] = useState([]);
 
+	const [metadata, setMetadata] = useState([]);
 	const [appMetadata, setAppMetadata] = useState(null);
+	const [selectedAppMetadata, setSelectedAppMetadata] = useState(null);
 
 	const [initialAppMetadata, setInitialAppMetadata] = useState(null);
 
@@ -178,6 +180,8 @@ export default function EditPatientsPage() {
 
 	const patientId = useParams().id;
 	const history = useHistory();
+
+	const [refresh, setRefresh] = useState(false);
 
 	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
@@ -563,13 +567,10 @@ export default function EditPatientsPage() {
 					customMessage: "Could not get entities.",
 				});
 			});
-		getAppMetadata(
-			"404eb47a-4b1c-408a-fcb7-08db4575ec5a",
-			loggedUser.accessToken
-		)
+		getMetadata(loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
-					setAppMetadata(res.data);
+					setMetadata(res.data);
 				}
 			})
 			.catch((error) => {
@@ -578,6 +579,7 @@ export default function EditPatientsPage() {
 					customMessage: "Could not get app metadata.",
 				});
 			});
+
 		if (!patientId) {
 			disableLoadingData();
 			return;
@@ -651,7 +653,7 @@ export default function EditPatientsPage() {
 				});
 				history.push("/patients");
 			});
-	}, [patientId, disableLoadingData, history]);
+	}, [patientId, disableLoadingData, history, refresh]);
 
 	function getPermittedApps() {
 		if (apps != null) {
@@ -714,7 +716,8 @@ export default function EditPatientsPage() {
 				element
 			] = event.target.value;
 		}
-		setPatient({ ...patient, ["app_metadata"]: metadataUser });
+		console.log("handlechange", metadataUser);
+		setPatient({ ...patient, app_metadata: metadataUser });
 	};
 
 	function getMetadataValue(attribute, app_metadata_id) {
@@ -821,7 +824,7 @@ export default function EditPatientsPage() {
 		const elem = assignedGames.find((item) => item.id === cell);
 		return (
 			<>
-				<Tooltip title="Assign again">
+				<Tooltip title="Reassign">
 					<Button
 						style={buttonsStyle}
 						size="small"
@@ -1181,6 +1184,18 @@ export default function EditPatientsPage() {
 									}
 									filterSelectedOptions
 									onChange={(event, selected) => {
+										if (
+											patient.apps
+												.filter(
+													(x) =>
+														!selected
+															.map((y) => y.id)
+															.includes(x)
+												)
+												.includes(selectedAppMetadata)
+										) {
+											setSelectedAppMetadata(null);
+										}
 										setPatient({
 											...patient,
 											apps: selected.map((x) => x.id),
@@ -1204,8 +1219,48 @@ export default function EditPatientsPage() {
 					</CardBody>
 				</Card>
 				<Card>
-					<CardHeader title="Additional information"></CardHeader>
-					<CardBody>{renderMetadataFields()}</CardBody>
+					<CardHeader title="Additional information">
+						<CardHeaderToolbar>
+							<Autocomplete
+								id="autocomplete-app-metadata"
+								style={{
+									width: 300,
+								}}
+								disableClearable
+								filterSelectedOptions
+								options={getPermittedApps().filter((x) =>
+									patient.apps.includes(x.id)
+								)}
+								getOptionLabel={(option) => option.nombre}
+								value={getPermittedApps().find(
+									(x) => x.id === selectedAppMetadata
+								)}
+								onChange={(event, selected) => {
+									setSelectedAppMetadata(selected.id);
+									let data = metadata.find(
+										(x) => x.app_id === selected.id
+									);
+									setAppMetadata(
+										data !== undefined ? data.metadata : []
+									);
+								}}
+								renderInput={(params) => (
+									<TextField
+										{...params}
+										label="App"
+										margin="normal"
+										variant="outlined"
+										InputLabelProps={{
+											shrink: true,
+										}}
+									/>
+								)}
+							/>
+						</CardHeaderToolbar>
+					</CardHeader>
+					<CardBody>
+						{selectedAppMetadata && renderMetadataFields()}
+					</CardBody>
 				</Card>
 				<Card>
 					<CardHeader title="Assigned games">

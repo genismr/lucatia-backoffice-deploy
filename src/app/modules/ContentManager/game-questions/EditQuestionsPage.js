@@ -348,23 +348,6 @@ export default function EditQuestionsPage() {
 						<EditIcon />
 					</Button>
 				</Tooltip>
-				{elem.ofrece_reintento && (
-					<Tooltip title="Edit">
-						<Button
-							style={buttonsStyle}
-							size="small"
-							onClick={() => {
-								storeToSession("question", {
-									id: questionId,
-									name: question.nombre,
-								});
-								history.push("/edit-answer/" + cell);
-							}}
-						>
-							<Replay />
-						</Button>
-					</Tooltip>
-				)}
 				<Tooltip title="Delete">
 					<Button
 						style={buttonsStyle}
