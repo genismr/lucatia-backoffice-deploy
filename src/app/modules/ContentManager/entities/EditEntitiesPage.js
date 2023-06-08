@@ -39,6 +39,18 @@ import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 import { getRoles } from "../../../../api/role";
 import { getProvincias } from "../../../../api/provincia";
+import {
+	getAssets,
+	getCategories,
+	getExtensions,
+	getFormats,
+	getTags,
+	getTypes,
+} from "../../../../api/asset";
+import AddResourceIcon from "@material-ui/icons/AddPhotoAlternate";
+import AssetTableDialog from "../../../components/dialogs/AssetTableDialog";
+import PreviewDialog from "../../../components/dialogs/PreviewDialog";
+import { Visibility } from "@material-ui/icons";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -78,6 +90,9 @@ export default function EditEntitiesPage() {
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 	const [refresh, setRefresh] = useState(false);
 	const [openTableDialog, setOpenTableDialog] = useState(null);
+	const [openAssetTableDialog, setOpenAssetTableDialog] = useState(null);
+	const [openPreviewDialog, setOpenPreviewDialog] = useState(null);
+	const [previewFile, setPreviewFile] = useState(null);
 
 	const [
 		contactoPropietarioSelected,
@@ -100,6 +115,13 @@ export default function EditEntitiesPage() {
 	const [roles, setRoles] = useState(null);
 	const [users, setUsers] = useState(null);
 	const [provincias, setProvincias] = useState([]);
+
+	const [assets, setAssets] = useState([]);
+	const [types, setTypes] = useState(null);
+	const [categories, setCategories] = useState(null);
+	const [formats, setFormats] = useState(null);
+	const [extensions, setExtensions] = useState(null);
+	const [tags, setTags] = useState(null);
 
 	const entityId = useParams().id;
 	const history = useHistory();
@@ -137,7 +159,9 @@ export default function EditEntitiesPage() {
 		getEntities(loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 200) {
-					setParentEntities(res.data);
+					let data = res.data;
+					data = data.filter(x => x.id !== entityId);
+					setParentEntities(data);
 				}
 			})
 			.catch((error) => {
@@ -158,6 +182,7 @@ export default function EditEntitiesPage() {
 					error: error,
 					customMessage: "Could not get users.",
 				});
+				history.push("/entities");
 			});
 		getRoles()
 			.then((res) => {
@@ -170,6 +195,7 @@ export default function EditEntitiesPage() {
 					error: error,
 					customMessage: "Could not get roles.",
 				});
+				history.push("/entities");
 			});
 		getProvincias()
 			.then((res) => {
@@ -182,7 +208,86 @@ export default function EditEntitiesPage() {
 					error: error,
 					customMessage: "Could not get provincias.",
 				});
-				history.push("/users");
+				history.push("/entities");
+			});
+		getTypes()
+			.then((res) => {
+				if (res.status === 200) {
+					setTypes(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/entities");
+			});
+		getCategories()
+			.then((res) => {
+				if (res.status === 200) {
+					setCategories(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/entities");
+			});
+		getFormats()
+			.then((res) => {
+				if (res.status === 200) {
+					setFormats(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/entities");
+			});
+		getExtensions()
+			.then((res) => {
+				if (res.status === 200) {
+					setExtensions(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/entities");
+			});
+		getTags()
+			.then((res) => {
+				if (res.status === 200) {
+					setTags(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/entities");
+			});
+		getAssets(loggedUser.accessToken)
+			.then((res) => {
+				if (res.status === 200) {
+					setAssets(res.data);
+					disableLoadingData();
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/entities");
 			});
 		if (!entityId) {
 			disableLoadingData();
@@ -197,6 +302,7 @@ export default function EditEntitiesPage() {
 						? entity.provincia.id
 						: null;
 					delete entity.provincia;
+					entity.icono_id = entity.icono?.id;
 
 					setEntity(entity);
 					disableLoadingData();
@@ -404,7 +510,7 @@ export default function EditEntitiesPage() {
 									filterSelectedOptions
 									options={provincias}
 									getOptionLabel={(option) => option.nombre}
-									value={provincias.find(
+									value={provincias?.find(
 										(x) => x.id === entity?.provincia_id
 									)}
 									onChange={(event, selected) => {
@@ -591,9 +697,10 @@ export default function EditEntitiesPage() {
 								/>
 							</div>
 						</div>
-						{loggedUser.role.rango === userRoles.SUPER_ADMIN && (
-							<>
-								<div className="row">
+						<div className="row">
+							{loggedUser.role.rango ===
+								userRoles.SUPER_ADMIN && (
+								<>
 									<div className="col-6 gx-3">
 										<Autocomplete
 											id="autocomplete-parent-entity"
@@ -630,10 +737,74 @@ export default function EditEntitiesPage() {
 											)}
 										/>
 									</div>
-								</div>
-							</>
-						)}
+								</>
+							)}
+							<div className="col-6 gx-3">
+								<TextField
+									id={`icon`}
+									label="Icono"
+									value={
+										assets.find(
+											(x) => x.id === entity.icono_id
+										)?.descripcion
+									}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									InputProps={
+										({ readOnly: true },
+										{
+											endAdornment: (
+												<>
+													{entity?.icono_id && (
+														<Tooltip title="Preview">
+															<Button
+																onClick={() => {
+																	setPreviewFile(
+																		assets.find(
+																			(
+																				x
+																			) =>
+																				x.id ===
+																				entity.icono_id
+																		)?.url
+																	);
+																	setOpenPreviewDialog(
+																		true
+																	);
+																}}
+															>
+																<Visibility />
+															</Button>
+														</Tooltip>
+													)}
+													<Tooltip title="Select image">
+														<Button
+															onClick={() => {
+																setOpenAssetTableDialog(
+																	true
+																);
+															}}
+														>
+															<AddResourceIcon />
+														</Button>
+													</Tooltip>
+												</>
+											),
+										})
+									}
+								/>
+							</div>
+						</div>
 					</CardBody>
+					<PreviewDialog
+						title={"Preview file"}
+						open={openPreviewDialog}
+						setOpen={setOpenPreviewDialog}
+						src={previewFile}
+					/>
 					<EntityContactsTableDialog
 						open={openTableDialog}
 						setOpen={setOpenTableDialog}
@@ -650,6 +821,32 @@ export default function EditEntitiesPage() {
 							newUsers.push(user);
 							setUsers(newUsers);
 							updateContacto(user);
+						}}
+					/>
+					<AssetTableDialog
+						open={openAssetTableDialog}
+						setOpen={setOpenAssetTableDialog}
+						data={assets}
+						type={types.find((x) => x.descripcion === "Imagen")}
+						formats={formats}
+						categories={categories}
+						extensions={extensions}
+						tags={tags}
+						onSelectRow={(item) => {
+							setEntity({
+								...entity,
+								icono_id: item.id,
+							});
+							setOpenAssetTableDialog(false);
+						}}
+						onAssetCreated={(item) => {
+							let newAssets = [...assets];
+							newAssets.push(item);
+							setAssets(newAssets);
+							setEntity({
+								...entity,
+								icono_id: item.id,
+							});
 						}}
 					/>
 				</Card>

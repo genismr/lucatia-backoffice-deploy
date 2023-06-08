@@ -38,11 +38,15 @@ import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 import { userRoles } from "../../../../utils/helpers";
+import { Image } from "react-bootstrap";
 
 function getData(users, loggedUser) {
 	let data = [];
 	for (let i = 0; i < users.length; ++i) {
-		if (users[i].role.rango === userRoles.USER && users[i].id !== loggedUser.userID) {
+		if (
+			users[i].role.rango === userRoles.USER &&
+			users[i].id !== loggedUser.userID
+		) {
 			const elem = {};
 
 			let apellidos = users[i].apellidos;
@@ -52,8 +56,7 @@ function getData(users, loggedUser) {
 
 			elem.nombreApellidos = users[i].nombre + apellidos;
 			elem.email = users[i].email;
-			elem.faviconRol = "WIP";
-			elem.rol = users[i].role.descripcion;
+			elem.rol = users[i].role;
 			elem.faviconEntityOwner = "WIP";
 			elem.faviconEntityManager = "WIP";
 			elem.lastLogin = users[i].last_login;
@@ -83,9 +86,10 @@ export default function PatientsPage() {
 		return (
 			<>
 				<Tooltip title={elem.role.descripcion}>
-					<Button style={buttonsStyle} size="small">
-						<RoleIcon />
-					</Button>
+					<img
+						src={elem.role.icono?.url}
+						style={{ maxWidth: "30px", cursor: "zoom-in" }}
+					/>
 				</Tooltip>
 			</>
 		);

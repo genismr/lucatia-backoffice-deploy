@@ -68,46 +68,37 @@ export default function ViewAssetsPage() {
 							</div>
 							<div className="col-4 gx-3">
 								<h5>
-									File
-									<Tooltip title={"Preview file"}>
-										<Button
-											size="small"
-											onClick={() =>
-												setOpenPreviewDialog(true)
-											}
-											style={{
-												...buttonsStyle,
-												marginRight: "15px",
-											}}
-										>
-											<Visibility />
-										</Button>
-									</Tooltip>
+									File &nbsp;&nbsp;
+									<img
+										key={asset.imageURL}
+										src={asset.url}
+										alt={asset.url.split(/-(.*)/s)[1]}
+										style={{
+											maxWidth: "70px",
+											cursor: "zoom-in",
+										}}
+										onClick={() =>
+											setOpenPreviewDialog(true)
+										}
+									/>
 									<PreviewDialog
-										title={"Preview file"}
+										title={asset.descripcion}
 										open={openPreviewDialog}
 										setOpen={setOpenPreviewDialog}
 										src={asset.url}
 									/>
 								</h5>
-								<p>
-									{asset.url !== ""
-										? asset.url.split(/-(.*)/s)[1]
-										: "---"}
-								</p>
 							</div>
-						</div>
-						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Tipo</h5>
 								<p>{asset.type.descripcion || "---"}</p>
 							</div>
+						</div>
+						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Formato</h5>
 								<p>{asset.format.descripcion || "---"}</p>
 							</div>
-						</div>
-						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Categoría</h5>
 								<p>{asset.category.descripcion || "---"}</p>
@@ -118,7 +109,7 @@ export default function ViewAssetsPage() {
 							</div>
 						</div>
 						<div className="row">
-							<div className="col-4 gx-3">
+							<div className="col-12 gx-3">
 								<h5>Tags</h5>
 								{!asset.tags.length && <p>{"---"}</p>}
 								{asset.tags.length > 0 && (

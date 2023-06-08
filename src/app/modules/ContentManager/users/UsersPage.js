@@ -61,7 +61,7 @@ function getData(users, loggedUser) {
 			elem.nombreApellidos = users[i].nombre + apellidos;
 			elem.email = users[i].email;
 			elem.faviconRol = "WIP";
-			elem.rol = users[i].role.descripcion;
+			elem.rol = users[i].role;
 			elem.faviconEntityOwner = "WIP";
 			elem.faviconEntityManager = "WIP";
 			elem.lastLogin = users[i].last_login;
@@ -118,9 +118,10 @@ export default function UsersPage() {
 		return (
 			<>
 				<Tooltip title={elem.role.descripcion}>
-					<Button style={buttonsStyle} size="small">
-						<RoleIcon />
-					</Button>
+					<img
+						src={elem.role.icono?.url}
+						style={{ maxWidth: "30px", cursor: "zoom-in" }}
+					/>
 				</Tooltip>
 			</>
 		);

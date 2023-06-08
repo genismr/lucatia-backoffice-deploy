@@ -10,11 +10,17 @@ import { useSkeleton } from "../../../hooks/useSkeleton";
 import { alertError } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import { getAppById } from "../../../../api/app";
+import PreviewDialog from "../../../components/dialogs/PreviewDialog";
 
 export default function ViewAppsPage() {
 	const [app, setApp] = useState(null);
 	const appId = useParams().id;
 	const history = useHistory();
+
+	const [openPreviewIconDialog, setOpenPreviewIconDialog] = useState(false);
+	const [openPreviewBannerDialog, setOpenPreviewBannerDialog] = useState(
+		false
+	);
 
 	const loggedUser = useSelector(
 		(store) => store.authentication?.user,
@@ -72,6 +78,53 @@ export default function ViewAppsPage() {
 						</div>
 						<div className="row">
 							<div className="col-4 gx-3">
+								<h5>Icono</h5>
+								<p />
+								<img
+									key={app.icono?.url}
+									src={app.icono?.url}
+									alt={app.icono?.url.split(/-(.*)/s)[1]}
+									style={{
+										maxWidth: "70px",
+										cursor: "zoom-in",
+									}}
+									onClick={() =>
+										setOpenPreviewIconDialog(true)
+									}
+								/>
+								<PreviewDialog
+									title={app.icono?.descripcion}
+									open={openPreviewIconDialog}
+									setOpen={setOpenPreviewIconDialog}
+									src={app.icono?.url}
+								/>
+							</div>
+							<div className="col-4 gx-3">
+								<h5>Banner</h5>
+								<p />
+								<img
+									key={app.banner?.url}
+									src={app.banner?.url}
+									alt={app.banner?.url.split(/-(.*)/s)[1]}
+									style={{
+										maxWidth: "70px",
+										cursor: "zoom-in",
+									}}
+									onClick={() =>
+										setOpenPreviewBannerDialog(true)
+									}
+								/>
+								<PreviewDialog
+									title={app.banner?.descripcion}
+									open={openPreviewBannerDialog}
+									setOpen={setOpenPreviewBannerDialog}
+									src={app.banner?.url}
+								/>
+							</div>
+						</div>
+						<br />
+						<div className="row">
+							<div className="col-4 gx-3">
 								<h5>Entidades propietarias</h5>
 								{!app.ownedEntities.length && <p>{"---"}</p>}
 								{app.ownedEntities.length > 0 && (
@@ -113,6 +166,8 @@ export default function ViewAppsPage() {
 									</>
 								)}
 							</div>
+						</div>
+						<div className="row">
 							<div className="col-4 gx-3">
 								<h5>Estado</h5>
 								{app.activo ? <p>Activo</p> : <p>Inactivo</p>}

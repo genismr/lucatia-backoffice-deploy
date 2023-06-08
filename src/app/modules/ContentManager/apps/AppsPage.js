@@ -30,6 +30,7 @@ import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 import { userRoles } from "../../../../utils/helpers";
+import PreviewDialog from "../../../components/dialogs/PreviewDialog";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -48,7 +49,7 @@ function getData(apps) {
 	for (let i = 0; i < apps.length; ++i) {
 		const elem = {};
 
-		elem.faviconApp = apps[i].icono_id;
+		elem.icon = apps[i].icono?.url;
 		elem.nombre = apps[i].nombre;
 		elem.tecnologia = apps[i].tecnologia ? apps[i].tecnologia : "---";
 		elem.faviconOwnerEntity = apps[i].ownedEntities?.map((e) => e.icono_id);
@@ -80,9 +81,9 @@ export default function AppsPage() {
 	function imageFormatter(cell) {
 		return cell && cell !== "" ? (
 			<img
-				//src={SERVER_URL + '/' + cell}
+				src={cell}
 				alt="icon"
-				style={{ width: "50px", height: "50px" }}
+				style={{ width: "50px", height: "50px", cursor: "zoom-in" }}
 				onClick={() => {
 					setPreviewImage(cell);
 					setOpenPreviewDialog(true);
@@ -137,8 +138,8 @@ export default function AppsPage() {
 
 	const columns = [
 		{
-			dataField: "faviconApp",
-			text: "App Icon",
+			dataField: "icon",
+			text: "",
 			formatter: imageFormatter,
 		},
 		{
@@ -273,6 +274,12 @@ export default function AppsPage() {
 					/>
 				</CardBody>
 			</Card>
+			<PreviewDialog
+				title={"Preview file"}
+				open={openPreviewDialog}
+				setOpen={setOpenPreviewDialog}
+				src={previewImage}
+			/>
 		</>
 	);
 }

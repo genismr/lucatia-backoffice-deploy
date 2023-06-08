@@ -90,9 +90,10 @@ const EntityContactsTableDialog = (props) => {
 		return (
 			<>
 				<Tooltip title={elem.role.descripcion}>
-					<Button style={buttonsStyle} size="small">
-						<RoleIcon />
-					</Button>
+					<img
+						src={elem.role.icono?.url}
+						style={{ maxWidth: "30px", cursor: "zoom-in" }}
+					/>
 				</Tooltip>
 			</>
 		);

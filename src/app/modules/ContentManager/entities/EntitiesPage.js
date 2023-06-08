@@ -23,7 +23,6 @@ import {
 	FormControl,
 	InputLabel,
 } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import ViewIcon from "@material-ui/icons/Visibility";
 import { alertError, alertSuccess } from "../../../../utils/logger";
@@ -34,16 +33,16 @@ import { useSkeleton } from "../../../hooks/useSkeleton";
 import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 import { userRoles } from "../../../../utils/helpers";
+import PreviewDialog from "../../../components/dialogs/PreviewDialog";
 
 function getData(entities) {
 	let data = [];
 	for (let i = 0; i < entities.length; ++i) {
 		const elem = {};
 
-		elem.favicon = entities[i].icono_id;
+		elem.icon = entities[i].icono?.url;
 		elem.nombre = entities[i].nombre;
-		elem.faviconParentEntity = entities[i].parentEntity?.icono_id;
-		elem.ownerName = "WIP";
+		elem.iconParentEntity = entities[i].parentEntity?.icono?.url;
 		elem.activo = entities[i].activo;
 		elem.id = entities[i].id;
 
@@ -70,9 +69,9 @@ export default function EntitiesPage() {
 	function imageFormatter(cell) {
 		return cell && cell !== "" ? (
 			<img
-				//src={SERVER_URL + '/' + cell}
+				src={cell}
 				alt="icon"
-				style={{ width: "50px", height: "50px" }}
+				style={{ width: "50px", height: "50px", cursor: "zoom-in" }}
 				onClick={() => {
 					setPreviewImage(cell);
 					setOpenPreviewDialog(true);
@@ -126,18 +125,17 @@ export default function EntitiesPage() {
 	}
 
 	const columns = [
-		{ dataField: "favicon", text: "Icon", formatter: imageFormatter },
+		{ dataField: "icon", text: "", formatter: imageFormatter },
 		{
 			dataField: "nombre",
 			text: "Nombre",
 			sort: true,
 		},
 		{
-			dataField: "faviconParentEntity",
+			dataField: "iconParentEntity",
 			text: "Parent entity",
 			formatter: imageFormatter,
 		},
-		{ dataField: "ownerName", text: "Owner name" },
 		{ dataField: "id", text: "", formatter: buttonFormatter },
 	];
 
@@ -258,6 +256,12 @@ export default function EntitiesPage() {
 					/>
 				</CardBody>
 			</Card>
+			<PreviewDialog
+				title={"Preview file"}
+				open={openPreviewDialog}
+				setOpen={setOpenPreviewDialog}
+				src={previewImage}
+			/>
 		</>
 	);
 }

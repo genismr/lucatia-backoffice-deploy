@@ -14,6 +14,7 @@ import {
 	MenuItem,
 	Select,
 	FormHelperText,
+	Tooltip,
 } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import { useSkeleton } from "../../../hooks/useSkeleton";
@@ -30,8 +31,20 @@ import {
 	unassignEntities,
 	changeEntityOwnership,
 } from "../../../../api/app";
+import {
+	getAssets,
+	getCategories,
+	getExtensions,
+	getFormats,
+	getTags,
+	getTypes,
+} from "../../../../api/asset";
 import { getEntities } from "../../../../api/entity";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
+import AddResourceIcon from "@material-ui/icons/AddPhotoAlternate";
+import AssetTableDialog from "../../../components/dialogs/AssetTableDialog";
+import PreviewDialog from "../../../components/dialogs/PreviewDialog";
+import { Visibility } from "@material-ui/icons";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -48,8 +61,8 @@ function getEmptyApp() {
 		nombre: "",
 		descripcion: "",
 		tecnologia: null,
-		icono_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-		banner_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+		icono_id: null,
+		banner_id: null,
 		fecha_alta: "",
 		user_alta_id: "",
 		ownedEntities: [],
@@ -64,8 +77,8 @@ function getData(app) {
 	data.id = app.id;
 	data.nombre = app.nombre;
 	data.descripcion = app.descripcion;
-	data.icono_id = app.icono_id;
-	data.banner_id = app.banner_id;
+	data.icono_id = app.icono?.id;
+	data.banner_id = app.banner?.id;
 	data.fecha_alta = app.fecha_alta;
 	data.user_alta_id = app.user_alta_id;
 	data.ownedEntities = app.ownedEntities.map((e) => e.id);
@@ -86,6 +99,20 @@ export default function EditAppsPage() {
 	const [initialDelegatedEntities, setInitialDelegatedEntities] = useState(
 		null
 	);
+
+	const [iconSelected, setIconSelected] = useState(null);
+	const [bannerSelected, setBannerSelected] = useState(null);
+
+	const [openAssetTableDialog, setOpenAssetTableDialog] = useState(null);
+	const [openPreviewDialog, setOpenPreviewDialog] = useState(null);
+	const [previewFile, setPreviewFile] = useState(null);
+
+	const [assets, setAssets] = useState([]);
+	const [types, setTypes] = useState(null);
+	const [categories, setCategories] = useState(null);
+	const [formats, setFormats] = useState(null);
+	const [extensions, setExtensions] = useState(null);
+	const [tags, setTags] = useState(null);
 
 	const appId = useParams().id;
 	const history = useHistory();
@@ -112,6 +139,85 @@ export default function EditAppsPage() {
 				alertError({
 					error: error,
 					customMessage: "Could not get app.",
+				});
+				history.push("/apps");
+			});
+		getTypes()
+			.then((res) => {
+				if (res.status === 200) {
+					setTypes(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/apps");
+			});
+		getCategories()
+			.then((res) => {
+				if (res.status === 200) {
+					setCategories(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/apps");
+			});
+		getFormats()
+			.then((res) => {
+				if (res.status === 200) {
+					setFormats(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/apps");
+			});
+		getExtensions()
+			.then((res) => {
+				if (res.status === 200) {
+					setExtensions(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/apps");
+			});
+		getTags()
+			.then((res) => {
+				if (res.status === 200) {
+					setTags(res.data);
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
+				});
+				history.push("/apps");
+			});
+		getAssets(loggedUser.accessToken)
+			.then((res) => {
+				if (res.status === 200) {
+					setAssets(res.data);
+					disableLoadingData();
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get assets.",
 				});
 				history.push("/apps");
 			});
@@ -419,7 +525,136 @@ export default function EditAppsPage() {
 							margin="normal"
 							variant="outlined"
 						/>
-						<br />
+						<div className="row">
+							<div className="col-6 gx-3">
+								<TextField
+									id={`icon`}
+									label="Icono"
+									value={
+										assets.find(
+											(x) => x.id === app.icono_id
+										)?.descripcion
+									}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									InputProps={
+										({ readOnly: true },
+										{
+											endAdornment: (
+												<>
+													{app?.icono_id && (
+														<Tooltip title="Preview">
+															<Button
+																onClick={() => {
+																	setPreviewFile(
+																		assets.find(
+																			(
+																				x
+																			) =>
+																				x.id ===
+																				app.icono_id
+																		)?.url
+																	);
+																	setOpenPreviewDialog(
+																		true
+																	);
+																}}
+															>
+																<Visibility />
+															</Button>
+														</Tooltip>
+													)}
+													<Tooltip title="Select image">
+														<Button
+															onClick={() => {
+																setIconSelected(
+																	true
+																);
+																setBannerSelected(
+																	false
+																);
+																setOpenAssetTableDialog(
+																	true
+																);
+															}}
+														>
+															<AddResourceIcon />
+														</Button>
+													</Tooltip>
+												</>
+											),
+										})
+									}
+								/>
+							</div>
+							<div className="col-6 gx-3">
+								<TextField
+									id={`banner`}
+									label="Banner"
+									value={
+										assets.find(
+											(x) => x.id === app.banner_id
+										)?.descripcion
+									}
+									InputLabelProps={{
+										shrink: true,
+									}}
+									margin="normal"
+									variant="outlined"
+									InputProps={
+										({ readOnly: true },
+										{
+											endAdornment: (
+												<>
+													{app?.banner_id && (
+														<Tooltip title="Preview">
+															<Button
+																onClick={() => {
+																	setPreviewFile(
+																		assets.find(
+																			(
+																				x
+																			) =>
+																				x.id ===
+																				app.banner_id
+																		)?.url
+																	);
+																	setOpenPreviewDialog(
+																		true
+																	);
+																}}
+															>
+																<Visibility />
+															</Button>
+														</Tooltip>
+													)}
+													<Tooltip title="Select image">
+														<Button
+															onClick={() => {
+																setIconSelected(
+																	false
+																);
+																setBannerSelected(
+																	true
+																);
+																setOpenAssetTableDialog(
+																	true
+																);
+															}}
+														>
+															<AddResourceIcon />
+														</Button>
+													</Tooltip>
+												</>
+											),
+										})
+									}
+								/>
+							</div>
+						</div>
 						<br />
 						<div className="row">
 							<div className="col-6 gx-3">
@@ -491,6 +726,54 @@ export default function EditAppsPage() {
 						</div>
 					</CardBody>
 				</Card>
+				<PreviewDialog
+					title={"Preview file"}
+					open={openPreviewDialog}
+					setOpen={setOpenPreviewDialog}
+					src={previewFile}
+				/>
+				<AssetTableDialog
+					open={openAssetTableDialog}
+					setOpen={setOpenAssetTableDialog}
+					data={assets}
+					type={types.find((x) => x.descripcion === "Imagen")}
+					formats={formats}
+					categories={categories}
+					extensions={extensions}
+					tags={tags}
+					onSelectRow={(item) => {
+						if (iconSelected) {
+							setApp({
+								...app,
+								icono_id: item.id,
+							});
+							setIconSelected(null);
+						} else if (bannerSelected) {
+							setApp({
+								...app,
+								banner_id: item.id,
+							});
+							setBannerSelected(null);
+						}
+						setOpenAssetTableDialog(false);
+					}}
+					onAssetCreated={(item) => {
+						let newAssets = [...assets];
+						newAssets.push(item);
+						setAssets(newAssets);
+						if (iconSelected) {
+							setApp({
+								...app,
+								icono_id: item.id,
+							});
+						} else if (bannerSelected) {
+							setApp({
+								...app,
+								banner_id: item.id,
+							});
+						}
+					}}
+				/>
 				<Button
 					onClick={() => history.push("/apps")}
 					variant="outlined"

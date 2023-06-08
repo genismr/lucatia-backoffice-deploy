@@ -31,6 +31,7 @@ import ToggleOffIcon from "@material-ui/icons/ToggleOff";
 import ToggleOnIcon from "@material-ui/icons/ToggleOn";
 import { userRoles } from "../../../../utils/helpers";
 import { getGames } from "../../../../api/game";
+import PreviewDialog from "../../../components/dialogs/PreviewDialog";
 
 function getData(games) {
 	let data = [];
@@ -39,8 +40,8 @@ function getData(games) {
 
 		elem.nombre = games[i].nombre;
 		elem.descripcion = games[i].descripcion;
-		elem.icono = games[i].icono_id;
-		elem.imagen = games[i].imagen_id;
+		elem.icono = games[i].icono?.url;
+		elem.imagen = games[i].imagen?.url;
 		elem.id = games[i].id;
 
 		data = data.concat(elem);
@@ -66,9 +67,9 @@ export default function GamesPage() {
 	function imageFormatter(cell) {
 		return cell && cell !== "" ? (
 			<img
-				//src={SERVER_URL + '/' + cell}
+				src={cell}
 				alt="icon"
-				style={{ width: "50px", height: "50px" }}
+				style={{ width: "50px", height: "50px", cursor: "zoom-in" }}
 				onClick={() => {
 					setPreviewImage(cell);
 					setOpenPreviewDialog(true);
@@ -107,6 +108,11 @@ export default function GamesPage() {
 
 	const columns = [
 		{
+			dataField: "icono",
+			text: "",
+			formatter: imageFormatter,
+		},
+		{
 			dataField: "nombre",
 			text: "Nombre",
 		},
@@ -114,11 +120,6 @@ export default function GamesPage() {
 			dataField: "descripcion",
 			text: "Descripcion",
 			sort: true,
-		},
-		{
-			dataField: "icono",
-			text: "Icono",
-			formatter: imageFormatter,
 		},
 		{
 			dataField: "imagen",
@@ -162,6 +163,12 @@ export default function GamesPage() {
 					<Table data={data} columns={columns} />
 				</CardBody>
 			</Card>
+			<PreviewDialog
+				title={"Preview file"}
+				open={openPreviewDialog}
+				setOpen={setOpenPreviewDialog}
+				src={previewImage}
+			/>
 		</>
 	);
 }
