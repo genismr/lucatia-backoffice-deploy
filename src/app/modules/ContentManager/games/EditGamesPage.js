@@ -284,7 +284,7 @@ export default function EditGamesPage() {
 	function imageFormatter(cell) {
 		return cell && cell !== "" ? (
 			<img
-				//src={SERVER_URL + '/' + cell}
+				src={cell}
 				alt="icon"
 				style={{ width: "50px", height: "50px" }}
 				onClick={() => {

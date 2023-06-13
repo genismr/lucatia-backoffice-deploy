@@ -50,8 +50,11 @@ import Table, {
 } from "../../../components/tables/table";
 import GameTableDialog from "../../../components/dialogs/GameTableDialog";
 import { getGames } from "../../../../api/game";
-import { Replay } from "@material-ui/icons";
-import { postGameSession } from "../../../../api/game-session";
+import { Delete, Replay } from "@material-ui/icons";
+import {
+	deleteGameSession,
+	postGameSession,
+} from "../../../../api/game-session";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -136,7 +139,7 @@ function getGameData(assignedGames) {
 		elem.fechaInicio = assignedGames[i].fecha_inicio;
 		elem.fechaFin = assignedGames[i].fecha_fin;
 		elem.jugado = assignedGames[i].jugado;
-		elem.id = assignedGames[i].id;
+		elem.sessionId = assignedGames[i].sessionId;
 
 		data = data.concat(elem);
 	}
@@ -157,7 +160,12 @@ export default function EditPatientsPage() {
 	const [selectedSession, setSelectedSession] = useState([]);
 
 	const [openTableDialog, setOpenTableDialog] = useState(null);
-	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
+	const [openConfirmReassignDialog, setOpenConfirmReassignDialog] = useState(
+		null
+	);
+	const [openConfirmUnassignDialog, setOpenConfirmUnassignDialog] = useState(
+		null
+	);
 
 	const [roles, setRoles] = useState(null);
 	const [entities, setEntities] = useState(null);
@@ -716,7 +724,6 @@ export default function EditPatientsPage() {
 				element
 			] = event.target.value;
 		}
-		console.log("handlechange", metadataUser);
 		setPatient({ ...patient, app_metadata: metadataUser });
 	};
 
@@ -807,7 +814,6 @@ export default function EditPatientsPage() {
 													)}
 												</Select>
 											</FormControl>
-
 											<br />
 											<br />
 										</div>
@@ -821,7 +827,7 @@ export default function EditPatientsPage() {
 	}
 
 	function buttonFormatter(cell) {
-		const elem = assignedGames.find((item) => item.id === cell);
+		const elem = assignedGames.find((item) => item.sessionId === cell);
 		return (
 			<>
 				<Tooltip title="Reassign">
@@ -830,10 +836,22 @@ export default function EditPatientsPage() {
 						size="small"
 						onClick={() => {
 							setSelectedSession(elem);
-							setOpenConfirmDialog(true);
+							setOpenConfirmReassignDialog(true);
 						}}
 					>
 						<Replay />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Unassign">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						onClick={() => {
+							setSelectedSession(elem);
+							setOpenConfirmUnassignDialog(true);
+						}}
+					>
+						<Delete />
 					</Button>
 				</Tooltip>
 			</>
@@ -864,7 +882,7 @@ export default function EditPatientsPage() {
 			formatter: booleanFormatter,
 		},
 		{
-			dataField: "id",
+			dataField: "sessionId",
 			text: "",
 			formatter: buttonFormatter,
 		},
@@ -1296,10 +1314,41 @@ export default function EditPatientsPage() {
 				/>
 				<ConfirmDialog
 					title={"Are you sure you want to reassign this game?"}
-					open={openConfirmDialog}
-					setOpen={setOpenConfirmDialog}
+					open={openConfirmReassignDialog}
+					setOpen={setOpenConfirmReassignDialog}
 					onConfirm={() => {
 						reAssignGameSession();
+					}}
+				/>
+				<ConfirmDialog
+					title={"Are you sure you want to unassign this game?"}
+					open={openConfirmUnassignDialog}
+					setOpen={setOpenConfirmUnassignDialog}
+					onConfirm={() => {
+						deleteGameSession(selectedSession.sessionId)
+							.then((res) => {
+								if (res.status === 204) {
+									alertSuccess({
+										title: "Deleted!",
+										customMessage:
+											"Session unassigned successfully.",
+									});
+									let index = assignedGames
+										.map((x) => x.id)
+										.indexOf(selectedSession.sessionId);
+									let newAssignedGames = [...assignedGames];
+									newAssignedGames.splice(index, 1);
+									setAssignedGames(newAssignedGames);
+									setRefresh(true);
+								}
+							})
+							.catch((error) => {
+								alertError({
+									error: error,
+									customMessage:
+										"Could not unassign session.",
+								});
+							});
 					}}
 				/>
 				<Button
