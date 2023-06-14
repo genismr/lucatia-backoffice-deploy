@@ -118,12 +118,12 @@ export default function GamesPage() {
 		},
 		{
 			dataField: "descripcion",
-			text: "Descripcion",
+			text: "Descripción",
 			sort: true,
 		},
 		{
 			dataField: "imagen",
-			text: "Imagen",
+			text: "",
 			formatter: imageFormatter,
 		},
 		{ dataField: "id", text: "", formatter: buttonFormatter },

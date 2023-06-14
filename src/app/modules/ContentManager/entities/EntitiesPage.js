@@ -42,7 +42,7 @@ function getData(entities) {
 
 		elem.icon = entities[i].icono?.url;
 		elem.nombre = entities[i].nombre;
-		elem.iconParentEntity = entities[i].parentEntity?.icono?.url;
+		elem.parentEntity = entities[i].parentEntity?.nombre;
 		elem.activo = entities[i].activo;
 		elem.id = entities[i].id;
 
@@ -132,9 +132,8 @@ export default function EntitiesPage() {
 			sort: true,
 		},
 		{
-			dataField: "iconParentEntity",
+			dataField: "parentEntity",
 			text: "Parent entity",
-			formatter: imageFormatter,
 		},
 		{ dataField: "id", text: "", formatter: buttonFormatter },
 	];
