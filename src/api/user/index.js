@@ -29,12 +29,12 @@ export const postUser = async (user, accessToken) => {
   return authClient(accessToken).post(`${API}/user`, user)
 }
 
-export const postUserAppMetadata = async (id, metadata, accessToken) => {
-  return authClient(accessToken).post(`${API}/user/${id}/app-metadata`, metadata)
+export const postUserMetadata = async (id, metadata, accessToken) => {
+  return authClient(accessToken).post(`${API}/user/${id}/metadata`, metadata)
 }
 
-export const updateUserAppMetadata = async (id, metadata, accessToken) => {
-  return authClient(accessToken).put(`${API}/user/${id}/app-metadata`, metadata)
+export const updateUserMetadata = async (id, metadata, accessToken) => {
+  return authClient(accessToken).put(`${API}/user/${id}/metadata`, metadata)
 }
 
 // Update user

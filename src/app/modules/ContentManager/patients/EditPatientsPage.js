@@ -27,8 +27,8 @@ import {
 	getUserById,
 	postUser,
 	updateUser,
-	postUserAppMetadata,
-	updateUserAppMetadata,
+	postUserMetadata,
+	updateUserMetadata,
 	assignUserApp,
 	unassignUserApp,
 	getUserAssignedGames,
@@ -40,7 +40,6 @@ import { alertError, alertSuccess } from "../../../../utils/logger";
 import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "../../../components/dialogs/ConfirmDialog";
 import { checkIsEmpty, userRoles } from "../../../../utils/helpers";
-import { getAppMetadata, getMetadata } from "../../../../api/app";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 import { getProvincias } from "../../../../api/provincia";
 import Table, {
@@ -55,6 +54,7 @@ import {
 	deleteGameSession,
 	postGameSession,
 } from "../../../../api/game-session";
+import { getMetadata } from "../../../../api/metadata";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -98,7 +98,7 @@ function getEmptyPatient() {
 		activo: true,
 		owned_entities: [],
 		managed_entities: [],
-		app_metadata: [],
+		metadata: [],
 		apps: [],
 	};
 }
@@ -173,10 +173,8 @@ export default function EditPatientsPage() {
 	const [provincias, setProvincias] = useState([]);
 
 	const [metadata, setMetadata] = useState([]);
-	const [appMetadata, setAppMetadata] = useState(null);
-	const [selectedAppMetadata, setSelectedAppMetadata] = useState(null);
 
-	const [initialAppMetadata, setInitialAppMetadata] = useState(null);
+	const [initialMetadata, setInitialMetadata] = useState(null);
 
 	const [initialAssignedEntities, setInitialAssignedEntities] = useState(
 		null
@@ -377,18 +375,16 @@ export default function EditPatientsPage() {
 	}
 
 	function savePatientMetadata(metadataUserId) {
-		let saveNewMetadata = patient.app_metadata;
-		if (initialAppMetadata != null) {
-			saveNewMetadata = patient.app_metadata.filter(
+		let saveNewMetadata = patient.metadata;
+		if (initialMetadata != null) {
+			saveNewMetadata = patient.metadata.filter(
 				(e) =>
-					!initialAppMetadata.find(
-						(y) => y.app_metadata_id == e.app_metadata_id
-					)
+					!initialMetadata.find((y) => y.metadata_id == e.metadata_id)
 			);
 		}
 
 		if (saveNewMetadata.length) {
-			postUserAppMetadata(
+			postUserMetadata(
 				metadataUserId,
 				saveNewMetadata,
 				loggedUser.accessToken
@@ -407,14 +403,11 @@ export default function EditPatientsPage() {
 				});
 		}
 
-		let saveMetadata = patient.app_metadata.filter(
-			(e) =>
-				!saveNewMetadata.find(
-					(y) => y.app_metadata_id == e.app_metadata_id
-				)
+		let saveMetadata = patient.metadata.filter(
+			(e) => !saveNewMetadata.find((y) => y.metadata_id == e.metadata_id)
 		);
 
-		updateUserAppMetadata(
+		updateUserMetadata(
 			metadataUserId,
 			saveMetadata,
 			loggedUser.accessToken
@@ -476,7 +469,7 @@ export default function EditPatientsPage() {
 			postUser(savePatient, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 201) {
-						if (patient.app_metadata.length) {
+						if (patient.metadata.length) {
 							savePatientMetadata(res.data.id);
 						}
 						if (
@@ -511,7 +504,7 @@ export default function EditPatientsPage() {
 			updateUser(patientId, savePatient, loggedUser.accessToken)
 				.then((res) => {
 					if (res.status === 204) {
-						if (patient.app_metadata.length) {
+						if (patient.metadata.length) {
 							savePatientMetadata(patientId);
 						}
 						handleOwnedEntitiesAssignment(patientId);
@@ -649,7 +642,7 @@ export default function EditPatientsPage() {
 					setInitialManagedEntities(user.managed_entities);
 					setInitialAssignedApps([...user.apps]);
 					setPatient(user);
-					setInitialAppMetadata(user.app_metadata);
+					setInitialMetadata(user.metadata);
 
 					disableLoadingData();
 				}
@@ -687,18 +680,17 @@ export default function EditPatientsPage() {
 		setPatient({ ...patient, [element]: text });
 	};
 
-	const handleChangeMetadata = (element, app_metadata_id) => (event) => {
-		let metadataUser = [...patient.app_metadata];
+	const handleChangeMetadata = (element, metadata_id) => (event) => {
+		let metadataUser = [...patient.metadata];
 		if (
-			metadataUser.filter((u) => u.app_metadata_id === app_metadata_id)
-				.length === 0
+			metadataUser.filter((u) => u.metadata_id === metadata_id).length ===
+			0
 		) {
-			let whichMetadata = appMetadata.find(
-				(a) => a.app_metadata_id == app_metadata_id
+			let whichMetadata = metadata.find(
+				(a) => a.metadata_id == metadata_id
 			);
 			metadataUser.push({
-				app_metadata_id: app_metadata_id,
-				app_id: whichMetadata.app_id,
+				metadata_id: metadata_id,
 				metadata_tipo_id: whichMetadata.metadata_tipo_id,
 				metadata_es_respuesta_abierta:
 					whichMetadata.metadata_es_respuesta_abierta,
@@ -710,28 +702,27 @@ export default function EditPatientsPage() {
 
 		if (element === "metadata_valor_select") {
 			metadataUser.find(
-				(u) => u.app_metadata_id == app_metadata_id
+				(u) => u.metadata_id == metadata_id
 			).metadata_valor_select_id = event.target.value;
-			let value = appMetadata
-				.find((a) => a.app_metadata_id == app_metadata_id)
+			let value = metadata
+				.find((a) => a.metadata_id == metadata_id)
 				.metadata_select_values.find((u) => u.id == event.target.value)
 				.meta_valor_select;
-			metadataUser.find((u) => u.app_metadata_id == app_metadata_id)[
+			metadataUser.find((u) => u.metadata_id == metadata_id)[
 				element
 			] = value;
 		} else {
-			metadataUser.find((u) => u.app_metadata_id == app_metadata_id)[
-				element
-			] = event.target.value;
+			metadataUser.find((u) => u.metadata_id == metadata_id)[element] =
+				event.target.value;
 		}
-		setPatient({ ...patient, app_metadata: metadataUser });
+		setPatient({ ...patient, metadata: metadataUser });
 	};
 
-	function getMetadataValue(attribute, app_metadata_id) {
+	function getMetadataValue(attribute, metadata_id) {
 		let value = "";
-		if (patient.app_metadata.length) {
-			let found = patient.app_metadata.find(
-				(u) => u.app_metadata_id == app_metadata_id
+		if (patient.metadata.length) {
+			let found = patient.metadata.find(
+				(u) => u.metadata_id == metadata_id
 			);
 			if (attribute === "metadata_valor_select_id") {
 				if (found != undefined) value = found.metadata_valor_select_id;
@@ -747,8 +738,8 @@ export default function EditPatientsPage() {
 		return (
 			<>
 				<div className="row">
-					{appMetadata?.length > 0 &&
-						appMetadata.map((attribute) => {
+					{metadata?.length > 0 &&
+						metadata.map((attribute) => {
 							if (attribute.metadata_es_respuesta_abierta) {
 								return (
 									<>
@@ -757,14 +748,14 @@ export default function EditPatientsPage() {
 												id={attribute}
 												defaultValue={getMetadataValue(
 													"metadata_valor_abierto",
-													attribute.app_metadata_id
+													attribute.metadata_id
 												)}
 												label={
 													attribute.metadata_nombre
 												}
 												onChange={handleChangeMetadata(
 													"metadata_valor_abierto",
-													attribute.app_metadata_id
+													attribute.metadata_id
 												)}
 												InputLabelProps={{
 													shrink: true,
@@ -790,11 +781,11 @@ export default function EditPatientsPage() {
 													id="demo-simple-select-standard"
 													defaultValue={getMetadataValue(
 														"metadata_valor_select_id",
-														attribute.app_metadata_id
+														attribute.metadata_id
 													)}
 													onChange={handleChangeMetadata(
 														"metadata_valor_select",
-														attribute.app_metadata_id
+														attribute.metadata_id
 													)}
 													MenuProps={MenuProps}
 												>
@@ -1202,18 +1193,6 @@ export default function EditPatientsPage() {
 									}
 									filterSelectedOptions
 									onChange={(event, selected) => {
-										if (
-											patient.apps
-												.filter(
-													(x) =>
-														!selected
-															.map((y) => y.id)
-															.includes(x)
-												)
-												.includes(selectedAppMetadata)
-										) {
-											setSelectedAppMetadata(null);
-										}
 										setPatient({
 											...patient,
 											apps: selected.map((x) => x.id),
@@ -1237,48 +1216,8 @@ export default function EditPatientsPage() {
 					</CardBody>
 				</Card>
 				<Card>
-					<CardHeader title="Additional information">
-						<CardHeaderToolbar>
-							<Autocomplete
-								id="autocomplete-app-metadata"
-								style={{
-									width: 300,
-								}}
-								disableClearable
-								filterSelectedOptions
-								options={getPermittedApps().filter((x) =>
-									patient.apps.includes(x.id)
-								)}
-								getOptionLabel={(option) => option.nombre}
-								value={getPermittedApps().find(
-									(x) => x.id === selectedAppMetadata
-								)}
-								onChange={(event, selected) => {
-									setSelectedAppMetadata(selected.id);
-									let data = metadata.find(
-										(x) => x.app_id === selected.id
-									);
-									setAppMetadata(
-										data !== undefined ? data.metadata : []
-									);
-								}}
-								renderInput={(params) => (
-									<TextField
-										{...params}
-										label="App"
-										margin="normal"
-										variant="outlined"
-										InputLabelProps={{
-											shrink: true,
-										}}
-									/>
-								)}
-							/>
-						</CardHeaderToolbar>
-					</CardHeader>
-					<CardBody>
-						{selectedAppMetadata && renderMetadataFields()}
-					</CardBody>
+					<CardHeader title="Additional information"></CardHeader>
+					<CardBody>{renderMetadataFields()}</CardBody>
 				</Card>
 				<Card>
 					<CardHeader title="Assigned games">
