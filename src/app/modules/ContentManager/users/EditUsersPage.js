@@ -1015,7 +1015,7 @@ export default function EditUsersPage() {
 										option.descripcion
 									}
 									value={
-										roles.find(
+										roles?.find(
 											(x) => x.id === user?.user_rol_id
 										) || ""
 									}
