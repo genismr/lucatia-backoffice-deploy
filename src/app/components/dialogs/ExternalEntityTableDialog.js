@@ -31,24 +31,27 @@ import { shallowEqual, useSelector } from "react-redux";
 import ConfirmDialog from "./ConfirmDialog";
 import { AddBox } from "@material-ui/icons";
 import { assignGameToUser } from "../../../api/user";
+import { setSessionAssignedByExternalEntity, updateSession } from "../../../api/game-session";
 
-function getData(games) {
+function getData(externalEntities) {
 	let data = [];
-	for (let i = 0; i < games.length; ++i) {
+	for (let i = 0; i < externalEntities.length; ++i) {
 		const elem = {};
 
-		elem.nombre = games[i].nombre;
-		elem.descripcion = games[i].descripcion ? games[i].descripcion : "---";
-		elem.id = games[i].id;
+		elem.nombre = externalEntities[i].nombre;
+		elem.razonSocial = externalEntities[i]?.razonSocial || "---";
+		elem.nif = externalEntities[i]?.nif || "---";
+
+		elem.id = externalEntities[i].id;
 
 		data = data.concat(elem);
 	}
 
 	return data;
 }
-const GameTableDialog = (props) => {
-	const { title, open, setOpen, data, patientId, onCreate } = props;
-	const [selectedGame, setSelectedGame] = useState(null);
+const ExternalEntityTableDialog = (props) => {
+	const { title, open, setOpen, data, session, onCreate } = props;
+	const [selectedEntity, setSelectedEntity] = useState(null);
 	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 
 	const loggedUser = useSelector(
@@ -66,7 +69,7 @@ const GameTableDialog = (props) => {
 						size="small"
 						onClick={() => {
 							setOpenConfirmDialog(true);
-							setSelectedGame(elem);
+							setSelectedEntity(elem);
 						}}
 					>
 						<AddBox />
@@ -83,8 +86,13 @@ const GameTableDialog = (props) => {
 			sort: true,
 		},
 		{
-			dataField: "descripcion",
-			text: "Descripcion",
+			dataField: "razonSocial",
+			text: "Razón Social",
+			sort: true,
+		},
+		{
+			dataField: "nif",
+			text: "NIF",
 			sort: true,
 		},
 		{
@@ -94,18 +102,21 @@ const GameTableDialog = (props) => {
 		},
 	];
 
-	function assignGame() {
-		const saveGameSession = {};
-		saveGameSession.juego_id = selectedGame.id;
-
-		assignGameToUser(patientId, saveGameSession, loggedUser.accessToken)
+	function assignExternalEntity() {
+		let saveGameSession = {
+			juego_id: session.juego.id,
+			fecha_inicio: session.fecha_inicio,
+			fecha_fin: session.fecha_inicio,
+			enviado_por_entidad_ext: selectedEntity.id,
+		};
+		updateSession(session.sessionId, saveGameSession)
 			.then((res) => {
 				if (res.status === 201) {
-					onCreate(res.data);
-					setSelectedGame(null);
+					setSelectedEntity(null);
+					onCreate(res.data)
 					alertSuccess({
 						title: "Saved!",
-						customMessage: "Session successfully created.",
+						customMessage: "Entity assigned successfully.",
 					});
 					setOpen(false);
 				}
@@ -113,7 +124,7 @@ const GameTableDialog = (props) => {
 			.catch((error) => {
 				alertError({
 					error: error,
-					customMessage: "Could not save sessions.",
+					customMessage: "Could not assign entity.",
 				});
 			});
 	}
@@ -130,7 +141,7 @@ const GameTableDialog = (props) => {
 				<DialogTitle id="table-dialog">{title}</DialogTitle>
 				<DialogContent>
 					{!data || !data.length ? (
-						<p>{"No games found."}</p>
+						<p>{"No external entities found."}</p>
 					) : (
 						<Table data={getData(data)} columns={columns} />
 					)}
@@ -138,7 +149,7 @@ const GameTableDialog = (props) => {
 				<DialogActions>
 					<Button
 						onClick={() => {
-							setSelectedGame(null);
+							setSelectedEntity(null);
 							setOpen(false);
 						}}
 						variant="outlined"
@@ -150,14 +161,14 @@ const GameTableDialog = (props) => {
 				</DialogActions>
 			</Dialog>
 			<ConfirmDialog
-				title={"Are you sure you want to assign this game?"}
+				title={"Are you sure you want to assign this entity?"}
 				open={openConfirmDialog}
 				setOpen={setOpenConfirmDialog}
 				onConfirm={() => {
-					assignGame();
+					assignExternalEntity();
 				}}
 			/>
 		</>
 	);
 };
-export default GameTableDialog;
+export default ExternalEntityTableDialog;

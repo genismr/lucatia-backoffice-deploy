@@ -32,6 +32,8 @@ import {
 	assignUserApp,
 	unassignUserApp,
 	getUserAssignedGames,
+	unassignGameSessionFromUser,
+	assignGameToUser,
 } from "../../../../api/user";
 import { getEntities } from "../../../../api/entity";
 import { getRoles } from "../../../../api/role";
@@ -49,12 +51,14 @@ import Table, {
 } from "../../../components/tables/table";
 import GameTableDialog from "../../../components/dialogs/GameTableDialog";
 import { getGames } from "../../../../api/game";
-import { Delete, Replay } from "@material-ui/icons";
+import { AddBox, Delete, Replay, Store } from "@material-ui/icons";
 import {
 	deleteGameSession,
 	postGameSession,
 } from "../../../../api/game-session";
 import { getMetadata } from "../../../../api/metadata";
+import ExternalEntityTableDialog from "../../../components/dialogs/ExternalEntityTableDialog";
+import { getExternalEntities } from "../../../../api/external-entity";
 
 // Create theme for delete button (red)
 const theme = createMuiTheme({
@@ -135,6 +139,8 @@ function getGameData(assignedGames) {
 			assignedGames[i].asignado_por.nombre +
 			" " +
 			assignedGames[i].asignado_por.apellidos;
+		elem.enviadoPor =
+			assignedGames[i].enviado_por_entidad_ext?.nombre || "---";
 		elem.fechaAsignado = assignedGames[i].fecha_asignado;
 		elem.fechaInicio = assignedGames[i].fecha_inicio;
 		elem.fechaFin = assignedGames[i].fecha_fin;
@@ -159,6 +165,11 @@ export default function EditPatientsPage() {
 	const [assignedGames, setAssignedGames] = useState([]);
 	const [selectedSession, setSelectedSession] = useState([]);
 
+	const [
+		openExternalEntityTableDialog,
+		setOpenExternalEntityTableDialog,
+	] = useState(null);
+
 	const [openTableDialog, setOpenTableDialog] = useState(null);
 	const [openConfirmReassignDialog, setOpenConfirmReassignDialog] = useState(
 		null
@@ -171,6 +182,7 @@ export default function EditPatientsPage() {
 	const [entities, setEntities] = useState(null);
 	const [apps, setApps] = useState(null);
 	const [provincias, setProvincias] = useState([]);
+	const [externalEntities, setExternalEntities] = useState([]);
 
 	const [metadata, setMetadata] = useState([]);
 
@@ -407,11 +419,7 @@ export default function EditPatientsPage() {
 			(e) => !saveNewMetadata.find((y) => y.metadata_id == e.metadata_id)
 		);
 
-		updateUserMetadata(
-			metadataUserId,
-			saveMetadata,
-			loggedUser.accessToken
-		)
+		updateUserMetadata(metadataUserId, saveMetadata, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 204) {
 					setSuccess(true);
@@ -580,6 +588,21 @@ export default function EditPatientsPage() {
 					customMessage: "Could not get app metadata.",
 				});
 			});
+
+		if (loggedUser.role?.rango === userRoles.SUPER_ADMIN) {
+			getExternalEntities(loggedUser.accessToken)
+				.then((res) => {
+					if (res.status === 200) {
+						setExternalEntities(res.data);
+					}
+				})
+				.catch((error) => {
+					alertError({
+						error: error,
+						customMessage: "Could not get external entities.",
+					});
+				});
+		}
 
 		if (!patientId) {
 			disableLoadingData();
@@ -833,6 +856,20 @@ export default function EditPatientsPage() {
 						<Replay />
 					</Button>
 				</Tooltip>
+				{loggedUser.role?.rango === userRoles.SUPER_ADMIN && (
+					<Tooltip title="Assign entity">
+						<Button
+							style={buttonsStyle}
+							size="small"
+							onClick={() => {
+								setSelectedSession(elem);
+								setOpenExternalEntityTableDialog(true);
+							}}
+						>
+							<Store />
+						</Button>
+					</Tooltip>
+				)}
 				<Tooltip title="Unassign">
 					<Button
 						style={buttonsStyle}
@@ -861,6 +898,11 @@ export default function EditPatientsPage() {
 			sort: true,
 		},
 		{
+			dataField: "enviadoPor",
+			text: "Enviado Por",
+			sort: true,
+		},
+		{
 			dataField: "fechaAsignado",
 			text: "Asignado",
 			sort: true,
@@ -880,14 +922,10 @@ export default function EditPatientsPage() {
 	];
 
 	function reAssignGameSession() {
-		let saveSession = [
-			{
-				juego_id: selectedSession.juego.id,
-				asignado_a: selectedSession.asignado_a.id,
-				asignado_por: selectedSession.asignado_por.id,
-			},
-		];
-		postGameSession(saveSession)
+		let saveSession = {
+			juego_id: selectedSession.juego.id,
+		};
+		assignGameToUser(patientId, saveSession, loggedUser.accessToken)
 			.then((res) => {
 				if (res.status === 201) {
 					alertSuccess({
@@ -895,7 +933,7 @@ export default function EditPatientsPage() {
 						customMessage: "Session successfully created.",
 					});
 					let newAssignedGames = [...assignedGames];
-					newAssignedGames = newAssignedGames.concat(res.data);
+					newAssignedGames.push(res.data);
 					setAssignedGames(newAssignedGames);
 				}
 			})
@@ -1225,7 +1263,18 @@ export default function EditPatientsPage() {
 							<button
 								type="button"
 								className="btn btn-primary"
-								onClick={() => setOpenTableDialog(true)}
+								onClick={() => {
+									if (
+										assignedGames.some(
+											(x) => x.jugado === false
+										)
+									)
+										alertError({
+											error:
+												"You can't assign new games because the patient has games he hasn't played",
+										});
+									else setOpenTableDialog(true);
+								}}
 							>
 								Assign new
 							</button>
@@ -1244,11 +1293,29 @@ export default function EditPatientsPage() {
 					open={openTableDialog}
 					setOpen={setOpenTableDialog}
 					data={games}
-					patient={patientId}
+					patientId={patientId}
 					onCreate={(data) => {
 						let newAssignedGames = [...assignedGames];
-						newAssignedGames = newAssignedGames.concat(data);
+						newAssignedGames.push(data);
 						setAssignedGames(newAssignedGames);
+					}}
+				/>
+				<ExternalEntityTableDialog
+					open={openExternalEntityTableDialog}
+					setOpen={setOpenExternalEntityTableDialog}
+					data={externalEntities}
+					session={selectedSession}
+					onCreate={(data) => {
+						let newAssignedGames = [...assignedGames];
+						let updatedSession = newAssignedGames.find(
+							(x) => x.sessionId === data.id
+						);
+						updatedSession.enviado_por_entidad_ext = externalEntities.find(
+							(x) => x.id === data.enviado_por_entidad_ext
+						);
+
+						setAssignedGames(newAssignedGames);
+						setRefresh(true);
 					}}
 				/>
 				<ConfirmDialog
@@ -1264,7 +1331,11 @@ export default function EditPatientsPage() {
 					open={openConfirmUnassignDialog}
 					setOpen={setOpenConfirmUnassignDialog}
 					onConfirm={() => {
-						deleteGameSession(selectedSession.sessionId)
+						unassignGameSessionFromUser(
+							patientId,
+							selectedSession.sessionId,
+							loggedUser.accessToken
+						)
 							.then((res) => {
 								if (res.status === 204) {
 									alertSuccess({
@@ -1273,7 +1344,7 @@ export default function EditPatientsPage() {
 											"Session unassigned successfully.",
 									});
 									let index = assignedGames
-										.map((x) => x.id)
+										.map((x) => x.sessionId)
 										.indexOf(selectedSession.sessionId);
 									let newAssignedGames = [...assignedGames];
 									newAssignedGames.splice(index, 1);

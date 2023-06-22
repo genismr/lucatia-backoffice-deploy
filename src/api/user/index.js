@@ -72,12 +72,19 @@ export const unassignManagedEntity = async (userId, entities, accessToken) => {
 }
 
 export const assignUserApp = async (userId, apps, accessToken) => {
-  console.log('post user app', apps)
   return authClient(accessToken).post(`${API}/user/${userId}/assign-apps`, apps)
 }
 
 export const unassignUserApp = async (userId, apps, accessToken) => {
   return authClient(accessToken).post(`${API}/user/${userId}/unassign-apps`, apps)
+}
+
+export const assignGameToUser = async (userId, gameSession, accessToken) => {
+  return authClient(accessToken).post(`${API}/user/${userId}/assign-game`, gameSession)
+}
+
+export const unassignGameSessionFromUser = async (userId, gameSessionId, accessToken) => {
+  return authClient(accessToken).post(`${API}/user/${userId}/unassign-game-session/${gameSessionId}`)
 }
 
 
