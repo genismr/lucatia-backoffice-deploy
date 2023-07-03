@@ -36,9 +36,10 @@ import {
 	getTypes,
 } from "../../../../api/asset";
 import AddResourceIcon from "@material-ui/icons/AddPhotoAlternate";
-import { Visibility, VolumeUp } from "@material-ui/icons";
+import { Delete, Visibility, VolumeUp } from "@material-ui/icons";
 import AssetTableDialog from "../../../components/dialogs/AssetTableDialog";
 import PreviewDialog from "../../../components/dialogs/PreviewDialog";
+import { deleteGameActivity } from "../../../../api/game-activity";
 
 function getEmptyEnvironment() {
 	return {
@@ -73,9 +74,14 @@ export default function EditEnvironmentsPage() {
 	const [activities, setActivities] = useState([]);
 	const [assets, setAssets] = useState([]);
 
+	const [selectedActivity, setSelectedActivity] = useState(null);
+
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 	const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
 	const [previewFile, setPreviewFile] = useState(null);
 	const [openTableDialog, setOpenTableDialog] = useState(false);
+
+	const [refresh, setRefresh] = useState(false);
 
 	const [types, setTypes] = useState(null);
 	const [categories, setCategories] = useState(null);
@@ -215,7 +221,7 @@ export default function EditEnvironmentsPage() {
 				});
 				history.push("/edit-game/" + gameId);
 			});
-	}, [environmentId, disableLoadingData, history]);
+	}, [environmentId, disableLoadingData, history, refresh]);
 
 	function saveEnvironment() {
 		if (checkIsEmpty(environment.nombre)) {
@@ -311,6 +317,18 @@ export default function EditEnvironmentsPage() {
 						}}
 					>
 						<EditIcon />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Delete">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						onClick={() => {
+							setSelectedActivity(elem);
+							setOpenConfirmDialog(true);
+						}}
+					>
+						<Delete />
 					</Button>
 				</Tooltip>
 			</>
@@ -711,6 +729,30 @@ export default function EditEnvironmentsPage() {
 					open={openPreviewDialog}
 					setOpen={setOpenPreviewDialog}
 					src={previewFile}
+				/>
+				<ConfirmDialog
+					title={"Are you sure you want to delete this activity?"}
+					open={openConfirmDialog}
+					setOpen={setOpenConfirmDialog}
+					onConfirm={() => {
+						deleteGameActivity(selectedActivity.id)
+							.then((res) => {
+								if (res.status === 204) {
+									alertSuccess({
+										title: "Deleted!",
+										customMessage:
+											"Activity successfully deleted.",
+									});
+									setRefresh(true);
+								}
+							})
+							.catch((error) => {
+								alertError({
+									error: error,
+									customMessage: "Could not delete activity.",
+								});
+							});
+					}}
 				/>
 				<Button
 					onClick={() => history.push("/edit-game/" + gameId)}

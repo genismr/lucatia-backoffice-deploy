@@ -28,7 +28,7 @@ import {
 } from "../../../../api/game-activity";
 import { getEvaluatedConcepts } from "../../../../api/evaluated-concept";
 import Editor from "../../../components/editor/Editor";
-import { Visibility, VolumeUp } from "@material-ui/icons";
+import { Delete, Visibility, VolumeUp } from "@material-ui/icons";
 import {
 	getAssets,
 	getCategories,
@@ -40,6 +40,7 @@ import {
 import AddResourceIcon from "@material-ui/icons/AddPhotoAlternate";
 import AssetTableDialog from "../../../components/dialogs/AssetTableDialog";
 import PreviewDialog from "../../../components/dialogs/PreviewDialog";
+import { deleteGameQuestion } from "../../../../api/game-question";
 
 function getEmptyActivity() {
 	return {
@@ -76,9 +77,14 @@ export default function EditActivitiesPage() {
 	const [questions, setQuestions] = useState([]);
 	const [evaluatedConcepts, setEvaluatedConcepts] = useState([]);
 
+	const [selectedQuestion, setSelectedQuestion] = useState(null);
+
+	const [openConfirmDialog, setOpenConfirmDialog] = useState(null);
 	const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
 	const [previewFile, setPreviewFile] = useState(null);
 	const [openTableDialog, setOpenTableDialog] = useState(false);
+
+	const [refresh, setRefresh] = useState(false);
 
 	const [assets, setAssets] = useState([]);
 	const [types, setTypes] = useState(null);
@@ -241,7 +247,7 @@ export default function EditActivitiesPage() {
 				});
 				history.push("/edit-environment/" + environmentId);
 			});
-	}, [activityId, disableLoadingData, history]);
+	}, [activityId, disableLoadingData, history, refresh]);
 
 	function saveActivity() {
 		if (checkIsEmpty(activity.nombre)) {
@@ -344,6 +350,18 @@ export default function EditActivitiesPage() {
 						}}
 					>
 						<EditIcon />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Delete">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						onClick={() => {
+							setSelectedQuestion(elem);
+							setOpenConfirmDialog(true);
+						}}
+					>
+						<Delete />
 					</Button>
 				</Tooltip>
 			</>
@@ -784,6 +802,30 @@ export default function EditActivitiesPage() {
 					open={openPreviewDialog}
 					setOpen={setOpenPreviewDialog}
 					src={previewFile}
+				/>
+				<ConfirmDialog
+					title={"Are you sure you want to delete this question?"}
+					open={openConfirmDialog}
+					setOpen={setOpenConfirmDialog}
+					onConfirm={() => {
+						deleteGameQuestion(selectedQuestion.id)
+							.then((res) => {
+								if (res.status === 204) {
+									alertSuccess({
+										title: "Deleted!",
+										customMessage:
+											"Question successfully deleted.",
+									});
+									setRefresh(true);
+								}
+							})
+							.catch((error) => {
+								alertError({
+									error: error,
+									customMessage: "Could not delete question.",
+								});
+							});
+					}}
 				/>
 				<Button
 					onClick={() =>

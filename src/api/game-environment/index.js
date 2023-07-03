@@ -15,3 +15,7 @@ export const getGameEnvironmentActivities = (id) => {
 export const updateGameEnvironment = (id, gameEnvironment) => {
   return authClient().put(`${API}/game-environment/${id}`, gameEnvironment)
 }
+
+export const deleteGameEnvironment = (id) => {
+	return authClient().delete(`${API}/game-environment/${id}`);
+};
