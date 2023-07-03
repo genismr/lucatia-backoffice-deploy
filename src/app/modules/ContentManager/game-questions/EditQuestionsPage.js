@@ -427,6 +427,7 @@ export default function EditQuestionsPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{
@@ -508,6 +509,7 @@ export default function EditQuestionsPage() {
 									margin="normal"
 									variant="outlined"
 									required
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{
@@ -576,6 +578,7 @@ export default function EditQuestionsPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{

@@ -52,7 +52,7 @@ function getData(environments) {
 
 		elem.nombre = environments[i].nombre;
 		elem.descripcion = environments[i].descripcion;
-		elem.icono = environments[i].icono_id;
+		elem.icono = environments[i].icono?.id;
 		elem.id = environments[i].id;
 
 		data = data.concat(elem);
@@ -417,6 +417,7 @@ export default function EditGamesPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{
@@ -478,6 +479,7 @@ export default function EditGamesPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{

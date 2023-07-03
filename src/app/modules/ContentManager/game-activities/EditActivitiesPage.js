@@ -413,6 +413,7 @@ export default function EditActivitiesPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{
@@ -551,6 +552,7 @@ export default function EditActivitiesPage() {
 									margin="normal"
 									variant="outlined"
 									required
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{
@@ -620,6 +622,7 @@ export default function EditActivitiesPage() {
 									margin="normal"
 									variant="outlined"
 									required
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{

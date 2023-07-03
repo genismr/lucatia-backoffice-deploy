@@ -59,7 +59,7 @@ function getData(activities) {
 
 		elem.nombre = activities[i].nombre;
 		elem.descripcion = activities[i].descripcion;
-		elem.icono = activities[i].icono_id;
+		elem.icono = activities[i].icono?.id;
 		elem.id = activities[i].id;
 
 		data = data.concat(elem);
@@ -380,6 +380,7 @@ export default function EditEnvironmentsPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{
@@ -478,6 +479,7 @@ export default function EditEnvironmentsPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{
@@ -547,6 +549,7 @@ export default function EditEnvironmentsPage() {
 									}}
 									margin="normal"
 									variant="outlined"
+									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
 										{
