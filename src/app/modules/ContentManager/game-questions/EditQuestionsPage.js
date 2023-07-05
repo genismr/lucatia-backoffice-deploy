@@ -757,7 +757,7 @@ export default function EditQuestionsPage() {
 											}}
 										/>
 									}
-									label="Pregunta con puntuación"
+									label="Pregunta con puntuación propia"
 								/>
 							</div>
 							<div className="col">
