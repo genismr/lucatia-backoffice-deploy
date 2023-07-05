@@ -66,6 +66,8 @@ function getEmptyQuestion() {
 		es_abierta: true,
 		es_secuencial: true,
 		es_reintento: true,
+		es_puntuacion_pregunta: false,
+		puntuacion: null,
 	};
 }
 
@@ -717,20 +719,68 @@ export default function EditQuestionsPage() {
 											<Checkbox
 												checked={question.es_reintento}
 												name="checkActive"
-												onChange={(event) =>
+												onChange={(event) => {
 													setQuestion({
 														...question,
 														es_reintento:
 															event.target
 																.checked,
-													})
-												}
+													});
+												}}
 											/>
 										}
 										label="Reintento"
 									/>
 								</div>
 							)}
+						</div>
+						<br />
+						<div className="row d-flex align-items-center">
+							<div className="col">
+								<FormControlLabel
+									control={
+										<Checkbox
+											checked={
+												question.es_puntuacion_pregunta
+											}
+											name="checkActive"
+											onChange={(event) => {
+												let checked =
+													event.target.checked;
+												setQuestion({
+													...question,
+													es_puntuacion_pregunta: checked,
+													puntuacion: checked
+														? 0
+														: null,
+												});
+											}}
+										/>
+									}
+									label="Pregunta con puntuación"
+								/>
+							</div>
+							<div className="col">
+								{question.es_puntuacion_pregunta && (
+									<TextField
+										id={`punctuation`}
+										label="Puntuación"
+										value={question.puntuacion}
+										onChange={handleChange("puntuacion")}
+										InputLabelProps={{
+											shrink: true,
+										}}
+										InputProps={{
+											inputProps: {
+												min: 0,
+											},
+										}}
+										margin="normal"
+										variant="outlined"
+										type="number"
+									/>
+								)}
+							</div>
 						</div>
 					</CardBody>
 					{questionId && (
@@ -859,8 +909,7 @@ export default function EditQuestionsPage() {
 							.catch((error) => {
 								alertError({
 									error: error,
-									customMessage:
-										"Could not delete answer.",
+									customMessage: "Could not delete answer.",
 								});
 							});
 					}}

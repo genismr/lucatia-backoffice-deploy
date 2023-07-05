@@ -673,21 +673,28 @@ export default function EditAnswersPage() {
 												InputProps={{
 													...params.InputProps,
 													endAdornment: (
-														<Tooltip title="Create">
-															<Button
-																onClick={() => {
-																	storeToSession(
-																		"answer",
-																		answerId
-																	);
-																	history.push(
-																		"/edit-answer-question"
-																	);
-																}}
-															>
-																<AddBox />
-															</Button>
-														</Tooltip>
+														<>
+															{
+																params
+																	.InputProps
+																	.endAdornment
+															}
+															<Tooltip title="Create">
+																<Button
+																	onClick={() => {
+																		storeToSession(
+																			"answer",
+																			answerId
+																		);
+																		history.push(
+																			"/edit-answer-question"
+																		);
+																	}}
+																>
+																	<AddBox />
+																</Button>
+															</Tooltip>
+														</>
 													),
 												}}
 											/>
