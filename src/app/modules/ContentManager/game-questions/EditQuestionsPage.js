@@ -71,6 +71,7 @@ function getEmptyQuestion() {
 		tiene_puntuacion_global: false,
 		puntuacion: null,
 		tipo_pregunta_id: "",
+		repetir_si_fallo: null,
 	};
 }
 
@@ -120,6 +121,8 @@ export default function EditQuestionsPage() {
 
 	const questionId = useParams().id;
 	const history = useHistory();
+
+	const PREGUNTA_ABIERTA_SUFICIENTE = "AS";
 
 	const [refresh, setRefresh] = useState(false);
 
@@ -665,9 +668,9 @@ export default function EditQuestionsPage() {
 							</div>
 						</div>
 						<br />
-						<div className="row">
+						<div className="row d-flex align-items-center">
 							{!retryQuestion && (
-								<div className="col">
+								<div className="col md-3">
 									<FormControlLabel
 										control={
 											<Checkbox
@@ -687,7 +690,7 @@ export default function EditQuestionsPage() {
 									/>
 								</div>
 							)}
-							<div className="col">
+							<div className="col-md-3">
 								<FormControlLabel
 									control={
 										<Checkbox
@@ -708,11 +711,32 @@ export default function EditQuestionsPage() {
 											}}
 										/>
 									}
-									label="Pregunta con puntuación global"
+									label="Puntuación global"
 								/>
 							</div>
+							<div className="col-md-6">
+								{question.tiene_puntuacion_global && (
+									<TextField
+										id={`punctuation`}
+										label="Puntuación"
+										value={question.puntuacion}
+										onChange={handleChange("puntuacion")}
+										InputLabelProps={{
+											shrink: true,
+										}}
+										InputProps={{
+											inputProps: {
+												min: 0,
+											},
+										}}
+										margin="normal"
+										variant="outlined"
+										type="number"
+									/>
+								)}
+							</div>
 						</div>
-						<div className="row">
+						<div className="row d-flex align-items-center">
 							<div className="col">
 								<Autocomplete
 									id="autocomplete-question-type"
@@ -738,6 +762,13 @@ export default function EditQuestionsPage() {
 											tipo_pregunta_id: selected
 												? selected.id
 												: "",
+											repetir_si_fallo:
+												questionTypes.find(
+													(x) => x.id === selected?.id
+												).codigo ===
+												PREGUNTA_ABIERTA_SUFICIENTE
+													? false
+													: null,
 										});
 									}}
 									renderInput={(params) => (
@@ -755,23 +786,27 @@ export default function EditQuestionsPage() {
 								/>
 							</div>
 							<div className="col">
-								{question.tiene_puntuacion_global && (
-									<TextField
-										id={`punctuation`}
-										label="Puntuación"
-										value={question.puntuacion}
-										onChange={handleChange("puntuacion")}
-										InputLabelProps={{
-											shrink: true,
-										}}
-										InputProps={{
-											inputProps: {
-												min: 0,
-											},
-										}}
-										margin="normal"
-										variant="outlined"
-										type="number"
+								{questionTypes.find(
+									(x) => x.id === question.tipo_pregunta_id
+								).codigo === PREGUNTA_ABIERTA_SUFICIENTE && (
+									<FormControlLabel
+										control={
+											<Checkbox
+												checked={
+													question.repetir_si_fallo
+												}
+												name="checkActive"
+												onChange={(event) => {
+													let checked =
+														event.target.checked;
+													setQuestion({
+														...question,
+														repetir_si_fallo: checked,
+													});
+												}}
+											/>
+										}
+										label="Repetir si se falla"
 									/>
 								)}
 							</div>
