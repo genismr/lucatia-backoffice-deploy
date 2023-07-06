@@ -26,7 +26,10 @@ import {
 } from "../../../../utils/helpers";
 import { getEntities } from "../../../../api/entity";
 import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
-import Table, { buttonsStyle } from "../../../components/tables/table";
+import Table, {
+	buttonsStyle,
+	substringFormatter,
+} from "../../../components/tables/table";
 import EditIcon from "@material-ui/icons/Edit";
 import {
 	getAssets,
@@ -39,6 +42,7 @@ import {
 import {
 	getGameQuestionAnswers,
 	getGameQuestionById,
+	getGameQuestionTypes,
 	postGameQuestion,
 	updateGameQuestion,
 } from "../../../../api/game-question";
@@ -61,13 +65,12 @@ function getEmptyQuestion() {
 		nombre: "",
 		descripcion: null,
 		icono_id: null,
-		audio_id: "",
+		audio_id: null,
 		amb_imagen_id: null,
-		es_abierta: true,
-		es_secuencial: true,
-		es_reintento: true,
-		es_puntuacion_pregunta: false,
+		es_reintento: false,
+		tiene_puntuacion_global: false,
 		puntuacion: null,
+		tipo_pregunta_id: "",
 	};
 }
 
@@ -100,6 +103,8 @@ export default function EditQuestionsPage() {
 	const [openTableDialog, setOpenTableDialog] = useState(false);
 
 	const [assets, setAssets] = useState([]);
+	const [questionTypes, setQuestionTypes] = useState([]);
+
 	const [types, setTypes] = useState(null);
 	const [categories, setCategories] = useState(null);
 	const [formats, setFormats] = useState(null);
@@ -223,6 +228,21 @@ export default function EditQuestionsPage() {
 				});
 				history.push("/edit-activity/" + activityId);
 			});
+		getGameQuestionTypes()
+			.then((res) => {
+				if (res.status === 200) {
+					console.log(res.data);
+					setQuestionTypes(res.data);
+					disableLoadingData();
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get game question types.",
+				});
+				history.push("/edit-activity/" + activityId);
+			});
 		if (!questionId) {
 			disableLoadingData();
 			return;
@@ -244,7 +264,10 @@ export default function EditQuestionsPage() {
 		getGameQuestionById(questionId)
 			.then((res) => {
 				if (res.status === 200) {
-					setQuestion(res.data);
+					let question = res.data;
+					question.tipo_pregunta_id =
+						question.tipo_pregunta.id || null;
+					setQuestion(question);
 					disableLoadingData();
 				}
 			})
@@ -262,6 +285,13 @@ export default function EditQuestionsPage() {
 			alertError({
 				error: null,
 				customMessage: "Nombre is required",
+			});
+			return;
+		}
+		if (checkIsEmpty(question.tipo_pregunta_id)) {
+			alertError({
+				error: null,
+				customMessage: "Tipo de pregunta is required",
 			});
 			return;
 		}
@@ -510,7 +540,6 @@ export default function EditQuestionsPage() {
 									}}
 									margin="normal"
 									variant="outlined"
-									required
 									inputProps={{ readOnly: true }}
 									InputProps={
 										({ readOnly: true },
@@ -637,81 +666,6 @@ export default function EditQuestionsPage() {
 						</div>
 						<br />
 						<div className="row">
-							<div className="col ml-4">
-								<FormControlLabel
-									control={
-										<RadioGroup
-											row
-											aria-labelledby="demo-row-radio-buttons-group-label"
-											name="row-radio-buttons-group"
-											onChange={(event) =>
-												setQuestion({
-													...question,
-													es_abierta:
-														event.target.value ===
-														"abierta"
-															? true
-															: false,
-												})
-											}
-										>
-											<FormControlLabel
-												value="abierta"
-												checked={question?.es_abierta}
-												control={<Radio />}
-												label="Abierta"
-											/>
-											<FormControlLabel
-												value="cerrada"
-												checked={!question?.es_abierta}
-												control={<Radio />}
-												label="Cerrada"
-											/>
-										</RadioGroup>
-									}
-								/>
-							</div>
-							{!question?.es_abierta && (
-								<div className="col">
-									<FormControlLabel
-										control={
-											<RadioGroup
-												row
-												aria-labelledby="demo-row-radio-buttons-group-label"
-												name="row-radio-buttons-group"
-												onChange={(event) =>
-													setQuestion({
-														...question,
-														es_secuencial:
-															event.target
-																.value ===
-															"secuencial"
-																? true
-																: false,
-													})
-												}
-											>
-												<FormControlLabel
-													value="secuencial"
-													checked={
-														question?.es_secuencial
-													}
-													control={<Radio />}
-													label="Secuencial"
-												/>
-												<FormControlLabel
-													value="interactiva"
-													checked={
-														!question?.es_secuencial
-													}
-													control={<Radio />}
-													label="Interactiva"
-												/>
-											</RadioGroup>
-										}
-									/>
-								</div>
-							)}
 							{!retryQuestion && (
 								<div className="col">
 									<FormControlLabel
@@ -729,19 +683,16 @@ export default function EditQuestionsPage() {
 												}}
 											/>
 										}
-										label="Reintento"
+										label="Pregunta de reintento"
 									/>
 								</div>
 							)}
-						</div>
-						<br />
-						<div className="row d-flex align-items-center">
 							<div className="col">
 								<FormControlLabel
 									control={
 										<Checkbox
 											checked={
-												question.es_puntuacion_pregunta
+												question.tiene_puntuacion_global
 											}
 											name="checkActive"
 											onChange={(event) => {
@@ -749,7 +700,7 @@ export default function EditQuestionsPage() {
 													event.target.checked;
 												setQuestion({
 													...question,
-													es_puntuacion_pregunta: checked,
+													tiene_puntuacion_global: checked,
 													puntuacion: checked
 														? 0
 														: null,
@@ -757,11 +708,54 @@ export default function EditQuestionsPage() {
 											}}
 										/>
 									}
-									label="Pregunta con puntuación propia"
+									label="Pregunta con puntuación global"
+								/>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col">
+								<Autocomplete
+									id="autocomplete-question-type"
+									options={questionTypes}
+									getOptionLabel={(option) =>
+										option.codigo +
+										(option.descripcion
+											? " - " +
+											  substringFormatter(
+													option.descripcion,
+													30
+											  )
+											: "")
+									}
+									value={questionTypes.find(
+										(x) =>
+											x.id === question.tipo_pregunta_id
+									)}
+									filterSelectedOptions
+									onChange={(event, selected) => {
+										setQuestion({
+											...question,
+											tipo_pregunta_id: selected
+												? selected.id
+												: "",
+										});
+									}}
+									renderInput={(params) => (
+										<TextField
+											{...params}
+											label="Tipo de pregunta"
+											required
+											InputLabelProps={{
+												shrink: true,
+											}}
+											margin="normal"
+											variant="outlined"
+										/>
+									)}
 								/>
 							</div>
 							<div className="col">
-								{question.es_puntuacion_pregunta && (
+								{question.tiene_puntuacion_global && (
 									<TextField
 										id={`punctuation`}
 										label="Puntuación"

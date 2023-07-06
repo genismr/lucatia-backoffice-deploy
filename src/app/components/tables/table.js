@@ -40,9 +40,12 @@ function extractContent(s) {
 	return span.textContent || span.innerText;
 }
 
-export function substringFormatter(cell) {
+export function substringFormatter(cell, length) {
+	let maxLength = length ? length : 50;
 	const text = extractContent(cell);
-	return text.length > 50 ? text.substring(0, 50) + "..." : text;
+	return text.length > maxLength
+		? text.substring(0, maxLength) + "..."
+		: text;
 }
 
 const buildDate = (date) => {
@@ -88,7 +91,7 @@ const pagination = paginationFactory({
 	onSizePerPageChange: function(page, sizePerPage) {},
 });
 
-const rowClasses = row => (row.activo === false ? "inactive-row" : "");
+const rowClasses = (row) => (row.activo === false ? "inactive-row" : "");
 
 export default function Table({ data, columns, selectRow, ...tableProps }) {
 	return (
@@ -116,7 +119,7 @@ export default function Table({ data, columns, selectRow, ...tableProps }) {
 						pagination={pagination}
 						striped
 						rowClasses={rowClasses}
-						selectRow={selectRow}												
+						selectRow={selectRow}
 						{...tableProps}
 						{...props.baseProps}
 					/>

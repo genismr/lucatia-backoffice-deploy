@@ -1,11 +1,16 @@
 import { authClient, API } from "../index";
 
 export const postGameQuestion = (gameQuestion) => {
+	console.log("post", gameQuestion);
 	return authClient().post(`${API}/game-question`, gameQuestion);
 };
 
 export const getGameQuestionById = (id) => {
 	return authClient().get(`${API}/game-question/${id}`);
+};
+
+export const getGameQuestionTypes = (id) => {
+	return authClient().get(`${API}/game-question-type`);
 };
 
 export const getGameQuestionAnswers = (id) => {
