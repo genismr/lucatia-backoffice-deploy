@@ -765,7 +765,7 @@ export default function EditQuestionsPage() {
 											repetir_si_fallo:
 												questionTypes.find(
 													(x) => x.id === selected?.id
-												).codigo ===
+												)?.codigo ===
 												PREGUNTA_ABIERTA_SUFICIENTE
 													? false
 													: null,
@@ -788,7 +788,7 @@ export default function EditQuestionsPage() {
 							<div className="col">
 								{questionTypes.find(
 									(x) => x.id === question.tipo_pregunta_id
-								).codigo === PREGUNTA_ABIERTA_SUFICIENTE && (
+								)?.codigo === PREGUNTA_ABIERTA_SUFICIENTE && (
 									<FormControlLabel
 										control={
 											<Checkbox
