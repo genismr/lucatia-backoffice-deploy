@@ -270,6 +270,10 @@ export default function EditQuestionsPage() {
 					let question = res.data;
 					question.tipo_pregunta_id =
 						question.tipo_pregunta.id || null;
+					question.audio_id = question?.audio?.id;
+					question.amb_imagen_id = question?.amb_imagen?.id;
+					question.icono_id = question?.icono?.id;
+					
 					setQuestion(question);
 					disableLoadingData();
 				}
@@ -535,7 +539,7 @@ export default function EditQuestionsPage() {
 									label="Audio"
 									value={
 										assets.find(
-											(x) => x.id === question.audio_id
+											(x) => x.id === question?.audio_id
 										)?.descripcion
 									}
 									InputLabelProps={{
@@ -559,7 +563,7 @@ export default function EditQuestionsPage() {
 																				x
 																			) =>
 																				x.id ===
-																				question.audio_id
+																				question?.audio_id
 																		)?.url
 																	);
 																	setOpenPreviewDialog(
@@ -628,7 +632,7 @@ export default function EditQuestionsPage() {
 																				x
 																			) =>
 																				x.id ===
-																				question.amb_imagen_id
+																				question?.amb_imagen_id
 																		)?.url
 																	);
 																	setOpenPreviewDialog(
