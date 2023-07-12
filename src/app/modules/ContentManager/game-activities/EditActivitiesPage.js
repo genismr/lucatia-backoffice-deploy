@@ -28,7 +28,13 @@ import {
 } from "../../../../api/game-activity";
 import { getEvaluatedConcepts } from "../../../../api/evaluated-concept";
 import Editor from "../../../components/editor/Editor";
-import { Delete, Visibility, VolumeUp } from "@material-ui/icons";
+import {
+	ArrowDownward,
+	ArrowUpward,
+	Delete,
+	Visibility,
+	VolumeUp,
+} from "@material-ui/icons";
 import {
 	getAssets,
 	getCategories,
@@ -40,7 +46,10 @@ import {
 import AddResourceIcon from "@material-ui/icons/AddPhotoAlternate";
 import AssetTableDialog from "../../../components/dialogs/AssetTableDialog";
 import PreviewDialog from "../../../components/dialogs/PreviewDialog";
-import { deleteGameQuestion } from "../../../../api/game-question";
+import {
+	deleteGameQuestion,
+	updateGameQuestion,
+} from "../../../../api/game-question";
 
 function getEmptyActivity() {
 	return {
@@ -61,10 +70,20 @@ function getData(questions) {
 	for (let i = 0; i < questions.length; ++i) {
 		const elem = {};
 
+		elem.id = questions[i].id;
+		elem.actividad_id = questions[i].actividad_id;
 		elem.nombre = questions[i].nombre;
 		elem.descripcion = questions[i].descripcion;
-		elem.icono = questions[i].icono_id;
-		elem.id = questions[i].id;
+		elem.icono_id = questions[i].icono?.id || null;
+		elem.audio_id = questions[i].audio?.id || null;
+		elem.amb_imagen_id = questions[i].amb_imagen?.id || null;
+		elem.audio_id = questions[i].audio?.id || null;
+		elem.es_reintento = questions[i].es_reintento;
+		elem.tiene_puntuacion_global = questions[i].tiene_puntuacion_global;
+		elem.puntuacion = questions[i].puntuacion;
+		elem.tipo_pregunta_id = questions[i].tipo_pregunta?.id || null;
+		elem.repetir_si_fallo = questions[i].repetir_si_fallo;
+		elem.orden = questions[i].orden;
 
 		data = data.concat(elem);
 	}
@@ -119,6 +138,23 @@ export default function EditActivitiesPage() {
 			: types.find((x) => x.descripcion === "Imagen");
 
 		return type;
+	}
+
+	function fetchQuestions() {
+		getGameActivityQuestions(activityId)
+			.then((res) => {
+				if (res.status === 200) {
+					setQuestions(getData(res.data));
+					disableLoadingData();
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get activity questions.",
+				});
+				history.push("/edit-environment/" + environmentId);
+			});
 	}
 
 	useEffect(() => {
@@ -219,20 +255,7 @@ export default function EditActivitiesPage() {
 			disableLoadingData();
 			return;
 		}
-		getGameActivityQuestions(activityId)
-			.then((res) => {
-				if (res.status === 200) {
-					setQuestions(getData(res.data));
-					disableLoadingData();
-				}
-			})
-			.catch((error) => {
-				alertError({
-					error: error,
-					customMessage: "Could not get activity questions.",
-				});
-				history.push("/edit-environment/" + environmentId);
-			});
+		fetchQuestions();
 		getGameActivityById(activityId)
 			.then((res) => {
 				if (res.status === 200) {
@@ -317,6 +340,30 @@ export default function EditActivitiesPage() {
 		setActivity({ ...activity, [element]: text });
 	};
 
+	const handleMoveQuestion = (index, newIndex) => {
+		let newQuestions = [...questions];
+
+		const aux = newQuestions[index];
+		newQuestions.splice(index, 1, newQuestions[newIndex]);
+		newQuestions.splice(newIndex, 1, aux);
+
+		let saveQuestion = { ...questions[index] };
+		saveQuestion.orden = newIndex;
+
+		let saveQuestion2 = { ...questions[newIndex] };
+		saveQuestion2.orden = index;
+
+		updateGameQuestion(saveQuestion.id, saveQuestion).then((res) => {
+			if (res.status === 204) {
+				updateGameQuestion(saveQuestion2.id, saveQuestion2).then(
+					(res) => {
+						fetchQuestions();
+					}
+				);
+			}
+		});
+	};
+
 	function imageFormatter(cell) {
 		return cell && cell !== "" ? (
 			<img
@@ -350,6 +397,30 @@ export default function EditActivitiesPage() {
 						}}
 					>
 						<EditIcon />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Move up">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						disabled={elem.orden == 0}
+						onClick={() =>
+							handleMoveQuestion(elem.orden, elem.orden - 1)
+						}
+					>
+						<ArrowUpward />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Move down">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						disabled={elem.orden == questions.length - 1}
+						onClick={() =>
+							handleMoveQuestion(elem.orden, elem.orden + 1)
+						}
+					>
+						<ArrowDownward />
 					</Button>
 				</Tooltip>
 				<Tooltip title="Delete">

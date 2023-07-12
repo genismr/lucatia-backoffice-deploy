@@ -36,10 +36,19 @@ import {
 	getTypes,
 } from "../../../../api/asset";
 import AddResourceIcon from "@material-ui/icons/AddPhotoAlternate";
-import { Delete, Visibility, VolumeUp } from "@material-ui/icons";
+import {
+	ArrowDownward,
+	ArrowUpward,
+	Delete,
+	Visibility,
+	VolumeUp,
+} from "@material-ui/icons";
 import AssetTableDialog from "../../../components/dialogs/AssetTableDialog";
 import PreviewDialog from "../../../components/dialogs/PreviewDialog";
-import { deleteGameActivity } from "../../../../api/game-activity";
+import {
+	deleteGameActivity,
+	updateGameActivity,
+} from "../../../../api/game-activity";
 
 function getEmptyEnvironment() {
 	return {
@@ -58,10 +67,17 @@ function getData(activities) {
 	for (let i = 0; i < activities.length; ++i) {
 		const elem = {};
 
+		elem.id = activities[i].id;
+		elem.entorno_id = activities[i].entorno_id;
 		elem.nombre = activities[i].nombre;
 		elem.descripcion = activities[i].descripcion;
-		elem.icono = activities[i].icono?.id;
-		elem.id = activities[i].id;
+		elem.icono_id = activities[i].icono?.id || null;
+		elem.concepto_evaluado_id = activities[i].concepto_evaluado_id;
+		elem.contexto_audio = activities[i].contexto_audio;
+		elem.amb_texto = activities[i].amb_texto;
+		elem.amb_audio_id = activities[i].amb_audio?.id;
+		elem.amb_imagen_id = activities[i].amb_imagen?.id;
+		elem.orden = activities[i].orden;
 
 		data = data.concat(elem);
 	}
@@ -108,6 +124,24 @@ export default function EditEnvironmentsPage() {
 		disableLoading: disableLoadingData,
 		ContentSkeleton,
 	} = useSkeleton();
+
+	function fetchActivities() {
+		getGameEnvironmentActivities(environmentId)
+			.then((res) => {
+				if (res.status === 200) {
+					console.log("activities", res.data);
+					setActivities(getData(res.data));
+					disableLoadingData();
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get environment activities.",
+				});
+				history.push("/edit-game/" + gameId);
+			});
+	}
 
 	useEffect(() => {
 		getTypes()
@@ -193,20 +227,7 @@ export default function EditEnvironmentsPage() {
 			disableLoadingData();
 			return;
 		}
-		getGameEnvironmentActivities(environmentId)
-			.then((res) => {
-				if (res.status === 200) {
-					setActivities(getData(res.data));
-					disableLoadingData();
-				}
-			})
-			.catch((error) => {
-				alertError({
-					error: error,
-					customMessage: "Could not get environment activities.",
-				});
-				history.push("/edit-game/" + gameId);
-			});
+		fetchActivities();
 		getGameEnvironmentById(environmentId)
 			.then((res) => {
 				if (res.status === 200) {
@@ -236,6 +257,22 @@ export default function EditEnvironmentsPage() {
 			alertError({
 				error: null,
 				customMessage: "Ambientación is required",
+			});
+			return;
+		}
+
+		if (checkIsEmpty(environment.amb_audio_id)) {
+			alertError({
+				error: null,
+				customMessage: "Audio is required",
+			});
+			return;
+		}
+
+		if (checkIsEmpty(environment.amb_imagen_id)) {
+			alertError({
+				error: null,
+				customMessage: "Imagen is required",
 			});
 			return;
 		}
@@ -284,6 +321,30 @@ export default function EditEnvironmentsPage() {
 		setEnvironment({ ...environment, [element]: text });
 	};
 
+	const handleMoveActivity = (index, newIndex) => {
+		let newActivities = [...activities];
+
+		const aux = newActivities[index];
+		newActivities.splice(index, 1, newActivities[newIndex]);
+		newActivities.splice(newIndex, 1, aux);
+
+		let saveActivity = { ...activities[index] };
+		saveActivity.orden = newIndex;
+
+		let saveActivity2 = { ...activities[newIndex] };
+		saveActivity2.orden = index;
+
+		updateGameActivity(saveActivity.id, saveActivity).then((res) => {
+			if (res.status === 204) {
+				updateGameActivity(saveActivity2.id, saveActivity2).then(
+					(res) => {
+						fetchActivities();
+					}
+				);
+			}
+		});
+	};
+
 	function imageFormatter(cell) {
 		return cell && cell !== "" ? (
 			<img
@@ -317,6 +378,30 @@ export default function EditEnvironmentsPage() {
 						}}
 					>
 						<EditIcon />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Move up">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						disabled={elem.orden == 0}
+						onClick={() =>
+							handleMoveActivity(elem.orden, elem.orden - 1)
+						}
+					>
+						<ArrowUpward />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Move down">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						disabled={elem.orden == activities.length - 1}
+						onClick={() =>
+							handleMoveActivity(elem.orden, elem.orden + 1)
+						}
+					>
+						<ArrowDownward />
 					</Button>
 				</Tooltip>
 				<Tooltip title="Delete">

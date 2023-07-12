@@ -32,9 +32,18 @@ import {
 	getTags,
 	getTypes,
 } from "../../../../api/asset";
-import { Delete, Visibility } from "@material-ui/icons";
+import {
+	ArrowDownward,
+	ArrowUpward,
+	Delete,
+	EventAvailableOutlined,
+	Visibility,
+} from "@material-ui/icons";
 import PreviewDialog from "../../../components/dialogs/PreviewDialog";
-import { deleteGameEnvironment } from "../../../../api/game-environment";
+import {
+	deleteGameEnvironment,
+	updateGameEnvironment,
+} from "../../../../api/game-environment";
 
 function getEmptyGame() {
 	return {
@@ -51,10 +60,15 @@ function getData(environments) {
 	for (let i = 0; i < environments.length; ++i) {
 		const elem = {};
 
+		elem.id = environments[i].id;
+		elem.juego_id = environments[i].juego_id;
 		elem.nombre = environments[i].nombre;
 		elem.descripcion = environments[i].descripcion;
-		elem.icono = environments[i].icono?.id;
-		elem.id = environments[i].id;
+		elem.icono_id = environments[i].icono?.id;
+		elem.amb_texto = environments[i].amb_texto;
+		elem.amb_audio_id = environments[i].amb_audio?.id;
+		elem.amb_imagen_id = environments[i].amb_imagen?.id;
+		elem.orden = environments[i].orden;
 
 		data = data.concat(elem);
 	}
@@ -105,6 +119,24 @@ export default function EditGamesPage() {
 		let type = types.find((x) => x.descripcion === "Imagen");
 
 		return type;
+	}
+
+	function fetchEnvironments() {
+		getGameEnvironments(gameId)
+			.then((res) => {
+				if (res.status === 200) {
+					console.log("data", res.data);
+					setEnvironments(getData(res.data));
+					disableLoadingData();
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get game environments.",
+				});
+				history.push("/games");
+			});
 	}
 
 	useEffect(() => {
@@ -205,20 +237,7 @@ export default function EditGamesPage() {
 			disableLoadingData();
 			return;
 		}
-		getGameEnvironments(gameId)
-			.then((res) => {
-				if (res.status === 200) {
-					setEnvironments(getData(res.data));
-					disableLoadingData();
-				}
-			})
-			.catch((error) => {
-				alertError({
-					error: error,
-					customMessage: "Could not get game environments.",
-				});
-				history.push("/games");
-			});
+		fetchEnvironments();
 		getGameById(gameId)
 			.then((res) => {
 				if (res.status === 200) {
@@ -286,6 +305,33 @@ export default function EditGamesPage() {
 		setGame({ ...game, [element]: text });
 	};
 
+	const handleMoveEnvironment = (index, newIndex) => {
+		let newEnvironments = [...environments];
+
+		const aux = newEnvironments[index];
+		newEnvironments.splice(index, 1, newEnvironments[newIndex]);
+		newEnvironments.splice(newIndex, 1, aux);
+
+		let saveEnvironment = { ...environments[index] };
+		saveEnvironment.orden = newIndex;
+
+		let saveEnvironment2 = { ...environments[newIndex] };
+		saveEnvironment2.orden = index;
+
+		updateGameEnvironment(saveEnvironment.id, saveEnvironment).then(
+			(res) => {
+				if (res.status === 204) {
+					updateGameEnvironment(
+						saveEnvironment2.id,
+						saveEnvironment2
+					).then((res) => {
+						fetchEnvironments();
+					});
+				}
+			}
+		);
+	};
+
 	function imageFormatter(cell) {
 		return cell && cell !== "" ? (
 			<img
@@ -319,6 +365,30 @@ export default function EditGamesPage() {
 						}}
 					>
 						<EditIcon />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Move up">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						disabled={elem.orden == 0}
+						onClick={() =>
+							handleMoveEnvironment(elem.orden, elem.orden - 1)
+						}
+					>
+						<ArrowUpward />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Move down">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						disabled={elem.orden == environments.length - 1}
+						onClick={() =>
+							handleMoveEnvironment(elem.orden, elem.orden + 1)
+						}
+					>
+						<ArrowDownward />
 					</Button>
 				</Tooltip>
 				<Tooltip title="Delete">

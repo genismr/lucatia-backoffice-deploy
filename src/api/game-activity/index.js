@@ -13,6 +13,7 @@ export const getGameActivityQuestions = (id) => {
 };
 
 export const updateGameActivity = (id, gameActivity) => {
+	console.log("save", gameActivity);
 	return authClient().put(`${API}/game-activity/${id}`, gameActivity);
 };
 

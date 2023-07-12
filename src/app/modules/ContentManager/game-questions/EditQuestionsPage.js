@@ -47,6 +47,8 @@ import {
 	updateGameQuestion,
 } from "../../../../api/game-question";
 import {
+	ArrowDownward,
+	ArrowUpward,
 	CheckBox,
 	Delete,
 	Replay,
@@ -57,7 +59,10 @@ import AddResourceIcon from "@material-ui/icons/AddPhotoAlternate";
 import AssetTableDialog from "../../../components/dialogs/AssetTableDialog";
 import PreviewDialog from "../../../components/dialogs/PreviewDialog";
 import { FormControl, FormLabel } from "react-bootstrap";
-import { deleteGameAnswer } from "../../../../api/game-answer";
+import {
+	deleteGameAnswer,
+	updateGameAnswer,
+} from "../../../../api/game-answer";
 
 function getEmptyQuestion() {
 	return {
@@ -80,11 +85,19 @@ function getData(answers) {
 	for (let i = 0; i < answers.length; ++i) {
 		const elem = {};
 
+		elem.id = answers[i].id;
+		elem.pregunta_id = answers[i].pregunta_id;
 		elem.nombre = answers[i].nombre;
 		elem.descripcion = answers[i].descripcion;
-		elem.icono = answers[i].icono_id;
+		elem.icono_id = answers[i].icono?._id || null;
+		elem.texto = answers[i].texto;
+		elem.imagen_id = answers[i].imagen?._id || null;
+		elem.es_correcto = answers[i].es_correcto;
+		elem.linea_de_tiempo_id = answers[i].linea_de_tiempo_id;
 		elem.ofrece_reintento = answers[i].ofrece_reintento;
-		elem.id = answers[i].id;
+		elem.reintento_pregunta_id = answers[i].reintento_pregunta_id;
+		elem.puntuacion = answers[i].puntuacion;
+		elem.orden = answers[i].orden;
 
 		data = data.concat(elem);
 	}
@@ -147,6 +160,24 @@ export default function EditQuestionsPage() {
 			: types.find((x) => x.descripcion === "Imagen");
 
 		return type;
+	}
+
+	function fetchAnswers() {
+		getGameQuestionAnswers(questionId)
+			.then((res) => {
+				if (res.status === 200) {
+					console.log("data", res.data);
+					setAnswers(getData(res.data));
+					disableLoadingData();
+				}
+			})
+			.catch((error) => {
+				alertError({
+					error: error,
+					customMessage: "Could not get activity answers.",
+				});
+				history.push("/edit-activity/" + activityId);
+			});
 	}
 
 	useEffect(() => {
@@ -234,7 +265,6 @@ export default function EditQuestionsPage() {
 		getGameQuestionTypes()
 			.then((res) => {
 				if (res.status === 200) {
-					console.log(res.data);
 					setQuestionTypes(res.data);
 					disableLoadingData();
 				}
@@ -250,20 +280,7 @@ export default function EditQuestionsPage() {
 			disableLoadingData();
 			return;
 		}
-		getGameQuestionAnswers(questionId)
-			.then((res) => {
-				if (res.status === 200) {
-					setAnswers(getData(res.data));
-					disableLoadingData();
-				}
-			})
-			.catch((error) => {
-				alertError({
-					error: error,
-					customMessage: "Could not get activity answers.",
-				});
-				history.push("/edit-activity/" + activityId);
-			});
+		fetchAnswers();
 		getGameQuestionById(questionId)
 			.then((res) => {
 				if (res.status === 200) {
@@ -273,7 +290,7 @@ export default function EditQuestionsPage() {
 					question.audio_id = question?.audio?.id;
 					question.amb_imagen_id = question?.amb_imagen?.id;
 					question.icono_id = question?.icono?.id;
-					
+
 					setQuestion(question);
 					disableLoadingData();
 				}
@@ -352,6 +369,28 @@ export default function EditQuestionsPage() {
 		setQuestion({ ...question, [element]: text });
 	};
 
+	const handleMoveAnswer = (index, newIndex) => {
+		let newAnswers = [...answers];
+
+		const aux = newAnswers[index];
+		newAnswers.splice(index, 1, newAnswers[newIndex]);
+		newAnswers.splice(newIndex, 1, aux);
+
+		let saveAnswer = { ...answers[index] };
+		saveAnswer.orden = newIndex;
+
+		let saveAnswer2 = { ...answers[newIndex] };
+		saveAnswer2.orden = index;
+
+		updateGameAnswer(saveAnswer.id, saveAnswer).then((res) => {
+			if (res.status === 204) {
+				updateGameAnswer(saveAnswer2.id, saveAnswer2).then((res) => {
+					fetchAnswers();
+				});
+			}
+		});
+	};
+
 	function imageFormatter(cell) {
 		return cell && cell !== "" ? (
 			<img
@@ -385,6 +424,30 @@ export default function EditQuestionsPage() {
 						}}
 					>
 						<EditIcon />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Move up">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						disabled={elem.orden == 0}
+						onClick={() =>
+							handleMoveAnswer(elem.orden, elem.orden - 1)
+						}
+					>
+						<ArrowUpward />
+					</Button>
+				</Tooltip>
+				<Tooltip title="Move down">
+					<Button
+						style={buttonsStyle}
+						size="small"
+						disabled={elem.orden == answers.length - 1}
+						onClick={() =>
+							handleMoveAnswer(elem.orden, elem.orden + 1)
+						}
+					>
+						<ArrowDownward />
 					</Button>
 				</Tooltip>
 				<Tooltip title="Delete">
